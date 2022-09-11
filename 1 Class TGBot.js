@@ -74,19 +74,22 @@ class TGbot {
       muteHttpExceptions: true,
       followRedirects: true,
       validateHttpsCertificates: true,
-      contentType: contentType,
+      //contentType: contentType,
     };
 
-    for (var item in payload) {
-      if (payload[item] == null) delete payload[item];
-    }
-
     if (payload) {
-      if (contentType === "multipart/form-data;") {
+      for (var item in payload) {
+        if (payload[item] == null) delete payload[item];
+      }
+
+      if (contentType === "multipart/form-data") {
         delete options.contentType;
         options["Content-Type"] = contentType;
         options.payload = payload;
-      } else options.payload = JSON.stringify(payload);
+      } else {
+        options["contentType"] = contentType;
+        options.payload = JSON.stringify(payload);
+      }
     }
 
     if (this._log_request)
@@ -849,7 +852,7 @@ class TGbot {
    * @param {string} [options.caption] подпись к фото (может использоваться при повторной отправке по file_id), 0-1024 символа.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] SON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
@@ -915,7 +918,7 @@ class TGbot {
    * Миниатюры не могут быть повторно использованы и могут быть загружены только как новый файл.
    * Поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] SON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_content_type_detection] отключает автоматическое определение типа контента на стороне сервера для файлов, загруженных с помощью multipart/form-data.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
@@ -984,7 +987,7 @@ class TGbot {
    * @param {string} [options.caption] подпись к видео (может использоваться при повторной отправке по file_id), 0-1024 символа.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] SON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
@@ -1055,7 +1058,7 @@ class TGbot {
    * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] SON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.

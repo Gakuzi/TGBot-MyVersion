@@ -104,9 +104,9 @@ timeLog = {
   },
 
   endInMilliseconds: (start, log = true) => {
-    const end = new Date().getTime();
-    if (log) console.log(`SecondWay: ${e - s}ms`);
-    return end - start;
+    const time = new Date().getTime() - start;
+    if (log) console.log(`SecondWay: ${time}ms`);
+    return time;
   },
 
   endInMinutes: (milliseconds) => {
@@ -1140,5 +1140,139 @@ function dateFormat(arr, timeZone, format = "dd.MM.yy") {
 function activateSheet(name) {
   if (ss.getSheetByName(name).activate()) {
     SpreadsheetApp.setActiveSheet(ss.getSheetByName(name));
+  }
+}
+
+/**
+ * Установить триггер с частой запуска
+ * @see https://developers.google.com/apps-script/reference/script/clock-trigger-builder
+ * @param {name} название триггера
+ * @param {number} minutes время в минутах 1,5,10,15,30
+ * @param {number} hour в n час (совместно с days и monthDay)
+ * @param {number} hours каждый n час
+ * @param {number} days каждый n день 1-7 (совместно с hour)
+ * @param {number} monthDay каждый день месяца 1-31 (совместно с hour)
+ * @param {enum} weekDay в день недели (ScriptApp.WeekDay.MONDAY):
+ * - SUNDAY - Воскресенье;
+ * - MONDAY - Понедельник;
+ * - TUESDAY - Вторник;
+ * - WEDNESDAY - Среда;
+ * - THURSDAY - Четверг;
+ * - FRIDAY - Пятница;
+ * - SATURDAY - Суббота.
+ * @return {boolean} true или false
+ */
+function setTriggerBy({
+  minutes,
+  hour,
+  hours,
+  days,
+  weeks,
+  weekDay,
+  monthDay,
+  name = "main",
+}) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const owner = ss.getOwner().getEmail();
+  const user = Session.getActiveUser().getEmail();
+  if (user != owner) {
+    ss.toast(
+      "Только владелец таблицы может установить триггер",
+      "⛔️ Внимание",
+      5
+    );
+    return;
+  }
+
+  const triggers = ScriptApp.getUserTriggers(ss);
+  for (var i in triggers) {
+    if (triggers[i].getHandlerFunction() === name) {
+      ss.toast("Триггер уже установлен", "⚠️ Внимание", 5);
+      return false;
+    }
+  }
+
+  if (minutes)
+    // Указывает запускать триггер каждые n минуты, должно быть 1, 5, 10, 15 или 30.
+    ScriptApp.newTrigger(name).timeBased().everyMinutes(minutes).create();
+
+  if (hours)
+    // Указывает запускать триггер каждый n час.
+    ScriptApp.newTrigger(name).timeBased().everyHours(hours).create();
+
+  if (days && hour)
+    // Указывает запускать триггер каждые n дней в n час.
+    ScriptApp.newTrigger(name)
+      .timeBased()
+      .everyDays(days)
+      .atHour(hour)
+      .create();
+
+  if (weeks)
+    // Указывает запускать триггер каждую n неделю.
+    ScriptApp.newTrigger(name).timeBased().everyWeeks(weeks).create();
+
+  if (monthDay)
+    // Указывает дату в месяце запуска триггера в n час.
+    ScriptApp.newTrigger(name)
+      .timeBased()
+      .onMonthDay(monthDay)
+      .atHour(hour)
+      .create();
+
+  if (weekDay && hour)
+    // Указывает день недели, в который запускается триггер.
+    ScriptApp.newTrigger(name)
+      .timeBased()
+      .onWeekDay(weekDay)
+      .atHour(hour)
+      .create();
+
+  ss.toast("Триггер установлен", "✅ Внимание", 5);
+  return true;
+}
+
+/**
+ * Удалить триггер по имени
+ * @param {name} название триггера
+ * @return {boolean} true или false
+ */
+function deleteTrigger(name = "main") {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const triggers = ScriptApp.getUserTriggers(ss);
+  for (var i in triggers) {
+    if (triggers[i].getHandlerFunction() === name) {
+      ScriptApp.deleteTrigger(triggers[i]);
+      ss.toast("Триггер удалён", "✅ Внимание", 5);
+      return true;
+    }
+  }
+
+  ss.toast("Триггера для удаления не найдено", "⚠️ Внимание", 5);
+  return false;
+}
+
+/**
+ * Удалить все триггеры
+ * @return {boolean} true или false
+ */
+function deleteTriggers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const owner = ss.getOwner().getEmail();
+  const user = Session.getActiveUser().getEmail();
+
+  if (user != owner) {
+    ss.toast(
+      "Только владелец таблицы может установить триггер",
+      "⛔️ Внимание",
+      5
+    );
+    return false;
+  } else {
+    ScriptApp.getProjectTriggers().forEach((trigger) =>
+      ScriptApp.deleteTrigger(trigger)
+    );
+    ss.toast("Триггеры удалёны", "✅ Внимание", 5);
+    return true;
   }
 }

@@ -128,9 +128,10 @@ function authorizeNewUser(message, value) {
 // список user_id
 function usersList() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("USERS") || ss.insertSheet("USERS");
+  const sheet =
+    ss.getSheetByName("USERS") || ss.insertSheet("USERS").setTabColor("RED");
   const lastRow = sheet.getLastRow();
-  if (lastRow == 0) return undefined;
+  if (lastRow == 0) return {}; // undefined;
   let data = sheet
     .getRange("A1:E" + lastRow)
     .getValues()
