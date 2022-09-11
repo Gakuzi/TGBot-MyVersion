@@ -167,7 +167,7 @@ function writeLocation(message) {
   SpreadsheetApp.flush();
 }
 
-// сбор новых users
+// запись лога
 function writeLogByUser(message) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet =
