@@ -6,7 +6,8 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 [![Donate](https://img.shields.io/badge/Donate-Yoomoney-green.svg)](https://yoomoney.ru/to/410019620244262)
 
 ID библиотеки:
-**1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**
+**1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
+Актуальная версия: 52 от 11 сент., 11:09
 
 > Поддерживает работу с ответами doPost(e) только через Webhook.
 
@@ -31,7 +32,7 @@ ID библиотеки:
 
 ```JavaScript
 
-//токен Telegram бота от \@BotFather.
+// токен Telegram бота от \@BotFather.
 const botToken = "<botToken>"
 
 // ссылка на WebApp Google для работы с ответами doGet(e).
@@ -48,8 +49,10 @@ const Bot = TGbot.bot(botToken, webAppUrl, log_request);
 
 ```JavaScript
 
+const chat_id = "123456" // chat_id получателя
+
 // отправка сообщения
-const response = Bot.sendMessage({ chat_id: "123456", text: "Какой-то текст 😁" });
+const response = Bot.sendMessage({ chat_id: chat_id, text: "Какой-то текст 😁" });
 
 console.log(JSON.stringify(response, null, 7));
 
@@ -57,20 +60,20 @@ const message_id = response?.result?.message_id;
 
 // изменение сообщения
 Bot.editMessageText({
-  chat_id: "123456",
+  chat_id: chat_id,
   message_id: message_id ,
   text: "Изменили сообщение",
 });
 
 // удаление сообщения
 Bot.deleteMessage({
-  chat_id: "123456",
+  chat_id: chat_id,
   message_id: message_id,
 });
 
 // отправка фото
 Bot.sendPhoto({
-    chat_id: "123456",
+    chat_id: chat_id,
     photo: "url фото",
     caption: "Отправка фото",
   });
@@ -83,7 +86,35 @@ const data = [
 ].map((item) => TGbot.inputMediaPhoto({ media: item[0], caption: item[1] }));
 
   console.log(JSON.stringify(data, null, 7));
-  Bot.sendMediaGroup({ chat_id: "123456", media: data });
+  Bot.sendMediaGroup({ chat_id: chat_id, media: data });
+
+// отправка изображения или документа с использованием Blob
+
+const ss = SpreadsheetApp.getActiveSpreadsheet();
+const sheet = ss.getSheetByName("Название листа");
+const blob = sheet.getCharts()[0].getBlob(); // пример, отправка графика (фото .png) с листа Google Sheets
+
+Bot.sendPhoto({
+  chat_id: chat_id,
+  photo: blob,
+  contentType: "multipart/form-data" // указать обязательно
+});
+
+Bot.sendDocument({
+  chat_id: chat_id,
+  document: blob,
+  contentType: "multipart/form-data" // указать обязательно
+});
+
+// отправка архива с данными
+const filename = 'Test'; // название файла передавать только на латинице, используйте для транслитерации TGbot.translit(filename);
+const zip = Utilities.zip([blob], `${filename}.zip`); // [blob, ...] можно указать несколько файлов Blob (используйте разные имена для blob)
+
+Bot.sendDocument({
+  chat_id: chat_id,
+  document: zip,
+  contentType: "multipart/form-data" // указать обязательно
+});
 
 ```
 
@@ -133,7 +164,7 @@ const Bot = TGbot.bot(botToken, webAppUrl);
 function doPost(e) {
   if (!e || !e.postData || !e.postData.contents) return;
 
-  //парсим объет, который пришёл
+  // парсим объет, который пришёл
   const contents = JSON.parse(e.postData.contents);
   const debug =
     ss.getSheetByName("Debug") || ss.insertSheet("Debug").setTabColor("RED");
