@@ -89,7 +89,6 @@ const data = [
   Bot.sendMediaGroup({ chat_id: chat_id, media: data });
 
 // отправка изображения или документа с использованием Blob
-
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 const sheet = ss.getSheetByName("Название листа");
 const blob = sheet.getCharts()[0].getBlob(); // пример, отправка графика (фото .png) с листа Google Sheets
@@ -117,7 +116,6 @@ Bot.sendDocument({
 });
 
 // Сохранение файла xlsx отправленного в бот на Goole Drive (необходимо подключить к проекту Drive API)
-
 const folderId = "ID папки куда будет сохранен файл";
 const blob = UrlFetchApp.fetch(Bot.getFile(message.document.file_id)).getBlob();
 // const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob();
