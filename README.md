@@ -116,6 +116,21 @@ Bot.sendDocument({
   contentType: "multipart/form-data" // указать обязательно
 });
 
+// Сохранение файла xlsx отправленного в бот на Goole Drive (необходимо подключить к проекту Drive API)
+
+const folderId = "ID папки куда будет сохранен файл";
+const blob = UrlFetchApp.fetch(Bot.getFile(message.document.file_id)).getBlob();
+// const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob();
+const file_name = msg.document.file_name.replace(`${message.document.file_name.split('.')[message.document.file_name.split('.').length - 1]}.`, "");
+
+const resource = {
+  title: file_name,
+  mimeType: MimeType.GOOGLE_SHEETS, // если параметр не указать, то сохранится в исходном формате
+  parents: [{ id: folderId }],
+};
+
+const file = Drive.Files.insert(resource, blob);
+const newFileId = file.id;
 ```
 
 ## Кнопки клавиатуры
