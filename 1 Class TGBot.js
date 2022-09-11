@@ -17,7 +17,8 @@ class TGbot {
     this._botToken = "";
     this._webAppUrl = "";
     this._log_request = log_request;
-    this._apiTelegramUrl = `https://api.telegram.org/bot${botToken}/`;
+    this._apiBase = `https://api.telegram.org/`;
+    this._apiTelegramUrl = `${this._apiBase}bot${botToken}/`; // `https://api.telegram.org/bot${botToken}/`;
     this._build = this._builder(botToken, webAppUrl);
     this.InputMediaDocument = InputMediaPhoto;
     this.InputMediaDocument = InputMediaVideo;
@@ -1324,12 +1325,12 @@ class TGbot {
       this._miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
-    return `https://api.telegram.org/file/bot${this._botToken}/${
+    return `${this._apiBase}file/bot${this._botToken}/${
       JSON.parse(
         UrlFetchApp.fetch(
-          `https://api.telegram.org/bot${this._botToken}/getFile?file_id=${file_id}`
+          `${this._apiTelegramUrl}getFile?file_id=${file_id}`
         ).getContentText()
-      ).result
+      ).result.file_path
     }`;
   }
 
@@ -1344,10 +1345,11 @@ class TGbot {
       this._miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
+
     return JSON.parse(
       UrlFetchApp.fetch(
-        `https://api.telegram.org/file/bot${this._botToken}/getFile?file_id=${file_id}`
-      )
+        `${this._apiTelegramUrl}getFile?file_id=${file_id}`
+      ).getContentText()
     ).result.file_path;
   }
 
@@ -1359,7 +1361,7 @@ class TGbot {
    */
   getFileDownloadUrl(path) {
     if (!path) this._miss_parameter("path путь до папки.");
-    return `https://api.telegram.org/file/bot${this._botToken}/${path}`;
+    return `${this._apiBase}file/bot${this._botToken}/${path}`;
   }
 }
 
