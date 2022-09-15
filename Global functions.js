@@ -1032,6 +1032,17 @@ function translit(word) {
 }
 
 /**
+ * Делает первый символ заглавным
+ * @param {string} str строка
+ * @return {string} первая буква каждого слова заглавная
+ */
+function capitalize(str) {
+  return str.replace(/(^|\s)\S/g, function (a) {
+    return a.toUpperCase();
+  });
+}
+
+/**
  * Рандомизатор с проверкой
  * @param {[*]} arr одномерный массив данных
  * @param {number} n количество элементов на выходе

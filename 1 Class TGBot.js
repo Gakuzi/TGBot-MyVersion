@@ -78,10 +78,21 @@ class TGbot {
       //contentType: contentType,
     };
 
+    const removeEmpty = (obj) => {
+      Object.keys(obj).forEach(
+        (key) =>
+          (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
+          ((obj[key] == null || obj[key] === undefined) && delete obj[key])
+      );
+      return obj;
+    };
+
     if (payload) {
-      for (var item in payload) {
-        if (payload[item] == null) delete payload[item];
-      }
+      // for (var item in payload) {
+      //   if (payload[item] == null) delete payload[item];
+      // }
+
+      removeEmpty(payload);
 
       if (contentType === "multipart/form-data") {
         delete options.contentType;

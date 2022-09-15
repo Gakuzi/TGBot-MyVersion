@@ -9,31 +9,31 @@ function isAdminMessage(message) {
 }
 
 function isMessageType(message, type) {
-  if (message.hasOwnProperty("entities") && !message.hasOwnProperty(type))
+  if (!message.hasOwnProperty(type))
     return false;
   return true;
 }
 
 function isTextMessage(message) {
-  if (!message.hasOwnProperty("entities") && message.hasOwnProperty("text"))
+  if (message.hasOwnProperty("text"))
     return true;
   return false;
 }
 
 function isPhotoMessage(message) {
-  if (message.hasOwnProperty("entities") && message.hasOwnProperty("photo"))
+  if (message.hasOwnProperty("photo"))
     return true;
   return false;
 }
 
 function isVideoMessage(message) {
-  if (message.hasOwnProperty("entities") && message.hasOwnProperty("video"))
+  if (message.hasOwnProperty("video"))
     return true;
   return false;
 }
 
 function isDocumentMessage(message) {
-  if (message.hasOwnProperty("entities") && message.hasOwnProperty("document"))
+  if (message.hasOwnProperty("document"))
     return true;
   return false;
 }
