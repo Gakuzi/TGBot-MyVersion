@@ -126,18 +126,19 @@ class TGbot {
    * @private
    * @method _lengthError
    * @description Проверка длины сообщения.
-   * @param {string} text текст отправляемого сообщения.
-   * @param {string} caption подпись к документу отправляемого сообщения.
+   * @param {string} msg_text текст отправляемого сообщения.
+   * @param {string} caption_text подпись к документу отправляемого сообщения.
+   * @param {string} callback_query_text текст уведомления сообщения.
    * @return {Error} Возвращает ошибку в случае превышения допустимого размера.
    */
-  _lengthError({ text, caption, callback_query_text }) {
-    if (text.length > 4096)
+  _lengthError({ msg_text, caption_text, callback_query_text }) {
+    if (msg_text && msg_text.length > 4096)
       throw new Error(
-        `Длина текста отправляемого сообщения ${text.length} > 1-4096 символов`
+        `Длина текста отправляемого сообщения ${msg_text.length} > 1-4096 символов`
       );
-    if (caption.length > 1064)
-      throw new Error(`Длина подписи ${caption.length} > 0-1024 символов`);
-    if (callback_query_text.length > 1064)
+    if (caption_text && caption_text.length > 1064)
+      throw new Error(`Длина подписи ${caption_text.length} > 0-1024 символов`);
+    if (callback_query_text && callback_query_text.length > 1064)
       throw new Error(
         `Длина текста уведомления ${callback_query_text.length} > 200 символов`
       );
@@ -613,8 +614,7 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-
-    this._lengthError({ text: text });
+    this._lengthError({ msg_text: text });
 
     if (chat_id && text)
       var payload = {
@@ -678,6 +678,7 @@ class TGbot {
       this._miss_parameter(
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
+    this._lengthError({ caption_text: caption });
 
     if (chat_id && from_chat_id && message_id)
       var payload = {
@@ -761,7 +762,7 @@ class TGbot {
   }) {
     if (!text)
       this._miss_parameter("text новый текст сообщения, 1-4096 символов.");
-    this._lengthError({ text: text });
+    this._lengthError({ msg_text: text });
 
     if ((chat_id && message_id && text) || (inline_message_id && text))
       var payload = {
@@ -805,7 +806,7 @@ class TGbot {
       this._miss_parameter(
         "caption новый заголовок сообщения, 0-1024 символов."
       );
-    this._lengthError({ caption: caption });
+    this._lengthError({ caption_text: caption });
 
     if ((chat_id && message_id && caption) || (inline_message_id && caption))
       var payload = {
@@ -940,7 +941,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!photo) this._miss_parameter("photo фото для отправки.");
-    if (caption) this._lengthError({ caption: caption });
+    if (caption) this._lengthError({ caption_text: caption });
 
     if (chat_id && photo)
       var payload = {
@@ -1010,7 +1011,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!document) this._miss_parameter("document файл для отправки");
-    if (caption) this._lengthError({ caption: caption });
+    if (caption) this._lengthError({ caption_text: caption });
 
     if (chat_id && document)
       var payload = {
@@ -1082,7 +1083,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!video) this._miss_parameter("video видео для отправки.");
-    if (caption) this._lengthError({ caption: caption });
+    if (caption) this._lengthError({ caption_text: caption });
 
     if (chat_id && video)
       var payload = {
@@ -1153,7 +1154,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!audio) this._miss_parameter("audio аудио для отправки.");
-    if (caption) this._lengthError({ caption: caption });
+    if (caption) this._lengthError({ caption_text: caption });
 
     if (chat_id && audio)
       var payload = {
@@ -1467,8 +1468,7 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-
-    this._lengthError({ text: text });
+    this._lengthError({ msg_text: text });
 
     if (message && text)
       var payload = {
@@ -1520,7 +1520,7 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-    this._lengthError({ text: text });
+    this._lengthError({ msg_text: text });
 
     if (message && text)
       var payload = {
