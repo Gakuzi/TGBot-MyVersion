@@ -317,9 +317,11 @@ class TGbot {
    * @description Метод, для установки списока команд бота.
    * @see https://core.telegram.org/bots/api#setmycommands
    * @param {BotCommand[]} commands список комманд.
+   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
    * @return {boolean} Возвращает True в случае успеха.
    */
-  setMyCommands(commands) {
+  setMyCommands(commands, scope, language_code) {
     if (!commands || commands === [])
       this._miss_parameter(
         "commands объект JSON, описывающий новые права администратора по умолчанию."
@@ -327,8 +329,8 @@ class TGbot {
 
     var payload = {
       commands: JSON.stringify(commands),
-      // scope: scope,
-      // language_code : language_code
+      scope: scope ? JSON.stringify(scope) : null,
+      language_code: language_code ? language_code : null,
     };
 
     return console.log(
@@ -584,7 +586,7 @@ class TGbot {
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @param {boolean} [options.disable_web_page_preview]
+   * @param {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
@@ -744,7 +746,7 @@ class TGbot {
    * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в тексте сообщения, который можно указать вместо parse_mode.
-   * @param {boolean} [options.disable_web_page_preview]
+   * @param {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
    * @return {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageText({
@@ -1442,7 +1444,7 @@ class TGbot {
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @param {boolean} options.disable_web_page_preview
+   * @param {boolean} options.disable_web_page_preview отключить предварительный просмотр ссылок в этом сообщении.
    * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
    * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} options.reply_to_message_id если сообщение является ответом, ID исходного сообщения.
@@ -1496,7 +1498,7 @@ class TGbot {
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @param {boolean} options.disable_web_page_preview
+   * @param {boolean} options.disable_web_page_preview отключить предварительный просмотр ссылок в этом сообщении.
    * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
    * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
