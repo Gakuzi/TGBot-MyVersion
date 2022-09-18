@@ -18,7 +18,7 @@ class TGbot {
     this._webAppUrl = "";
     this._log_request = log_request;
     this._apiBase = `https://api.telegram.org/`;
-    this._apiTelegramUrl = `${this._apiBase}bot${botToken}/`; // `https://api.telegram.org/bot${botToken}/`;
+    this._apiTelegramUrl = `${this._apiBase}bot${botToken}/`;
     this._build = this._builder(botToken, webAppUrl);
     this.InputMediaDocument = InputMediaPhoto;
     this.InputMediaDocument = InputMediaVideo;
@@ -59,10 +59,10 @@ class TGbot {
    * @description Метод, для отправки запроса к API.
    * @param {string} method метод по которому делается запрос.
    * @param {string} payload дополнительные параметры запроса.
-   * @param {string} [options.contentType] "application/x-www-form-urlencoded;", "application/json;" (по умолчанию), "multipart/form-data;"
+   * @param {string} [options.contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data"
    * @return {JSON} В случае успеха возвращается объект JSON.
    */
-  _request(method, payload, contentType = "application/json;") {
+  _request(method, payload, contentType = "application/json") {
     if (!method)
       this._miss_parameter(
         "method не указан метод по которому делается запрос."
@@ -75,7 +75,6 @@ class TGbot {
       muteHttpExceptions: true,
       followRedirects: true,
       validateHttpsCertificates: true,
-      //contentType: contentType,
     };
 
     const removeEmpty = (obj) => {
@@ -88,10 +87,6 @@ class TGbot {
     };
 
     if (payload) {
-      // for (var item in payload) {
-      //   if (payload[item] == null) delete payload[item];
-      // }
-
       removeEmpty(payload);
 
       if (contentType === "multipart/form-data") {
@@ -125,6 +120,55 @@ class TGbot {
    */
   _miss_parameter(param) {
     throw new Error(`Пропущен ${param}`);
+  }
+
+  /**
+   * @private
+   * @method _lengthError
+   * @description Проверка длины сообщения.
+   * @param {string} text текст отправляемого сообщения.
+   * @param {string} caption подпись к документу отправляемого сообщения.
+   * @return {Error} Возвращает ошибку в случае превышения допустимого размера.
+   */
+  _lengthError({ text, caption, callback_query_text }) {
+    if (text.length > 4096)
+      throw new Error(
+        `Длина текста отправляемого сообщения ${text.length} больше 1-4096 символов`
+      );
+    if (caption.length > 1064)
+      throw new Error(`Длина подписи ${caption.length} больше 0-1024 символов`);
+    if (callback_query_text.length > 1064)
+      throw new Error(
+        `Длина подписи ${callback_query_text.length} больше 200 символов`
+      );
+  }
+
+  /**
+   * @private
+   * @method _fixedEncodeURIComponent
+   * @description Метод, кодирующий компонент универсального идентификатора ресурса (URI)
+   * @param {string} str строка для кодировки
+   * @return {string} закодированная строка
+   */
+  _fixedEncodeURIComponent(str) {
+    return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+      return "%" + c.charCodeAt(0).toString(16);
+    });
+  }
+
+  /**
+   * @private
+   * @method _log(message)
+   * @description Печть лога сообщения
+   * @param {string} message
+   */
+  _log(message) {
+    return (
+      "string" == typeof message
+        ? console.log(message)
+        : console.log(JSON.stringify(message, null, 7)),
+      !1
+    );
   }
 
   // Getting updates
@@ -532,7 +576,7 @@ class TGbot {
    * @metod sendMessage
    * @description Метод, для отправки текстовых сообщений.
    * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
-   * Форматы @see https://core.telegram.org/bots/api#formatting-options.
+   * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
    * @param {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
@@ -567,6 +611,8 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
+
+    this._lengthError({ text: text });
 
     if (chat_id && text)
       var payload = {
@@ -713,6 +759,7 @@ class TGbot {
   }) {
     if (!text)
       this._miss_parameter("text новый текст сообщения, 1-4096 символов.");
+    this._lengthError({ text: text });
 
     if ((chat_id && message_id && text) || (inline_message_id && text))
       var payload = {
@@ -756,6 +803,7 @@ class TGbot {
       this._miss_parameter(
         "caption новый заголовок сообщения, 0-1024 символов."
       );
+    this._lengthError({ caption: caption });
 
     if ((chat_id && message_id && caption) || (inline_message_id && caption))
       var payload = {
@@ -890,6 +938,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!photo) this._miss_parameter("photo фото для отправки.");
+    if (caption) this._lengthError({ caption: caption });
 
     if (chat_id && photo)
       var payload = {
@@ -959,6 +1008,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!document) this._miss_parameter("document файл для отправки");
+    if (caption) this._lengthError({ caption: caption });
 
     if (chat_id && document)
       var payload = {
@@ -1030,6 +1080,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!video) this._miss_parameter("video видео для отправки.");
+    if (caption) this._lengthError({ caption: caption });
 
     if (chat_id && video)
       var payload = {
@@ -1100,6 +1151,7 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!audio) this._miss_parameter("audio аудио для отправки.");
+    if (caption) this._lengthError({ caption: caption });
 
     if (chat_id && audio)
       var payload = {
@@ -1261,6 +1313,7 @@ class TGbot {
       this._miss_parameter(
         "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
+    if (text) this._lengthError({ callback_query_text: text });
 
     var payload = {
       callback_query_id: String(callback_query_id),
@@ -1345,6 +1398,8 @@ class TGbot {
     }`;
   }
 
+  // Не официальные методы API
+
   /**
    * @metod getPath
    * @description Метод, для получения пути к файлу.
@@ -1374,6 +1429,113 @@ class TGbot {
     if (!path) this._miss_parameter("path путь до папки.");
     return `${this._apiBase}file/bot${this._botToken}/${path}`;
   }
+
+  /**
+   * @metod answerMessage
+   * @description ответ по from.id на получнное сообщение.
+   * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
+   * Форматы @see https://core.telegram.org/bots/api#formatting-options
+   * @see https://core.telegram.org/bots/api#sendmessage
+   * @param {Object} options
+   * @param {JSON} options.message полученное сообщение.
+   * @param {string} options.text текст сообщения, 1-4096 символов.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
+   * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} options.disable_web_page_preview
+   * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
+   * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} options.reply_to_message_id если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  answerMessage({
+    message = "",
+    text = "",
+    reply_markup = "",
+    parse_mode = "HTML",
+    entities = "",
+    disable_web_page_preview = false,
+    disable_notification = false,
+    protect_content = false,
+    allow_sending_without_reply = false,
+  }) {
+    if (!message) this._miss_parameter("message");
+    if (!text)
+      this._miss_parameter(
+        "text текст отправляемого сообщения, 1-4096 символов."
+      );
+
+    this._lengthError({ text: text });
+
+    if (message && text)
+      var payload = {
+        chat_id: message.from.id,
+        text: String(text),
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+        parse_mode: String(parse_mode),
+        entities: entities ? JSON.stringify(entities) : null,
+        disable_web_page_preview: Boolean(disable_web_page_preview),
+        disable_notification: Boolean(disable_notification),
+        protect_content: Boolean(protect_content),
+        allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      };
+
+    return this._request("sendMessage", payload);
+  }
+
+  /**
+   * @metod replyMessage
+   * @description ответ по message_id на получнное сообщение.
+   * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
+   * Форматы @see https://core.telegram.org/bots/api#formatting-options
+   * @see https://core.telegram.org/bots/api#sendmessage
+   * @param {Object} options
+   * @param {JSON} options.message полученное сообщение.
+   * @param {string} options.text текст сообщения, 1-4096 символов.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
+   * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} options.disable_web_page_preview
+   * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
+   * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  replyMessage({
+    message = "",
+    text = "",
+    reply_markup = "",
+    parse_mode = "HTML",
+    entities = "",
+    disable_web_page_preview = false,
+    disable_notification = false,
+    protect_content = false,
+    allow_sending_without_reply = false,
+  }) {
+    if (!message) this._miss_parameter("message");
+    if (!text)
+      this._miss_parameter(
+        "text текст отправляемого сообщения, 1-4096 символов."
+      );
+    this._lengthError({ text: text });
+
+    if (message && text)
+      var payload = {
+        chat_id: message.from.id,
+        text: String(text),
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+        parse_mode: String(parse_mode),
+        entities: entities ? JSON.stringify(entities) : null,
+        disable_web_page_preview: Boolean(disable_web_page_preview),
+        disable_notification: Boolean(disable_notification),
+        protect_content: Boolean(protect_content),
+        reply_to_message_id: Number(message.message_id),
+        allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      };
+
+    return this._request("sendMessage", payload);
+  }
 }
 
 /**
@@ -1386,108 +1548,3 @@ class TGbot {
 function bot(botToken, webAppUrl, log_request) {
   return new TGbot({ botToken, webAppUrl, log_request });
 }
-
-// Не официальные методы API
-/**
- * @metod answerMessage
- * @description ответ по from.id на получнное сообщение.
- * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
- * Форматы @see https://core.telegram.org/bots/api#formatting-options.
- * @see https://core.telegram.org/bots/api#sendmessage
- * @param {Object} options
- * @param {JSON} options.message полученное сообщение.
- * @param {string} options.text текст сообщения, 1-4096 символов.
- * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
- * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
- * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
- * @param {boolean} options.disable_web_page_preview
- * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
- * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
- * @param {number} options.reply_to_message_id если сообщение является ответом, ID исходного сообщения.
- * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
- * @return {Message} В случае успеха возвращается Message отправленное сообщение.
- */
-TGbot.prototype.answerMessage = function ({
-  message = "",
-  text = "",
-  reply_markup = "",
-  parse_mode = "HTML",
-  entities = "",
-  disable_web_page_preview = false,
-  disable_notification = false,
-  protect_content = false,
-  allow_sending_without_reply = false,
-}) {
-  if (!message) this._miss_parameter("message");
-  if (!text)
-    this._miss_parameter(
-      "text текст отправляемого сообщения, 1-4096 символов."
-    );
-
-  if (message && text)
-    var payload = {
-      chat_id: message.from.id,
-      text: String(text),
-      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      parse_mode: String(parse_mode),
-      entities: entities ? JSON.stringify(entities) : null,
-      disable_web_page_preview: Boolean(disable_web_page_preview),
-      disable_notification: Boolean(disable_notification),
-      protect_content: Boolean(protect_content),
-      allow_sending_without_reply: Boolean(allow_sending_without_reply),
-    };
-
-  return this._request("sendMessage", payload);
-};
-
-/**
- * @metod replyMessage
- * @description ответ по message_id на получнное сообщение.
- * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
- * Форматы @see https://core.telegram.org/bots/api#formatting-options.
- * @see https://core.telegram.org/bots/api#sendmessage
- * @param {Object} options
- * @param {JSON} options.message полученное сообщение.
- * @param {string} options.text текст сообщения, 1-4096 символов.
- * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
- * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
- * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
- * @param {boolean} options.disable_web_page_preview
- * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
- * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
- * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
- * @return {Message} В случае успеха возвращается Message отправленное сообщение.
- */
-TGbot.prototype.replyMessage = function ({
-  message = "",
-  text = "",
-  reply_markup = "",
-  parse_mode = "HTML",
-  entities = "",
-  disable_web_page_preview = false,
-  disable_notification = false,
-  protect_content = false,
-  allow_sending_without_reply = false,
-}) {
-  if (!message) this._miss_parameter("message");
-  if (!text)
-    this._miss_parameter(
-      "text текст отправляемого сообщения, 1-4096 символов."
-    );
-
-  if (message && text)
-    var payload = {
-      chat_id: message.from.id,
-      text: String(text),
-      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      parse_mode: String(parse_mode),
-      entities: entities ? JSON.stringify(entities) : null,
-      disable_web_page_preview: Boolean(disable_web_page_preview),
-      disable_notification: Boolean(disable_notification),
-      protect_content: Boolean(protect_content),
-      reply_to_message_id: Number(message.message_id),
-      allow_sending_without_reply: Boolean(allow_sending_without_reply),
-    };
-
-  return this._request("sendMessage", payload);
-};
