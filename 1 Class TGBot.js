@@ -88,7 +88,6 @@ class TGbot {
 
     if (payload) {
       removeEmpty(payload);
-
       if (contentType === "multipart/form-data") {
         delete options.contentType;
         options["Content-Type"] = contentType;
@@ -150,7 +149,6 @@ class TGbot {
       throw new Error(
         `Длина текста, который отображается, когда пользователь выбирает ${explanation_text.length} > 1-200 символов`
       );
-
     if (callback_query_text && callback_query_text.length > 1064)
       throw new Error(
         `Длина текста уведомления ${callback_query_text.length} > 200 символов`
