@@ -1132,8 +1132,8 @@ class TGbot {
    * @param {(InputFile|string)} options.audio видео для отправки.
    * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
    * @param {number} [options.duration] продолжительность в секундах.
-   * @param {String} [options.performer] исполнитель аудио.
-   * @param {String} [options.title] название аудио.
+   * @param {string} [options.performer] исполнитель аудио.
+   * @param {string} [options.title] название аудио.
    * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
