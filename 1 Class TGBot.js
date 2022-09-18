@@ -220,7 +220,7 @@ class TGbot {
       };
 
     return console.log(
-      JSON.stringify(this._request("setWebhook", payload), null, 5)
+      JSON.stringify(this._request(Methods.SET_WEBHOOK, payload), null, 5)
     );
   }
 
@@ -238,7 +238,7 @@ class TGbot {
       };
 
     return console.log(
-      JSON.stringify(this._request("deleteWebhook", payload), null, 5)
+      JSON.stringify(this._request(Methods.DELETE_WEBHOOK, payload), null, 5)
     );
   }
 
@@ -255,7 +255,7 @@ class TGbot {
       };
 
     return console.log(
-      JSON.stringify(this._request("getWebhookInfo", payload), null, 5)
+      JSON.stringify(this._request(Methods.GET_WEBHOOK_INFO, payload), null, 5)
     );
   }
 
@@ -268,7 +268,7 @@ class TGbot {
    * @return {User} Возвращает основную информацию о боте в виде объекта User.
    */
   getMe() {
-    return console.log(JSON.stringify(this._request("getMe"), null, 5));
+    return console.log(JSON.stringify(this._request(Methods.GET_ME), null, 5));
   }
 
   /**
@@ -295,7 +295,7 @@ class TGbot {
 
     return console.log(
       JSON.stringify(
-        this._request("setMyDefaultAdministratorRights", payload),
+        this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload),
         null,
         5
       )
@@ -317,7 +317,7 @@ class TGbot {
 
     return console.log(
       JSON.stringify(
-        this._request("getMyDefaultAdministratorRights", payload),
+        this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload),
         null,
         5
       )
@@ -346,7 +346,7 @@ class TGbot {
     };
 
     return console.log(
-      JSON.stringify(this._request("setMyCommands", payload), null, 5)
+      JSON.stringify(this._request(Methods.SET_MY_COMMANDS, payload), null, 5)
     );
   }
 
@@ -357,7 +357,9 @@ class TGbot {
    * @return {BotCommand[]|[]} Возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
    */
   getMyCommands() {
-    return console.log(JSON.stringify(this._request("getMyCommands"), null, 5));
+    return console.log(
+      JSON.stringify(this._request(Methods.GET_MY_COMMANDS), null, 5)
+    );
   }
 
   /**
@@ -368,7 +370,7 @@ class TGbot {
    */
   deleteMyCommands() {
     return console.log(
-      JSON.stringify(this._request("deleteMyCommands"), null, 5)
+      JSON.stringify(this._request(Methods.DELETE_MY_COMMANDS), null, 5)
     );
   }
 
@@ -392,7 +394,7 @@ class TGbot {
     };
 
     return console.log(
-      JSON.stringify(this._request("getChat", payload), null, 5)
+      JSON.stringify(this._request(Methods.GET_CHAT, payload), null, 5)
     );
   }
 
@@ -414,7 +416,11 @@ class TGbot {
     };
 
     return console.log(
-      JSON.stringify(this._request("getChatAdministrators", payload), null, 5)
+      JSON.stringify(
+        this._request(Methods.GET_CHAT_ADMINISTRATORS, payload),
+        null,
+        5
+      )
     );
   }
 
@@ -435,7 +441,7 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request("getChatMemberCount", payload);
+    return this._request(Methods.GET_CHAT_MEMBER_COUNT, payload);
   }
 
   /**
@@ -462,7 +468,7 @@ class TGbot {
         user_id: String(user_id),
       };
 
-    return this._request("getChatMember", payload);
+    return this._request(Methods.GET_CHAT_MEMBER, payload);
   }
 
   /**
@@ -495,7 +501,7 @@ class TGbot {
         revoke_messages: Boolean(revoke_messages),
       };
 
-    return this._request("banChatMember", payload);
+    return this._request(Methods.BAN_CHAT_MEMBER, payload);
   }
 
   /**
@@ -523,7 +529,7 @@ class TGbot {
         permissions: JSON.stringify(permissions),
       };
 
-    return this._request("setChatPermissions", payload);
+    return this._request(Methods.SET_CHAT_PERMISSIONS, payload);
   }
 
   /**
@@ -559,7 +565,7 @@ class TGbot {
         until_date: until_date ? Number(until_date) : null,
       };
 
-    return this._request("restrictChatMember", payload);
+    return this._request(Methods.RESTRICT_CHAT_MEMBER, payload);
   }
 
   /**
@@ -580,7 +586,95 @@ class TGbot {
     };
 
     return console.log(
-      JSON.stringify(this._request("leaveChat", payload), null, 5)
+      JSON.stringify(this._request(Methods.LEAVE_CHAT, payload), null, 5)
+    );
+  }
+
+  /**
+   * @metod setChatPhoto
+   * @description Используйте этот метод, чтобы установить новую фотографию профиля для чата. Фотографии нельзя изменить для приватных чатов. Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {InputFile} photo новое фото чата, загруженное с помощью multipart/form-data.
+   * @return {boolean} Возвращает True в случае успеха.
+   */
+  setChatPhoto(chat_id, photo) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!photo)
+      this._miss_parameter(
+        "photo новое фото чата, загруженное с помощью multipart/form-data."
+      );
+
+    if (chat_id && photo)
+      var payload = {
+        chat_id: String(chat_id),
+        photo: photo,
+      };
+
+    return console.log(
+      this._request(Methods.SET_CHAT_PHOTO, payload, "multipart/form-data"),
+      null,
+      5
+    );
+  }
+
+  /**
+   * @metod deleteChatPhoto
+   * @description Используйте этот метод, чтобы удалить фотографию чата. Фотографии нельзя изменить для приватных чатов. Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#leavechat
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @return {boolean} Возвращает True в случае успеха.
+   */
+  deleteChatPhoto(chat_id) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    var payload = {
+      chat_id: String(chat_id),
+    };
+
+    return console.log(
+      JSON.stringify(this._request(Methods.DELETE_CHAT_PHOTO, payload), null, 5)
+    );
+  }
+
+  /**
+   * @metod sendChatAction
+   * @description Используйте этот метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота. Статус устанавливается на 5 секунд или меньше (когда приходит сообщение от вашего бота, клиенты Telegram сбрасывают его статус набора).
+   * @see https://core.telegram.org/bots/api#sendchataction
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {string} action тип действия для трансляции.
+   * Выберите в зависимости от того, что пользователь собирается получить:
+   * - "typing" для текстовых сообщений;
+   * - "upload_photo" для фотографий;
+   * - "record_video" или "upload_video" для видео;
+   * - "record_voice" или "upload_voice" для голосовых заметок;
+   * - "upload_document" для общих файлов;
+   * - "choose_sticker" для наклеек;
+   * - "find_location" для данных о местоположении;
+   * - "record_video_note" или "upload_video_note" для видеозаметок;
+   * @return {boolean} Возвращает True в случае успеха.
+   */
+  sendChatAction(chat_id, action) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!action) this._miss_parameter("action тип действия для трансляции.");
+
+    if (chat_id && action)
+      var payload = {
+        chat_id: String(chat_id),
+        action: String(action),
+      };
+
+    return console.log(
+      JSON.stringify(this._request(Methods.SEND_CHAT_ACTION, payload), null, 5)
     );
   }
 
@@ -643,7 +737,7 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    return this._request("sendMessage", payload);
+    return this._request(Methods.SEND_MESSAGE, payload);
   }
 
   /**
@@ -710,7 +804,7 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    return this._request("copyMessage", payload);
+    return this._request(Methods.COPY_MESSAGE, payload);
   }
 
   /**
@@ -743,7 +837,7 @@ class TGbot {
         message_id: Number(message_id),
       };
 
-    return this._request("deleteMessage", payload);
+    return this._request(Methods.DELETE_MESSAGE, payload);
   }
 
   /**
@@ -787,7 +881,7 @@ class TGbot {
         disable_web_page_preview: Boolean(disable_web_page_preview),
       };
 
-    return this._request("editMessageText", payload);
+    return this._request(Methods.EDIT_MESSAGE_TEXT, payload);
   }
 
   /**
@@ -832,7 +926,7 @@ class TGbot {
           : null,
       };
 
-    return this._request("editMessageCaption", payload);
+    return this._request(Methods.EDIT_MESSAGE_CAPTION, payload);
   }
 
   /**
@@ -870,7 +964,7 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request("editMessageMedia", payload);
+    return this._request(Methods.EDIT_MESSAGE_MEDIA, payload);
   }
 
   /**
@@ -906,7 +1000,7 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request("editMessageReplyMarkup", payload);
+    return this._request(Methods.EDIT_MESSAGE_REPLY_MARKUP, payload);
   }
 
   // Other
@@ -972,8 +1066,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    if (contentType) return this._request("sendPhoto", payload, contentType);
-    else return this._request("sendPhoto", payload);
+    if (contentType)
+      return this._request(Methods.SEND_PHOTO, payload, contentType);
+    else return this._request(Methods.SEND_PHOTO, payload);
   }
 
   /**
@@ -1044,8 +1139,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    if (contentType) return this._request("sendDocument", payload, contentType);
-    else return this._request("sendDocument", payload);
+    if (contentType)
+      return this._request(Methods.SEND_DOCUMENT, payload, contentType);
+    else return this._request(Methods.SEND_DOCUMENT, payload);
   }
 
   /**
@@ -1117,8 +1213,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    if (contentType) return this._request("sendVideo", payload, contentType);
-    else return this._request("sendVideo", payload);
+    if (contentType)
+      return this._request(Methods.SEND_VIDEO, payload, contentType);
+    else return this._request(Methods.SEND_VIDEO, payload);
   }
 
   /**
@@ -1187,8 +1284,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    if (contentType) return this._request("sendAudio", payload, contentType);
-    else return this._request("sendAudio", payload);
+    if (contentType)
+      return this._request(Methods.SEND_AUDIO, payload, contentType);
+    else return this._request(Methods.SEND_AUDIO, payload);
   }
 
   /**
@@ -1234,7 +1332,7 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    return this._request("sendMediaGroup", payload);
+    return this._request(Methods.SEND_MEDIA_GROUP, payload);
   }
 
   /**
@@ -1243,7 +1341,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendpoll
    * @param {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {(string)} options.question вопрос-опрос, 1-300 символов.
+   * @param {string} options.question вопрос-опрос, 1-300 символов.
    * @param {string[]} options.options JSON-сериализованный список вариантов ответа, от 2 до 10 строк по 1-100 символов каждая.
    * @param {boolean} [options.is_anonymous] True, если опрос должен быть анонимным, по умолчанию True.
    * @param {string} [options.type] тип опроса, «викторина» или «обычный» (“quiz” или “regular”), по умолчанию «обычный».
@@ -1318,7 +1416,7 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request("sendPoll", payload);
+    return this._request(Methods.SEND_POLL, payload);
   }
 
   /**
@@ -1327,8 +1425,8 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#stoppoll
    * @param {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {(string)} options.message_id идентификатор исходного сообщения с опросом.
-   * @param {(InlineKeyboardMarkup)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} options.message_id идентификатор исходного сообщения с опросом.
+   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Poll} В случае успеха возвращается остановленный опрос.
    */
   stopPoll({ chat_id = "", message_id = "", reply_markup = "" }) {
@@ -1345,7 +1443,7 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request("stopPoll", payload);
+    return this._request(Methods.STOP_POLL, payload);
   }
 
   /**
@@ -1394,8 +1492,9 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    if (contentType) return this._request("sendSticker", payload, contentType);
-    else return this._request("sendSticker", payload);
+    if (contentType)
+      return this._request(Methods.SEND_STICKER, payload, contentType);
+    else return this._request(Methods.SEND_STICKER, payload);
   }
 
   /**
@@ -1412,7 +1511,7 @@ class TGbot {
       name: String(name),
     };
 
-    return this._request("getStickerSet", payload);
+    return this._request(Methods.GET_STICKER_SET, payload);
   }
 
   /**
@@ -1448,7 +1547,7 @@ class TGbot {
       cache_time: cache_time ? Number(cache_time) : null,
     };
 
-    return this._request("answerCallbackQuery", payload);
+    return this._request(Methods.ANSWER_CALLBACK_QUERY, payload);
   }
 
   /**
@@ -1495,7 +1594,7 @@ class TGbot {
         : null,
     };
 
-    return this._request("answerInlineQuery", payload);
+    return this._request(Methods.ANSWER_INLINE_QUERY, payload);
   }
 
   /**
@@ -1517,7 +1616,7 @@ class TGbot {
     return `${this._apiBase}file/bot${this._botToken}/${
       JSON.parse(
         UrlFetchApp.fetch(
-          `${this._apiTelegramUrl}getFile?file_id=${file_id}`
+          `${this._apiTelegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
         ).getContentText()
       ).result.file_path
     }`;
@@ -1539,7 +1638,7 @@ class TGbot {
 
     return JSON.parse(
       UrlFetchApp.fetch(
-        `${this._apiTelegramUrl}getFile?file_id=${file_id}`
+        `${this._apiTelegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
       ).getContentText()
     ).result.file_path;
   }
@@ -1605,7 +1704,7 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    return this._request("sendMessage", payload);
+    return this._request(Methods.SEND_MESSAGE, payload);
   }
 
   /**
@@ -1658,7 +1757,7 @@ class TGbot {
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
-    return this._request("sendMessage", payload);
+    return this._request(Methods.SEND_MESSAGE, payload);
   }
 }
 
@@ -1672,3 +1771,112 @@ class TGbot {
 function bot(botToken, webAppUrl, log_request) {
   return new TGbot({ botToken, webAppUrl, log_request });
 }
+
+const Methods = {
+  // Getting Updates
+  GET_UPDATES: "getUpdates",
+  SET_WEBHOOK: "setWebhook", // +
+  DELETE_WEBHOOK: "deleteWebhook", // +
+  GET_WEBHOOK_INFO: "getWebhookInfo", // +
+
+  // Available methods
+  GET_ME: "getMe", // +
+  LOG_OUT: "logOut",
+  CLOSE: "close",
+  SEND_MESSAGE: "sendMessage", // +
+  FORWARD_MESSAGE: "forwardMessage",
+  COPY_MESSAGE: "copyMessage", // +
+  SEND_PHOTO: "sendPhoto", // +
+  SEND_AUDIO: "sendAudio", // +
+  SEND_DOCUMENT: "sendDocument", // +
+  SEND_VIDEO: "sendVideo", // +
+  SEND_ANIMATION: "sendAnimation",
+  SEND_VOICE: "sendVoice",
+  SEND_VIDEO_NOTE: "sendVideoNote",
+  SEND_MEDIA_GROUP: "sendMediaGroup", // +
+  SEND_LOCATION: "sendLocation",
+  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation",
+  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation",
+  SEND_VENUE: "sendVenue",
+  SEND_CONTACT: "sendContact",
+  SEND_POLL: "sendPoll", // +
+  SEND_DICE: "sendDice",
+  SEND_CHAT_ACTION: "sendChatAction", // +
+  GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos",
+  GET_FILE: "getFile", // +
+  KICK_CHAT_MEMBER: "kickChatMember",
+  BAN_CHAT_MEMBER: "banChatMember", // +
+  UNBAN_CHAT_MEMBER: "unbanChatMember",
+  RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
+  PROMOTE_CHAT_MEMBER: "promoteChatMember",
+  SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle",
+  BAN_CHAT_SENDER_CHAT: "banChatSenderChat",
+  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat",
+  SET_CHAT_PERMISSIONS: "setChatPermissions", // +
+  EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink",
+  CREATE_CHAT_INVITE_LINK: "createChatInviteLink",
+  EDIT_CHAT_INVITE_LINK: "editChatInviteLink",
+  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink",
+  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest",
+  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest",
+  SET_CHAT_PHOTO: "setChatPhoto", // +
+  DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
+  SET_CHAT_TITLE: "setChatTitle",
+  SET_CHAT_DESCRIPTION: "setChatDescription",
+  PIN_CHAT_MESSAGE: "pinChatMessage",
+  UNPIN_CHAT_MESSAGE: "unpinChatMessage",
+  UNPIN_ALL_CHAT_MESSAGES: "unpinAllChatMessages",
+  LEAVE_CHAT: "leaveChat", // +
+  GET_CHAT: "getChat", // +
+  GET_CHAT_ADMINISTRATORS: "getChatAdministrators", // +
+  GET_CHAT_MEMBER_COUNT: "getChatMemberCount", // +
+  GET_CHAT_MEMBER: "getChatMember", // +
+  SET_CHAT_STICKER_SET: "setChatStickerSet",
+  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet",
+  ANSWER_CALLBACK_QUERY: "answerCallbackQuery", // +
+  SET_MY_COMMANDS: "setMyCommands", // +
+  DELETE_MY_COMMANDS: "deleteMyCommands", // +
+  GET_MY_COMMANDS: "getMyCommands", // +
+
+  // Updating messages
+  EDIT_MESSAGE_TEXT: "editMessageText", // +
+  EDIT_MESSAGE_CAPTION: "editMessageCaption", // +
+  EDIT_MESSAGE_MEDIA: "editMessageMedia", // +
+  EDIT_MESSAGE_REPLY_MARKUP: "editMessageReplyMarkup", // +
+  STOP_POLL: "stopPoll", // +
+  DELETE_MESSAGE: "deleteMessage", // +
+
+  // Stickers
+  SEND_STICKER: "sendSticker", // +
+  GET_STICKER_SET: "getStickerSet", // +
+  UPLOAD_STICKER_FILE: "uploadStickerFile",
+  GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers",
+  CREATE_NEW_STICKER_SET: "createNewStickerSet",
+  ADD_STICKER_TO_SET: "addStickerToSet",
+  SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet",
+  DELETE_STICKER_FROM_SET: "deleteStickerFromSet",
+  SET_STICKER_SET_THUMB: "setStickerSetThumb",
+
+  // Inline mode
+  ANSWER_INLINE_QUERY: "answerInlineQuery", // +
+  ANSWER_WEB_APP_QUERY: "answerWebAppQuery",
+  SET_CHAT_MENU_BUTTON: "setChatMenuButton",
+  GET_CHAT_MENU_BUTTON: "getChatMenuButton",
+
+  SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
+  GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +
+
+  // Payments
+  SEND_INVOICE: "sendInvoice",
+  CREATE_INVOICE_LINK: "createInvoiceLink",
+  ANSWER_SHIPPING_QUERY: "answerShippingQuery",
+  ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery",
+
+  // Telegram Passport
+  SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors",
+
+  // Games
+  SEND_GAME: "sendGame",
+  SET_GAME_SCORE: "setGameScore",
+  GET_GAME_HIGH_SCORES: "getGameHighScores",
+};
