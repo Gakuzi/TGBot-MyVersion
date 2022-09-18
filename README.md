@@ -115,6 +115,31 @@ Bot.sendDocument({
   contentType: "multipart/form-data" // указать обязательно
 });
 
+// отправка опросов
+// регулярный
+Bot.sendPoll({
+  chat_id: chat_id,
+  question: "Как выходные?",
+  options: ["Фантастично", "Пойдёт", "Бывало лучше"],
+});
+
+// викторина
+Bot.sendPoll({
+  chat_id: chat_id,
+  question: "Попугай и хомяк ели овес и орехи.\nХомяк не ел овес, кто ел орехи?",
+  options: ["Попугай", "Хомяк", "Никто"],
+  type: "quiz",
+  is_anonymous: false,
+  correct_option_id: 1, // правилтный ответ в массиве, если 0 то не передавать
+  explanation: "Интересные загадки для 10 лет!!!"
+});
+
+// остановка опроса
+Bot.stopPoll({
+  chat_id: chat_id,
+  message_id: message_id, // ID сообщения с опросом который нужно остановить
+});
+
 /**
  * Сохранение файла xlsx отправленного в бот Webhook - doPost(e) на Goole Drive (необходимо подключить к проекту Drive API).
  * @param {Message} message полученное сообщение.
@@ -274,6 +299,8 @@ function doPost(e) {
 - [sendVideo](https://core.telegram.org/bots/api#sendvideo) метод, для отправки видео.
 - [sendAudio](https://core.telegram.org/bots/api#sendaudio) метод, для отправки отправки аудиофайлов.
 - [sendMediaGroup](https://core.telegram.org/bots/api#sendmediagroup) метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
+- [sendPoll](https://core.telegram.org/bots/api#sendpoll) метод, для отправки отправки собственного опроса.
+- [stopPoll]https://core.telegram.org/bots/api#stoppoll) метод, для остановки опроса, отправленный ботом.
 - [sendSticker](https://core.telegram.org/bots/api#sendsticker) метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
 - [getStickerSet](https://core.telegram.org/bots/api#getstickerset) метод, для получения набора наклеек по названию набора.
 - [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.

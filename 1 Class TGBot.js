@@ -131,13 +131,26 @@ class TGbot {
    * @param {string} callback_query_text текст уведомления сообщения.
    * @return {Error} Возвращает ошибку в случае превышения допустимого размера.
    */
-  _lengthError({ msg_text, caption_text, callback_query_text }) {
+  _lengthError({
+    msg_text,
+    caption_text,
+    question_text,
+    explanation_text,
+    callback_query_text,
+  }) {
     if (msg_text && msg_text.length > 4096)
       throw new Error(
         `Длина текста отправляемого сообщения ${msg_text.length} > 1-4096 символов`
       );
     if (caption_text && caption_text.length > 1064)
       throw new Error(`Длина подписи ${caption_text.length} > 0-1024 символов`);
+    if (question_text && question_text.length > 300)
+      throw new Error(`Длина вопроса ${question_text.length} > 1-300 символов`);
+    if (explanation_text && explanation_text.length > 200)
+      throw new Error(
+        `Длина текста, который отображается, когда пользователь выбирает ${explanation_text.length} > 1-200 символов`
+      );
+
     if (callback_query_text && callback_query_text.length > 1064)
       throw new Error(
         `Длина текста уведомления ${callback_query_text.length} > 200 символов`
@@ -1224,6 +1237,117 @@ class TGbot {
       };
 
     return this._request("sendMediaGroup", payload);
+  }
+
+  /**
+   * @metod sendPoll
+   * @description Метод, для отправки отправки собственного опроса.
+   * @see https://core.telegram.org/bots/api#sendpoll
+   * @param {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {(string)} options.question вопрос-опрос, 1-300 символов.
+   * @param {string[]} options.options JSON-сериализованный список вариантов ответа, от 2 до 10 строк по 1-100 символов каждая.
+   * @param {boolean} [options.is_anonymous] True, если опрос должен быть анонимным, по умолчанию True.
+   * @param {string} [options.type] тип опроса, «викторина» или «обычный» (“quiz” или “regular”), по умолчанию «обычный».
+   * @param {boolean} [options.allows_multiple_answers] True, если опрос допускает несколько ответов, игнорируется для опросов в режиме викторины, по умолчанию False.
+   * @param {number} [options.correct_option_id] отсчитываемый от 0 идентификатор правильного варианта ответа, необходимый для опросов в режиме викторины.
+   * @param {string} [options.explanation] текст, который отображается, когда пользователь выбирает неправильный ответ или нажимает на значок лампы в опросе в стиле викторины, 0–200 символов с не более чем двумя переводами строки после разбора сущностей.
+   * @param {string} [options.explanation_parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.explanation_entities] JSON список специальных сущностей, которые появляются в объяснении опроса, которые можно указать вместо parse_mode.
+   * @param {number} [options.open_period] время в секундах, в течение которого опрос будет активен после создания, 5-600. Нельзя использовать вместе с close_date.
+   * @param {number} [options.close_date] момент времени (временная метка Unix), когда опрос будет автоматически закрыт. Должно быть не менее 5 и не более 600 секунд в будущем. Нельзя использовать вместе с open_period.
+   * @param {boolean} [options.is_closed] True, если опрос нужно немедленно закрыть. Это может быть полезно для предварительного просмотра опроса.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendPoll({
+    chat_id = "",
+    question = "",
+    options = "",
+    is_anonymous = true,
+    type = "regular",
+    allows_multiple_answers = false,
+    correct_option_id = "0",
+    explanation = "",
+    explanation_parse_mode = "HTML",
+    explanation_entities = "",
+    open_periode = "",
+    close_date = "",
+    is_closed = false,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = "",
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!question) this._miss_parameter("question вопрос для отправки.");
+    this._lengthError({ question_text: question });
+    if (!options)
+      this._miss_parameter(
+        "options JSON-сериализованный список вариантов ответа для отправки."
+      );
+    if (explanation) this._lengthError({ explanation_text: explanation });
+
+    if (chat_id && question && options)
+      var payload = {
+        chat_id: String(chat_id),
+        question: String(question),
+        options: JSON.stringify(options),
+        is_anonymous: Boolean(is_anonymous),
+        type: type,
+        allows_multiple_answers: Boolean(allows_multiple_answers),
+        correct_option_id: correct_option_id ? Number(correct_option_id) : null,
+        explanation: explanation ? String(explanation) : null,
+        explanation_parse_mode: String(explanation_parse_mode),
+        explanation_entities: explanation_entities
+          ? JSON.stringify(explanation_entities)
+          : null,
+        open_periode: open_periode ? Number(open_periode) : null,
+        close_date: close_date ? Number(close_date) : null,
+        is_closed: Boolean(is_closed),
+        disable_notification: Boolean(disable_notification),
+        protect_content: Boolean(protect_content),
+        reply_to_message_id: Number(reply_to_message_id),
+        allow_sending_without_reply: Boolean(allow_sending_without_reply),
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      };
+
+    return this._request("sendPoll", payload);
+  }
+
+  /**
+   * @metod stopPoll
+   * @description Метод, для остановки опроса, отправленный ботом.
+   * @see https://core.telegram.org/bots/api#stoppoll
+   * @param {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {(string)} options.message_id идентификатор исходного сообщения с опросом.
+   * @param {(InlineKeyboardMarkup)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Poll} В случае успеха возвращается остановленный опрос.
+   */
+  stopPoll({ chat_id = "", message_id = "", reply_markup = "" }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!message_id) this._miss_parameter("message_id для отправки.");
+
+    if (chat_id && message_id)
+      var payload = {
+        chat_id: String(chat_id),
+        message_id: Number(message_id),
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      };
+
+    return this._request("stopPoll", payload);
   }
 
   /**
