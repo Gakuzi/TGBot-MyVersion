@@ -115,7 +115,7 @@ class TGbot {
    * @method _miss_parameter
    * @description Проверка наличия обязательных параметров для отправки запроса.
    * @param {string} param пропущенный параметр.
-   * @return {Error} Возвращает Error(`Пропущен ${param}`) в случае пропуска.
+   * @return {Error} возвращает Error(`Пропущен ${param}`) в случае пропуска.
    */
   _miss_parameter(param) {
     throw new Error(`Пропущен ${param}`);
@@ -128,30 +128,44 @@ class TGbot {
    * @param {string} msg_text текст отправляемого сообщения.
    * @param {string} caption_text подпись к документу отправляемого сообщения.
    * @param {string} callback_query_text текст уведомления сообщения.
-   * @return {Error} Возвращает ошибку в случае превышения допустимого размера.
+   * @return {Error} возвращает ошибку в случае превышения допустимого размера.
    */
   _lengthError({
     msg_text,
     caption_text,
+    chat_title,
+    chat_description,
     question_text,
     explanation_text,
     callback_query_text,
   }) {
     if (msg_text && msg_text.length > 4096)
       throw new Error(
-        `Длина текста отправляемого сообщения ${msg_text.length} > 1-4096 символов`
+        `Длина текста отправляемого сообщения ${msg_text.length} > 1-4096 символов.`
       );
-    if (caption_text && caption_text.length > 1064)
-      throw new Error(`Длина подписи ${caption_text.length} > 0-1024 символов`);
+    if (caption_text && caption_text.length > 1024)
+      throw new Error(
+        `Длина подписи ${caption_text.length} > 0-1024 символов.`
+      );
+    if (chat_title && chat_title.length > 255)
+      throw new Error(
+        `Длина нового названия чата ${chat_title.length} > 1-255 символов.`
+      );
+    if (chat_description && chat_description.length > 255)
+      throw new Error(
+        `Длина нового описания чата ${chat_description.length} > 0-255 символов.`
+      );
     if (question_text && question_text.length > 300)
-      throw new Error(`Длина вопроса ${question_text.length} > 1-300 символов`);
+      throw new Error(
+        `Длина вопроса ${question_text.length} > 1-300 символов.`
+      );
     if (explanation_text && explanation_text.length > 200)
       throw new Error(
-        `Длина текста, который отображается, когда пользователь выбирает ${explanation_text.length} > 1-200 символов`
+        `Длина текста, который отображается, когда пользователь выбирает ${explanation_text.length} > 1-200 символов.`
       );
-    if (callback_query_text && callback_query_text.length > 1064)
+    if (callback_query_text && callback_query_text.length > 200)
       throw new Error(
-        `Длина текста уведомления ${callback_query_text.length} > 200 символов`
+        `Длина текста уведомления ${callback_query_text.length} > 200 символов.`
       );
   }
 
@@ -197,7 +211,7 @@ class TGbot {
    * @param {number} [options.max_connections] max допустимое количество одновременных подключений HTTPS к веб-перехватчику для доставки обновлений: 1–100. По умолчанию 40. Используйте более низкие значения, чтобы ограничить нагрузку на сервер вашего бота, и более высокие значения, чтобы увеличить пропускную способность вашего бота.
    * @param {String[]} [options.allowed_updates] JSON список типов обновлений, которые должен получать ваш бот. Укажите [“message”, “edited_channel_post”, “callback_query”], чтобы получать обновления только этих типов.
    * @param {boolean} [options.drop_pending_updates] True, чтобы удалить все ожидающие обновления.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   setWebhook({
     url = this._webAppUrl,
@@ -229,7 +243,7 @@ class TGbot {
    * @description Метод, для удаления интеграции с веб-перехватчиком, если вы решите вернуться к getUpdates.
    * @see https://core.telegram.org/bots/api#deletewebhook
    * @param {boolean} [drop_pending_updates] True, чтобы удалить все ожидающие обновления, по умолчанию false.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   deleteWebhook(drop_pending_updates = false) {
     if (this._botToken && this._webAppUrl)
@@ -265,10 +279,33 @@ class TGbot {
    * @metod getMe
    * @description Метод проверки токена аутентификации вашего бота. Не требует параметров.
    * @see https://core.telegram.org/bots/api#getme
-   * @return {User} Возвращает основную информацию о боте в виде объекта User.
+   * @return {User} возвращает основную информацию о боте в виде объекта User.
    */
   getMe() {
-    return console.log(JSON.stringify(this._request(Methods.GET_ME), null, 5));
+    return this._request(Methods.GET_ME);
+  }
+
+  /**
+   * @metod logOut
+   * @description Метод выхода из сервера API облачного бота перед локальным запуском бота. Не требует параметров.
+   * @see https://core.telegram.org/bots/api#logout
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  logOut() {
+    return this._request(Methods.LOG_OUT);
+  }
+
+  /**
+   * @metod close
+   * @description Метод чтобы закрыть экземпляр бота перед его перемещением с одного локального сервера на другой.
+   * Вам необходимо удалить веб-хук перед вызовом этого метода, чтобы гарантировать, что бот не запустится снова после перезапуска сервера.
+   * Метод вернет ошибку 429 в первые 10 минут после запуска бота.
+   * Не требует параметров.
+   * @see https://core.telegram.org/bots/api#close
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  close() {
+    return this._request(Methods.CLOSE);
   }
 
   /**
@@ -280,7 +317,7 @@ class TGbot {
    * Если не указано, права администратора по умолчанию будут удалены.
    * @param {boolean} [for_channels] True, чтобы изменить права администратора бота по умолчанию в каналах.
    * В противном случае будут изменены права администратора бота по умолчанию для групп и супергрупп.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   setMyDefaultAdministratorRights(rights, for_channels = false) {
     if (!rights)
@@ -293,13 +330,7 @@ class TGbot {
       for_channels: Boolean(for_channels),
     };
 
-    return console.log(
-      JSON.stringify(
-        this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload),
-        null,
-        5
-      )
-    );
+    return this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload);
   }
 
   /**
@@ -308,20 +339,14 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#getmydefaultadministratorrights
    * @param {boolean} for_channels True, чтобы получить права администратора бота по умолчанию в каналах.
    * В противном случае будут возвращены права администратора бота по умолчанию для групп и супергрупп.
-   * @return {ChatAdministratorRights} Возвращает ChatAdministratorRights в случае успеха.
+   * @return {ChatAdministratorRights} возвращает ChatAdministratorRights в случае успеха.
    */
   getMyDefaultAdministratorRights(for_channels = false) {
     var payload = {
       for_channels: Boolean(for_channels),
     };
 
-    return console.log(
-      JSON.stringify(
-        this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload),
-        null,
-        5
-      )
-    );
+    return this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload);
   }
 
   /**
@@ -331,9 +356,9 @@ class TGbot {
    * @param {BotCommand[]} commands список комманд.
    * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
-  setMyCommands(commands, scope, language_code) {
+  setMyCommands(commands, scope = "", language_code = "") {
     if (!commands || commands === [])
       this._miss_parameter(
         "commands объект JSON, описывающий новые права администратора по умолчанию."
@@ -345,33 +370,40 @@ class TGbot {
       language_code: language_code ? language_code : null,
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.SET_MY_COMMANDS, payload), null, 5)
-    );
+    return this._request(Methods.SET_MY_COMMANDS, payload);
   }
 
   /**
    * @metod getMyCommands
    * @description Метод, для получения списка команд бота.
    * @see https://core.telegram.org/bots/api#getmycommands
-   * @return {BotCommand[]|[]} Возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
+   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
+   * @return {BotCommand[]|[]} возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
    */
-  getMyCommands() {
-    return console.log(
-      JSON.stringify(this._request(Methods.GET_MY_COMMANDS), null, 5)
-    );
+  getMyCommands(scope = "", language_code = "") {
+    var payload = {
+      scope: scope ? JSON.stringify(scope) : null,
+      language_code: language_code ? language_code : null,
+    };
+    return this._request(Methods.GET_MY_COMMANDS, payload);
   }
 
   /**
    * @metod deleteMyCommands
    * @description Метод, для удаления списока команд бота.
    * @see https://core.telegram.org/bots/api#deletemycommands
-   * @return {boolean} Возвращает True в случае успеха.
+   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
+   * @return {boolean} возвращает True в случае успеха.
    */
-  deleteMyCommands() {
-    return console.log(
-      JSON.stringify(this._request(Methods.DELETE_MY_COMMANDS), null, 5)
-    );
+  deleteMyCommands(scope = "", language_code = "") {
+    var payload = {
+      scope: scope ? JSON.stringify(scope) : null,
+      language_code: language_code ? language_code : null,
+    };
+
+    return this._request(Methods.DELETE_MY_COMMANDS, payload);
   }
 
   // Chat
@@ -381,7 +413,7 @@ class TGbot {
    * @description Используйте этот метод для получения актуальной информации о чате (текущее имя пользователя для разговоров один на один, текущее имя пользователя, группы или канала и т. д.).
    * @see https://core.telegram.org/bots/api#getchat
    * @param {(string|number)} chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @return {Chat} Возвращает объект чата Chat в случае успеха.
+   * @return {Chat} возвращает объект чата Chat в случае успеха.
    */
   getChat(chat_id) {
     if (!chat_id)
@@ -393,9 +425,7 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.GET_CHAT, payload), null, 5)
-    );
+    return this._request(Methods.GET_CHAT, payload);
   }
 
   /**
@@ -415,13 +445,40 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return console.log(
-      JSON.stringify(
-        this._request(Methods.GET_CHAT_ADMINISTRATORS, payload),
-        null,
-        5
-      )
-    );
+    return this._request(Methods.GET_CHAT_ADMINISTRATORS, payload);
+  }
+
+  /**
+   * @metod setChatAdministratorCustomTitle
+   * @description Метод, чтобы установить пользовательский титул для администратора в супергруппе, продвигаемой ботом.
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
+   * @param {string} custom_title новый пользовательский титул для администратора, 0-16 символов, эмодзи не разрешены.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  setChatAdministratorCustomTitle(chat_id, user_id, custom_title) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!user_id)
+      this._miss_parameter(
+        "user_id уникальный идентификатор идентификатор целевого пользователя."
+      );
+    if (!custom_title)
+      this._miss_parameter(
+        "custom_title новый пользовательский титул для администратора 0-16 символов."
+      );
+
+    if (chat_id && user_id && custom_title)
+      var payload = {
+        chat_id: String(chat_id),
+        user_id: String(user_id),
+        custom_title: String(custom_title),
+      };
+
+    return this._request(Methods.SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE, payload);
   }
 
   /**
@@ -429,7 +486,7 @@ class TGbot {
    * @description Метод, для получения количества участников в чате.
    * @see https://core.telegram.org/bots/api#getchatmembercount
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @return {number} Возвращает Int в случае успеха.
+   * @return {number} возвращает Int в случае успеха.
    */
   getChatMemberCount(chat_id) {
     if (!chat_id)
@@ -449,8 +506,8 @@ class TGbot {
    * @description Метод, получения информации об участнике чата.
    * @see https://core.telegram.org/bots/api#getchatmember
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя
-   * @return {ChatMember} Возвращает объект ChatMember в случае успеха.
+   * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
+   * @return {ChatMember} возвращает объект ChatMember в случае успеха.
    */
   getChatMember(chat_id, user_id) {
     if (!chat_id)
@@ -481,7 +538,7 @@ class TGbot {
    * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
    * @param {number} [until_date] дата, когда пользователь будет разбанен, unix-время. Пользователь забанен > 366 дней или > 30 сек. текущего времени, забаненным навсегда. Применяется только для супергрупп и каналов.
    * @param {boolean} [revoke_messages] True, чтобы удалить все сообщения из чата для удаляемого пользователя. False, пользователь сможет видеть сообщения в группе, которые были отправлены до того, как пользователь был удален. Всегда верно для супергрупп и каналов.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   banChatMember(chat_id, user_id, until_date, revoke_messages = true) {
     if (!chat_id)
@@ -505,31 +562,36 @@ class TGbot {
   }
 
   /**
-   * @metod setChatPermissions
-   * @description Метод, для установки разрешений чата по умолчанию для всех участников.
-   * Чтобы это работало, бот должен быть администратором в группе или супергруппе и иметь права администратора can_restrict_members.
-   * @see https://core.telegram.org/bots/api#setchatpermissions
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
-   * @param {ChatPermissions} permissions JSON-сериализованный объект для новых разрешений чата по умолчанию.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @metod unbanChatMember
+   * @description Метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
+   * Пользователь не вернется в группу или канал автоматически, но сможет присоединиться по ссылке и т. д.
+   * По умолчанию этот метод гарантирует, что после звонка пользователь не будет участником чата, но сможет присоединиться к нему.
+   * Поэтому, если пользователь является участником чата, он также будет удален из чата. Если вы этого не хотите, используйте параметр only_if_banned.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
+   * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
+   * @param {boolean} [only_if_banned] ничего не делать, если пользователь не забанен.
+   * @return {boolean} возвращает True в случае успеха.
    */
-  setChatPermissions(chat_id, permissions) {
+  unbanChatMember(chat_id, user_id, only_if_banned = true) {
     if (!chat_id)
       this._miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
-    if (!permissions || permissions === {})
+    if (!user_id)
       this._miss_parameter(
-        "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
+        "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
-    if (chat_id && permissions)
+    if (chat_id && user_id)
       var payload = {
         chat_id: String(chat_id),
-        permissions: JSON.stringify(permissions),
+        user_id: String(user_id),
+        only_if_banned: Boolean(only_if_banned),
       };
 
-    return this._request(Methods.SET_CHAT_PERMISSIONS, payload);
+    return this._request(Methods.UNBAN_CHAT_MEMBER, payload);
   }
 
   /**
@@ -541,7 +603,7 @@ class TGbot {
    * @param {number} user_id уникальный идентификатор целевого пользователя.
    * @param {ChatPermissions} permissions JSON-сериализованный объект для новых разрешений пользователя.
    * @param {number} [until_date] дата снятия ограничений для пользователя, время unix. Заблокирован > 366 дней или < 30 сек. с текущего времени, считается заблокированным навсегда.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   restrictChatMember(chat_id, user_id, permissions, until_date) {
     if (!chat_id)
@@ -569,34 +631,42 @@ class TGbot {
   }
 
   /**
-   * @metod leaveChat
-   * @description Используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
-   * @see https://core.telegram.org/bots/api#leavechat
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @return {boolean} Возвращает True в случае успеха.
+   * @metod setChatPermissions
+   * @description Метод, для установки разрешений чата по умолчанию для всех участников.
+   * Чтобы это работало, бот должен быть администратором в группе или супергруппе и иметь права администратора can_restrict_members.
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
+   * @param {ChatPermissions} permissions JSON-сериализованный объект для новых разрешений чата по умолчанию.
+   * @return {boolean} возвращает True в случае успеха.
    */
-  leaveChat(chat_id) {
+  setChatPermissions(chat_id, permissions) {
     if (!chat_id)
       this._miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+      );
+    if (!permissions || permissions === {})
+      this._miss_parameter(
+        "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
 
-    var payload = {
-      chat_id: String(chat_id),
-    };
+    if (chat_id && permissions)
+      var payload = {
+        chat_id: String(chat_id),
+        permissions: JSON.stringify(permissions),
+      };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.LEAVE_CHAT, payload), null, 5)
-    );
+    return this._request(Methods.SET_CHAT_PERMISSIONS, payload);
   }
 
   /**
    * @metod setChatPhoto
-   * @description Используйте этот метод, чтобы установить новую фотографию профиля для чата. Фотографии нельзя изменить для приватных чатов. Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @description Метод, чтобы установить новую фотографию профиля для чата.
+   * Фотографии нельзя изменить для приватных чатов. Ч
+   * тобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see https://core.telegram.org/bots/api#setchatphoto
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {InputFile} photo новое фото чата, загруженное с помощью multipart/form-data.
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   setChatPhoto(chat_id, photo) {
     if (!chat_id)
@@ -614,19 +684,21 @@ class TGbot {
         photo: photo,
       };
 
-    return console.log(
-      this._request(Methods.SET_CHAT_PHOTO, payload, "multipart/form-data"),
-      null,
-      5
+    return this._request(
+      Methods.SET_CHAT_PHOTO,
+      payload,
+      "multipart/form-data"
     );
   }
 
   /**
    * @metod deleteChatPhoto
-   * @description Используйте этот метод, чтобы удалить фотографию чата. Фотографии нельзя изменить для приватных чатов. Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see https://core.telegram.org/bots/api#leavechat
+   * @description Метод, чтобы удалить фотографию чата.
+   * Фотографии нельзя изменить для приватных чатов.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#deletechatphoto
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   deleteChatPhoto(chat_id) {
     if (!chat_id)
@@ -638,9 +710,189 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.DELETE_CHAT_PHOTO, payload), null, 5)
-    );
+    return this._request(Methods.DELETE_CHAT_PHOTO, payload);
+  }
+
+  /**
+   * @metod setChatTitle
+   * @description Метод, чтобы изменить название чата.
+   * Названия не могут быть изменены для приватных чатов.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#setchattitle
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {string} title новое название чата, 1-255 символов.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  setChatTitle(chat_id, title) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!title)
+      this._miss_parameter("title новое название чата, 1-255 символов.");
+    this._lengthError({ chat_title: title });
+
+    if (chat_id && title)
+      var payload = {
+        chat_id: String(chat_id),
+        title: title,
+      };
+
+    return this._request(Methods.SET_CHAT_TITLE, payload);
+  }
+
+  /**
+   * @metod setChatDescription
+   * @description Метод для изменения описания группы, супергруппы или канала.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#setchatdescription
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {string} [description] новое описание чата, 0-255 символов.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  setChatDescription(chat_id, description = "") {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (description) this._lengthError({ chat_description: description });
+
+    var payload = {
+      chat_id: String(chat_id),
+      description: description ? String(description) : null,
+    };
+
+    return this._request(Methods.SET_CHAT_DESCRIPTION, payload);
+  }
+
+  /**
+   * @metod setChatMenuButton
+   * @description Метод изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+   * @see https://core.telegram.org/bots/api#setchatmenubutton
+   * @param {(string|number)} [chat_id] уникальный идентификатор целевого приватного чата.
+   * Если не указано, кнопка меню бота по умолчанию будет изменена.
+   * @param {MenuButton} [menu_button] JSON объект для новой кнопки меню бота, по умолчанию MenuButtonDefault.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  setChatMenuButton(chat_id = "", menu_button = "") {
+    var payload = {
+      chat_id: chat_id ? String(chat_id) : null,
+      menu_button: menu_button ? menu_button : null,
+    };
+
+    return this._request(Methods.SET_CHAT_MENU_BUTTON, payload);
+  }
+
+  /**
+   * @metod getChatMenuButton
+   * @description Метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+   * @see https://core.telegram.org/bots/api#getchatmenubutton
+   * @param {(string|number)} chat_id уникальный идентификатор целевого приватного чата.
+   * Если не указано, будет возвращена кнопка меню бота по умолчанию.
+   * @return {MenuButton} возвращает MenuButton в случае успеха.
+   */
+  getChatMenuButton(chat_id = "") {
+    var payload = {
+      chat_id: chat_id ? String(chat_id) : null,
+    };
+
+    return this._request(Methods.GET_CHAT_MENU_BUTTON, payload);
+  }
+
+  /**
+   * @metod pinChatMessage
+   * @description Метод, добавления сообщения в список закрепленных сообщений в чате.
+   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} message_id идентификатор сообщения для закрепления.
+   * @param {boolean} [disable_notification] True, если нет необходимости отправлять уведомление всем участникам чата о новом закрепленном сообщении.
+   * Уведомления всегда отключены в каналах и приватных чатах.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  pinChatMessage(chat_id, message_id, disable_notification = false) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!message_id)
+      this._miss_parameter(
+        "message_id идентификатор сообщения для закрепления."
+      );
+
+    if (chat_id && message_id)
+      var payload = {
+        chat_id: String(chat_id),
+        message_id: Number(message_id),
+        disable_notification: Boolean(disable_notification),
+      };
+
+    return this._request(Methods.PIN_CHAT_MESSAGE, payload);
+  }
+
+  /**
+   * @metod unpinChatMessage
+   * @description Метод удаления закрепленного сообщения в чате.
+   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
+   * @see https://core.telegram.org/bots/api#unpinchatmessage
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [message_id] идентификатор сообщения, которое нужно открепить.
+   * Если не указано, самое последнее закрепленное сообщение (по дате отправки) будет откреплено.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  unpinChatMessage(chat_id, message_id = "") {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    var payload = {
+      chat_id: String(chat_id),
+      message_id: message_id ? Number(message_id) : null,
+    };
+
+    return this._request(Methods.UNPIN_CHAT_MESSAGE, payload);
+  }
+
+  /**
+   * @metod unpinAllChatMessages
+   * @description Метод очистки списка закрепленных сообщений в чате.
+   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
+   * @see https://core.telegram.org/bots/api#unpinallchatmessages
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  unpinAllChatMessages(chat_id) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    var payload = {
+      chat_id: String(chat_id),
+    };
+
+    return this._request(Methods.UNPIN_ALL_CHAT_MESSAGES, payload);
+  }
+
+  /**
+   * @metod leaveChat
+   * @description Используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
+   * @see https://core.telegram.org/bots/api#leavechat
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  leaveChat(chat_id) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    var payload = {
+      chat_id: String(chat_id),
+    };
+
+    return this._request(Methods.LEAVE_CHAT, payload);
   }
 
   /**
@@ -658,7 +910,7 @@ class TGbot {
    * - "choose_sticker" для наклеек;
    * - "find_location" для данных о местоположении;
    * - "record_video_note" или "upload_video_note" для видеозаметок;
-   * @return {boolean} Возвращает True в случае успеха.
+   * @return {boolean} возвращает True в случае успеха.
    */
   sendChatAction(chat_id, action) {
     if (!chat_id)
@@ -673,9 +925,31 @@ class TGbot {
         action: String(action),
       };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.SEND_CHAT_ACTION, payload), null, 5)
-    );
+    return this._request(Methods.SEND_CHAT_ACTION, payload);
+  }
+
+  /**
+   * @metod getUserProfilePhotos
+   * @description Метод, для получения списока изображений профиля для пользователя.
+   * @see https://core.telegram.org/bots/api#getuserprofilephotos
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [offset] порядковый номер первой возвращаемой фотографии. По умолчанию возвращаются все фотографии.
+   * @param {number} [limit] ограничивает количество извлекаемых фотографий. Принимаются значения от 1 до 100. По умолчанию 100.
+   * @return {UserProfilePhotos} возвращает объект UserProfilePhotos в случае успеха.
+   */
+  getUserProfilePhotos(chat_id, offset = "", limit = "") {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    var payload = {
+      chat_id: String(chat_id),
+      offset: offset ? Number(offset) : null,
+      limit: limit ? Number(limit) : null,
+    };
+
+    return this._request(Methods.GET_USER_PROFILE_PHOTOS, payload);
   }
 
   // Message
@@ -741,6 +1015,51 @@ class TGbot {
   }
 
   /**
+   * @metod forwardMessage
+   * @description Метод, для пересылки сообщений любого типа.
+   * Служебные сообщения не могут быть переадресованы.
+   * @see https://core.telegram.org/bots/api#forwardmessage
+   * @param {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
+   * @param {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername).
+   * @param {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  forwardMessage({
+    chat_id = "",
+    from_chat_id = "",
+    message_id = "",
+    disable_notification = false,
+    protect_content = false,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+      );
+    if (!from_chat_id)
+      this._miss_parameter(
+        "from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername)."
+      );
+    if (!message_id)
+      this._miss_parameter(
+        "message_id идентификатор сообщения в чате указанный в from_chat_id."
+      );
+
+    if (chat_id && from_chat_id && message_id)
+      var payload = {
+        chat_id: String(chat_id),
+        from_chat_id: String(text),
+        message_id: Number(message_id),
+        disable_notification: Boolean(disable_notification),
+        protect_content: Boolean(protect_content),
+      };
+
+    return this._request(Methods.FORWARD_MESSAGE, payload);
+  }
+
+  /**
    * @metod copyMessage
    * @description Метод, для копирования сообщения.
    * @see https://core.telegram.org/bots/api#copymessage
@@ -756,7 +1075,7 @@ class TGbot {
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
    * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @return {MessageId} Возвращает MessageId отправленного сообщения в случае успеха.
+   * @return {MessageId} возвращает MessageId отправленного сообщения в случае успеха.
    */
   copyMessage({
     chat_id = "",
@@ -807,6 +1126,8 @@ class TGbot {
     return this._request(Methods.COPY_MESSAGE, payload);
   }
 
+  // Updating messages
+
   /**
   * @metod deleteMessage
   * @description Метод, для удаления сообщения, в том числе служебного, со следующими ограничениями:
@@ -821,7 +1142,7 @@ class TGbot {
   * @param {Object} options
   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername). 
   * @param {number} options.message_id идентификатор сообщения для удаления.
-  * @return {boolean} Возвращает True в случае успеха.
+  * @return {boolean} возвращает True в случае успеха.
  */
   deleteMessage({ chat_id, message_id }) {
     if (!chat_id)
@@ -1447,6 +1768,93 @@ class TGbot {
   }
 
   /**
+   * @metod answerCallbackQuery
+   * @description Метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
+   * Ответ будет отображаться пользователю в виде уведомления в верхней части экрана чата или в виде предупреждения.
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * @param {string} callback_query_id уникальный идентификатор запроса, на который нужно ответить.
+   * @param {string} [text] текст уведомления. Если не указано, пользователю ничего не будет показано, 0-200 символов.
+   * @param {boolean} [show_alert] True, оповещение вместо уведомления в верхней части экрана чата. По умолчанию false.
+   * @param {string} [url] URL-адрес, который будет открыт клиентом пользователя. Если вы создали игру и приняли условия через @Botfather, укажите URL-адрес, который открывает вашу игру — обратите внимание, что это будет работать, только если запрос исходит от кнопки callback_game.
+   * @param {number} [cache_time] max время в секундах, в течение которого результат запроса обратного вызова может кэшироваться на стороне клиента.
+   * @return {boolean} возвращает True в случае успеха.
+   */
+  answerCallbackQuery(
+    callback_query_id = "",
+    text = "",
+    show_alert = false,
+    url = "",
+    cache_time = ""
+  ) {
+    if (!callback_query_id)
+      this._miss_parameter(
+        "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
+      );
+    if (text) this._lengthError({ callback_query_text: text });
+
+    var payload = {
+      callback_query_id: String(callback_query_id),
+      text: text ? String(text) : null,
+      show_alert: Boolean(show_alert),
+      url: url ? String(url) : null,
+      cache_time: cache_time ? Number(cache_time) : null,
+    };
+
+    return this._request(Methods.ANSWER_CALLBACK_QUERY, payload);
+  }
+
+  // Inline mode
+
+  /**
+   * @metod answerInlineQuery
+   * @description Метод, для отправки ответов на встроенный запрос.
+   * Допускается не более 50 результатов на запрос.
+   * @see https://core.telegram.org/bots/api#answerinlinequery
+   * @param {Object} options
+   * @param {string} options.inline_query_id уникальный идентификатор ответа на запрос.
+   * @param {InlineQueryResult[]} options.results сериализованный в формате JSON массив результатов для встроенного запроса.
+   * @param {number} [options.cache_time] max время в секундах, в течение которого результат встроенного запроса может кэшироваться на сервере. По умолчанию 300.
+   * @param {boolean} [options.is_personal] True, если результаты могут кэшироваться на стороне сервера только для пользователя, отправившего запрос. По умолчанию результаты могут быть возвращены любому пользователю, отправившему тот же запрос.
+   * @param {string} [options.next_offset] смещение, которое клиент должен отправить в следующем запросе с тем же текстом, чтобы получить больше результатов. Передайте пустую строку, если результатов больше нет или если вы не поддерживаете нумерацию страниц. Длина смещения не может превышать 64 байта.
+   * @param {string} [options.switch_pm_text] если передано, клиенты будут отображать кнопку с указанным текстом, которая переключает пользователя в приватный чат с ботом и отправляет боту стартовое сообщение с параметром switch_pm_parameter.
+   * @param {string} [options.switch_pm_parameter] параметр глубокой ссылки для сообщения /start, отправляемого боту, когда пользователь нажимает кнопку переключения. 1-64 символа, разрешены только A-Z, a-z, 0-9, _ и -.
+   * Пример. Встроенный бот, который отправляет видео на YouTube, может попросить пользователя подключить бота к своей учетной записи YouTube, чтобы соответствующим образом адаптировать результаты поиска.
+   * Для этого он отображает кнопку «Подключить свою учетную запись YouTube» над результатами или даже до их отображения. Пользователь нажимает кнопку, переключается на приватный чат с ботом и при этом передает начальный параметр, который указывает боту вернуть ссылку OAuth.
+   * После этого бот может предложить кнопку switch_inline, чтобы пользователь мог легко вернуться в чат, где он хотел использовать встроенные возможности бота.
+   * @return {boolean} В случае успеха возвращается True.
+   */
+  answerInlineQuery({
+    inline_query_id = "",
+    results = "",
+    cache_time = "",
+    is_personal = true,
+    next_offset = "",
+    switch_pm_text = "",
+    switch_pm_parameter = "",
+  }) {
+    if (!inline_query_id)
+      this._miss_parameter(
+        "inline_query_id уникальный идентификатор ответа на запрос."
+      );
+
+    var payload = {
+      inline_query_id: String(inline_query_id),
+      results: results ? JSON.stringify(results) : null,
+      cache_time: cache_time ? Number(cache_time) : null,
+      is_personal: Boolean(is_personal),
+      next_offset: next_offset ? String(next_offset) : null,
+      switch_pm_text: switch_pm_text ? String(switch_pm_text) : null,
+      switch_pm_parameter: switch_pm_parameter
+        ? String(switch_pm_parameter)
+        : null,
+    };
+
+    return this._request(Methods.ANSWER_INLINE_QUERY, payload);
+  }
+
+  // Stickers
+
+  /**
    * @metod sendSticker
    * @description Метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
    * @see https://core.telegram.org/bots/api#sendsticker
@@ -1512,89 +1920,6 @@ class TGbot {
     };
 
     return this._request(Methods.GET_STICKER_SET, payload);
-  }
-
-  /**
-   * @metod answerCallbackQuery
-   * @description Метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
-   * Ответ будет отображаться пользователю в виде уведомления в верхней части экрана чата или в виде предупреждения.
-   * @see https://core.telegram.org/bots/api#answercallbackquery
-   * @param {string} callback_query_id уникальный идентификатор запроса, на который нужно ответить.
-   * @param {string} [text] текст уведомления. Если не указано, пользователю ничего не будет показано, 0-200 символов.
-   * @param {boolean} [show_alert] True, оповещение вместо уведомления в верхней части экрана чата. По умолчанию false.
-   * @param {string} [url] URL-адрес, который будет открыт клиентом пользователя. Если вы создали игру и приняли условия через @Botfather, укажите URL-адрес, который открывает вашу игру — обратите внимание, что это будет работать, только если запрос исходит от кнопки callback_game.
-   * @param {number} [cache_time] max время в секундах, в течение которого результат запроса обратного вызова может кэшироваться на стороне клиента.
-   * @return {boolean} Возвращает True в случае успеха.
-   */
-  answerCallbackQuery(
-    callback_query_id = "",
-    text = "",
-    show_alert = false,
-    url = "",
-    cache_time = ""
-  ) {
-    if (!callback_query_id)
-      this._miss_parameter(
-        "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
-      );
-    if (text) this._lengthError({ callback_query_text: text });
-
-    var payload = {
-      callback_query_id: String(callback_query_id),
-      text: text ? String(text) : null,
-      show_alert: Boolean(show_alert),
-      url: url ? String(url) : null,
-      cache_time: cache_time ? Number(cache_time) : null,
-    };
-
-    return this._request(Methods.ANSWER_CALLBACK_QUERY, payload);
-  }
-
-  /**
-   * @metod answerInlineQuery
-   * @description Метод, для отправки ответов на встроенный запрос.
-   * Допускается не более 50 результатов на запрос.
-   * @see https://core.telegram.org/bots/api#answerinlinequery
-   * @param {Object} options
-   * @param {string} options.inline_query_id уникальный идентификатор ответа на запрос.
-   * @param {InlineQueryResult[]} options.results сериализованный в формате JSON массив результатов для встроенного запроса.
-   * @param {number} [options.cache_time] max время в секундах, в течение которого результат встроенного запроса может кэшироваться на сервере. По умолчанию 300.
-   * @param {boolean} [options.is_personal] True, если результаты могут кэшироваться на стороне сервера только для пользователя, отправившего запрос. По умолчанию результаты могут быть возвращены любому пользователю, отправившему тот же запрос.
-   * @param {string} [options.next_offset] смещение, которое клиент должен отправить в следующем запросе с тем же текстом, чтобы получить больше результатов. Передайте пустую строку, если результатов больше нет или если вы не поддерживаете нумерацию страниц. Длина смещения не может превышать 64 байта.
-   * @param {string} [options.switch_pm_text] если передано, клиенты будут отображать кнопку с указанным текстом, которая переключает пользователя в приватный чат с ботом и отправляет боту стартовое сообщение с параметром switch_pm_parameter.
-   * @param {string} [options.switch_pm_parameter] параметр глубокой ссылки для сообщения /start, отправляемого боту, когда пользователь нажимает кнопку переключения. 1-64 символа, разрешены только A-Z, a-z, 0-9, _ и -.
-   * Пример. Встроенный бот, который отправляет видео на YouTube, может попросить пользователя подключить бота к своей учетной записи YouTube, чтобы соответствующим образом адаптировать результаты поиска.
-   * Для этого он отображает кнопку «Подключить свою учетную запись YouTube» над результатами или даже до их отображения. Пользователь нажимает кнопку, переключается на приватный чат с ботом и при этом передает начальный параметр, который указывает боту вернуть ссылку OAuth.
-   * После этого бот может предложить кнопку switch_inline, чтобы пользователь мог легко вернуться в чат, где он хотел использовать встроенные возможности бота.
-   * @return {boolean} В случае успеха возвращается True.
-   */
-  answerInlineQuery({
-    inline_query_id = "",
-    results = "",
-    cache_time = "",
-    is_personal = true,
-    next_offset = "",
-    switch_pm_text = "",
-    switch_pm_parameter = "",
-  }) {
-    if (!inline_query_id)
-      this._miss_parameter(
-        "inline_query_id уникальный идентификатор ответа на запрос."
-      );
-
-    var payload = {
-      inline_query_id: String(inline_query_id),
-      results: results ? JSON.stringify(results) : null,
-      cache_time: cache_time ? Number(cache_time) : null,
-      is_personal: Boolean(is_personal),
-      next_offset: next_offset ? String(next_offset) : null,
-      switch_pm_text: switch_pm_text ? String(switch_pm_text) : null,
-      switch_pm_parameter: switch_pm_parameter
-        ? String(switch_pm_parameter)
-        : null,
-    };
-
-    return this._request(Methods.ANSWER_INLINE_QUERY, payload);
   }
 
   /**
@@ -1774,15 +2099,15 @@ function bot(botToken, webAppUrl, log_request) {
 
 const Methods = {
   // Getting Updates
-  GET_UPDATES: "getUpdates",
+  GET_UPDATES: "getUpdates", // не подходит
   SET_WEBHOOK: "setWebhook", // +
   DELETE_WEBHOOK: "deleteWebhook", // +
   GET_WEBHOOK_INFO: "getWebhookInfo", // +
 
   // Available methods
   GET_ME: "getMe", // +
-  LOG_OUT: "logOut",
-  CLOSE: "close",
+  LOG_OUT: "logOut", // +
+  CLOSE: "close", // +
   SEND_MESSAGE: "sendMessage", // +
   FORWARD_MESSAGE: "forwardMessage",
   COPY_MESSAGE: "copyMessage", // +
@@ -1802,14 +2127,14 @@ const Methods = {
   SEND_POLL: "sendPoll", // +
   SEND_DICE: "sendDice",
   SEND_CHAT_ACTION: "sendChatAction", // +
-  GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos",
+  GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos", // +
   GET_FILE: "getFile", // +
   KICK_CHAT_MEMBER: "kickChatMember",
   BAN_CHAT_MEMBER: "banChatMember", // +
-  UNBAN_CHAT_MEMBER: "unbanChatMember",
+  UNBAN_CHAT_MEMBER: "unbanChatMember", // +
   RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
   PROMOTE_CHAT_MEMBER: "promoteChatMember",
-  SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle",
+  SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle", // +
   BAN_CHAT_SENDER_CHAT: "banChatSenderChat",
   UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat",
   SET_CHAT_PERMISSIONS: "setChatPermissions", // +
@@ -1821,11 +2146,11 @@ const Methods = {
   DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest",
   SET_CHAT_PHOTO: "setChatPhoto", // +
   DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
-  SET_CHAT_TITLE: "setChatTitle",
-  SET_CHAT_DESCRIPTION: "setChatDescription",
-  PIN_CHAT_MESSAGE: "pinChatMessage",
-  UNPIN_CHAT_MESSAGE: "unpinChatMessage",
-  UNPIN_ALL_CHAT_MESSAGES: "unpinAllChatMessages",
+  SET_CHAT_TITLE: "setChatTitle", // +
+  SET_CHAT_DESCRIPTION: "setChatDescription", // +
+  PIN_CHAT_MESSAGE: "pinChatMessage", // +
+  UNPIN_CHAT_MESSAGE: "unpinChatMessage", // +
+  UNPIN_ALL_CHAT_MESSAGES: "unpinAllChatMessages", // +
   LEAVE_CHAT: "leaveChat", // +
   GET_CHAT: "getChat", // +
   GET_CHAT_ADMINISTRATORS: "getChatAdministrators", // +
@@ -1859,9 +2184,10 @@ const Methods = {
 
   // Inline mode
   ANSWER_INLINE_QUERY: "answerInlineQuery", // +
+
   ANSWER_WEB_APP_QUERY: "answerWebAppQuery",
-  SET_CHAT_MENU_BUTTON: "setChatMenuButton",
-  GET_CHAT_MENU_BUTTON: "getChatMenuButton",
+  SET_CHAT_MENU_BUTTON: "setChatMenuButton", // +
+  GET_CHAT_MENU_BUTTON: "getChatMenuButton", // +
 
   SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
   GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +

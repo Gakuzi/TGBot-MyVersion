@@ -274,6 +274,8 @@ function doPost(e) {
 - [deleteWebhook](https://core.telegram.org/bots/api#deletewebhook) метод, для удаления интеграции с веб-перехватчиком.
 - [getWebhookInfo](https://core.telegram.org/bots/api#getwebhookinfo) метод, для получения текущего статуса веб-перехватчика.
 - [getMe](https://core.telegram.org/bots/api#getme) метод проверки токена аутентификации вашего бота.
+- [logOut](https://core.telegram.org/bots/api#logout) метод выхода из сервера API облачного бота перед локальным запуском бота.
+- [close](https://core.telegram.org/bots/api#close) метод чтобы закрыть экземпляр бота перед его перемещением с одного локального сервера на другой.
 - [setMyDefaultAdministratorRights](https://core.telegram.org/bots/api#setmydefaultadministratorrights) метод, для измения прав администратора по умолчанию, запрашиваемые ботом, когда он добавляется в качестве администратора в группы или каналы.
 - [getMyDefaultAdministratorRights](https://core.telegram.org/bots/api#getmydefaultadministratorrights) метод, для получения текущих прав администратора бота по умолчанию.
 - [setMyCommands](https://core.telegram.org/bots/api#setmycommands) метод, для установки списока команд бота.
@@ -281,13 +283,27 @@ function doPost(e) {
 - [deleteMyCommands](https://core.telegram.org/bots/api#deletemycommands) метод, для удаления списока команд бота.
 - [getChat](https://core.telegram.org/bots/api#getchat) используйте этот метод для получения актуальной информации о чате (текущее имя пользователя для разговоров один на один, текущее имя пользователя, группы или канала и т. д.).
 - [getChatAdministrators](https://core.telegram.org/bots/api#getchatadministrators) метод, для получения списка администраторов в чате.
+- [setChatAdministratorCustomTitle](https://core.telegram.org/bots/api#setchatadministratorcustomtitle) метод, для установики пользовательского титула для администратора в супергруппе, продвигаемой ботом.
 - [getChatMemberCount](https://core.telegram.org/bots/api#getchatmembercount) метод, для получения количества участников в чате.
 - [getChatMember](https://core.telegram.org/bots/api#getchatmember) метод, получения информации об участнике чата.
 - [banChatMember](https://core.telegram.org/bots/api#banchatmember) метод, для блокировки пользователя в группе, супергруппе или канале.
+- [unbanChatMember](https://core.telegram.org/bots/api#unbanchatmember) метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
 - [setChatPermissions](https://core.telegram.org/bots/api#setchatpermissions) метод, для установки разрешений чата по умолчанию для всех участников.
 - [restrictChatMember](https://core.telegram.org/bots/api#restrictchatmember) метод, чтобы ограничить пользователя в супергруппе.
+- [setChatPhoto](https://core.telegram.org/bots/api#setchatphoto) метод, чтобы установить новую фотографию профиля для чата.
+- [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) метод, чтобы удалить фотографию чата.
+- [setChatTitle](https://core.telegram.org/bots/api#setchattitle) метод, чтобы изменить название чата.
+- [setChatDescription](https://core.telegram.org/bots/api#setchatdescription) метод, чтобы изменить описание группы, супергруппы или канала.
+- [setChatMenuButton](https://core.telegram.org/bots/api#setchatmenubutton) метод, изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+- [getChatMenuButton](https://core.telegram.org/bots/api#getchatmenubutton) метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+- [pinChatMessage](https://core.telegram.org/bots/api#pinchatmessage) метод, чтобы добавить сообщения в список закрепленных сообщений в чате.
+- [unpinChatMessage](https://core.telegram.org/bots/api#unpinchatmessage) метод, для удаления закрепленного сообщения в чате.
+- [unpinAllChatMessages] (https://core.telegram.org/bots/api#unpinallchatmessages) метод, для очистки списка закрепленных сообщений в чате.
+- [sendChatAction](https://core.telegram.org/bots/api#sendchataction) метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота.
+- [getUserProfilePhotos](https://core.telegram.org/bots/api#getuserprofilephotos) метод, для получения списока изображений профиля для пользователя.
 - [leaveChat](https://core.telegram.org/bots/api#leavechat) используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
 - [sendMessage](https://core.telegram.org/bots/api#sendmessage) метод, для отправки текстовых сообщений.
+- [forwardMessage](https://core.telegram.org/bots/api#forwardmessage) метод, для пересылки сообщений любого типа.
 - [copyMessage](https://core.telegram.org/bots/api#copymessage) метод, для копирования сообщения.
 - [deleteMessage](https://core.telegram.org/bots/api#deletemessage) метод, для удаления сообщения.
 - [editMessageText](https://core.telegram.org/bots/api#editmessagetext) метод, для редактирования текстовых и игровых сообщений.
@@ -308,10 +324,10 @@ function doPost(e) {
 
 ## Неофициальные методы:
 
-- getPath метод, для получения пути к файлу.
-- getFileDownloadUrl метод, получения ссылки на скачивание файла.
-- answerMessage ответ по from.id на получнное сообщение. Передать объект message в качестве первого аргумента.
-- replyMessage ответ по message_id на получнное сообщение. Передать объект message в качестве первого аргумента.
+- [getPath](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L1958) метод, для получения пути к файлу.
+- [getFileDownloadUrl](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L1977) метод, получения ссылки на скачивание файла.
+- [answerMessage](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L2001) ответ по from.id на получнное сообщение. Передать объект message в качестве первого аргумента.
+- [replyMessage](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L2053)) ответ по message_id на получнное сообщение. Передать объект message в качестве первого аргумента.
 
 ## Copyright & License
 
