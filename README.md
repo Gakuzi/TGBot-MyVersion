@@ -85,8 +85,8 @@ const data = [
   ["url фото", "Подпись 3"],
 ].map((item) => TGbot.inputMediaPhoto({ media: item[0], caption: item[1] }));
 
-  console.log(JSON.stringify(data, null, 7));
-  Bot.sendMediaGroup({ chat_id: chat_id, media: data });
+console.log(JSON.stringify(data, null, 7));
+Bot.sendMediaGroup({ chat_id: chat_id, media: data });
 
 // отправка изображения или документа с использованием Blob
 const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -115,20 +115,36 @@ Bot.sendDocument({
   contentType: "multipart/form-data" // указать обязательно
 });
 
-// Сохранение файла xlsx отправленного в бот на Goole Drive (необходимо подключить к проекту Drive API)
-const folderId = "ID папки куда будет сохранен файл";
-const blob = UrlFetchApp.fetch(Bot.getFile(message.document.file_id)).getBlob();
-// const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob();
-const file_name = msg.document.file_name.replace(`${message.document.file_name.split('.')[message.document.file_name.split('.').length - 1]}.`, "");
+/**
+ * Сохранение файла xlsx отправленного в бот Webhook - doPost(e) на Goole Drive (необходимо подключить к проекту Drive API).
+ * @param {Message} message полученное сообщение.
+ * @param {string} folderId ID папки куда будет сохранен файл.
+ * @return {string} file id сохранённого файла.
+ */
+function saveXlsxFileToDrive(message, folderId) {
+  const blob = UrlFetchApp.fetch(
+    Bot.getFile(message.document.file_id)
+  ).getBlob();
+  // const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob(); // или так
+  const file_name = message.document.file_name.replace(
+    `${
+      message.document.file_name.split(".")[
+        message.document.file_name.split(".").length - 1
+      ]
+    }.`,
+    ""
+  );
 
-const resource = {
-  title: file_name,
-  mimeType: MimeType.GOOGLE_SHEETS, // если параметр не указать, то сохранится в исходном формате
-  parents: [{ id: folderId }],
-};
+  const resource = {
+    title: file_name,
+    mimeType: MimeType.GOOGLE_SHEETS, // если параметр не указать, то сохранится в исходном формате
+    parents: [{ id: folderId }],
+  };
 
-const file = Drive.Files.insert(resource, blob);
-const newFileId = file.id;
+  const file = Drive.Files.insert(resource, blob);
+  return file.id;
+}
+
 ```
 
 ## Кнопки клавиатуры
@@ -175,53 +191,53 @@ const webAppUrl = "<webAppUrl>"
 const Bot = TGbot.bot(botToken, webAppUrl);
 
 function doPost(e) {
-  if (!e || !e.postData || !e.postData.contents) return;
+  if (e?.postData?.contents) {
+    // парсим объет, который пришёл
+    const contents = JSON.parse(e.postData.contents);
+    const debug =
+      ss.getSheetByName("Debug") || ss.insertSheet("Debug").setTabColor("RED");
+    debug.getRange(1, 1).setValue(JSON.stringify(contents, null, 7));
 
-  // парсим объет, который пришёл
-  const contents = JSON.parse(e.postData.contents);
-  const debug =
-    ss.getSheetByName("Debug") || ss.insertSheet("Debug").setTabColor("RED");
-  debug.getRange(1, 1).setValue(JSON.stringify(contents, null, 7));
+    try {
+      if (contents.message) {
+        const msg = contents.message;
+        const text = msg.text;
+        const chat_id = msg.from.id;
 
-  try {
-    if (contents.message) {
-      const msg = contents.message;
-      const text = msg.text;
-      const chat_id = msg.from.id;
+        if (TGbot.isBotCommandMessage(msg)) {
+          if (["/start"].includes(text))
+            Bot.sendMessage({ chat_id: chat_id, text: `Привет!` });
+          else if (["/myid"].includes(text))
+            Bot.replyMessage({
+              message: msg,
+              text: `Твой Telegram ID: ${chat_id}`,
+            });
+          else if (!["/start", "/myid"].includes(text))
+            Bot.answerMessage({
+              message: msg,
+              text: `Я не знаю такой команды ${text} 😕, попробуй еще раз.`,
+            });
+        } else if (["фото"].includes(text.toLowerCase())) {
+          const data = [
+            ["url фото", "Подпись 1"],
+            ["url фото", "Подпись 2"],
+            ["url фото", "Подпись 3"],
+          ].map((item) =>
+            TGbot.inputMediaPhoto({ media: item[0], caption: item[1] })
+          );
 
-      if (TGbot.isBotCommandMessage(msg)) {
-        if (["/start"].includes(text))
-          Bot.sendMessage({ chat_id: chat_id, text: `Привет!` });
-        else if (["/myid"].includes(text))
-          Bot.replyMessage({
-            message: msg,
-            text: `Твой Telegram ID: ${chat_id}`,
+          return Bot.sendMediaGroup({ chat_id: chat_id, media: data });
+        } else if (["видео"].includes(text.toLowerCase()))
+          return Bot.sendVideo({ chat_id: chat_id, video: "url видео" });
+        else
+          return Bot.sendMessage({
+            chat_id: chat_id,
+            text: `Не понимаю ¯\_(ツ)_/¯`,
           });
-        else if (!["/start", "/myid"].includes(text))
-          Bot.answerMessage({
-            message: msg,
-            text: `Я не знаю такой команды ${text} 😕, попробуй еще раз.`,
-          });
-      } else if (["фото"].includes(text.toLowerCase())) {
-        const data = [
-          ["url фото", "Подпись 1"],
-          ["url фото", "Подпись 2"],
-          ["url фото", "Подпись 3"],
-        ].map(
-          (item) => TGbot.inputMediaPhoto({ media: item[0], caption: item[1] })
-        );
-
-        return Bot.sendMediaGroup({ chat_id: chat_id, media: data });
-      } else if (["видео"].includes(text.toLowerCase()))
-        return Bot.sendVideo({ chat_id: chat_id, video: "url видео" });
-      else
-        return Bot.sendMessage({
-          chat_id: chat_id,
-          text: `Не понимаю ¯\_(ツ)_/¯`,
-        });
+      }
+    } catch (err) {
+      console.log(err.stack);
     }
-  } catch (err) {
-    console.log(err.stack);
   }
 }
 
