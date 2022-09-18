@@ -7,7 +7,7 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
-Актуальная версия: 55 от 18 сент., 18:22
+Актуальная версия: 56 от 18 сент., 23:34
 
 > Поддерживает работу с ответами doPost(e) только через Webhook.
 
@@ -324,10 +324,10 @@ function doPost(e) {
 
 ## Неофициальные методы:
 
-- [getPath](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L1958) метод, для получения пути к файлу.
-- [getFileDownloadUrl](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L1977) метод, получения ссылки на скачивание файла.
-- [answerMessage](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L2001) ответ по from.id на получнное сообщение. Передать объект message в качестве первого аргумента.
-- [replyMessage](https://github.com/Guf-Hub/TGBot/blob/f9d71b186487e82ee5846683112419e9d136416b/1 Class TGBot.js#L2053)) ответ по message_id на получнное сообщение. Передать объект message в качестве первого аргумента.
+- [getPath](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1958) метод, для получения пути к файлу.
+- [getFileDownloadUrl](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1977) метод, получения ссылки на скачивание файла.
+- [answerMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2001) ответ по from.id на получнное сообщение. Передать объект message в качестве первого аргумента.
+- [replyMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2053) ответ по message_id на получнное сообщение. Передать объект message в качестве первого аргумента.
 
 ## Copyright & License
 
