@@ -298,7 +298,7 @@ function doPost(e) {
 - [getChatMenuButton](https://core.telegram.org/bots/api#getchatmenubutton) метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
 - [pinChatMessage](https://core.telegram.org/bots/api#pinchatmessage) метод, чтобы добавить сообщения в список закрепленных сообщений в чате.
 - [unpinChatMessage](https://core.telegram.org/bots/api#unpinchatmessage) метод, для удаления закрепленного сообщения в чате.
-- [unpinAllChatMessages] (https://core.telegram.org/bots/api#unpinallchatmessages) метод, для очистки списка закрепленных сообщений в чате.
+- [unpinAllChatMessages](https://core.telegram.org/bots/api#unpinallchatmessages) метод, для очистки списка закрепленных сообщений в чате.
 - [sendChatAction](https://core.telegram.org/bots/api#sendchataction) метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота.
 - [getUserProfilePhotos](https://core.telegram.org/bots/api#getuserprofilephotos) метод, для получения списока изображений профиля для пользователя.
 - [leaveChat](https://core.telegram.org/bots/api#leavechat) используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
@@ -316,7 +316,7 @@ function doPost(e) {
 - [sendAudio](https://core.telegram.org/bots/api#sendaudio) метод, для отправки отправки аудиофайлов.
 - [sendMediaGroup](https://core.telegram.org/bots/api#sendmediagroup) метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
 - [sendPoll](https://core.telegram.org/bots/api#sendpoll) метод, для отправки отправки собственного опроса.
-- [stopPoll]https://core.telegram.org/bots/api#stoppoll) метод, для остановки опроса, отправленный ботом.
+- [stopPoll](https://core.telegram.org/bots/api#stoppoll) метод, для остановки опроса, отправленный ботом.
 - [sendSticker](https://core.telegram.org/bots/api#sendsticker) метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
 - [getStickerSet](https://core.telegram.org/bots/api#getstickerset) метод, для получения набора наклеек по названию набора.
 - [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
