@@ -133,13 +133,13 @@ class TGbot {
   _lengthError({ text, caption, callback_query_text }) {
     if (text.length > 4096)
       throw new Error(
-        `Длина текста отправляемого сообщения ${text.length} больше 1-4096 символов`
+        `Длина текста отправляемого сообщения ${text.length} > 1-4096 символов`
       );
     if (caption.length > 1064)
-      throw new Error(`Длина подписи ${caption.length} больше 0-1024 символов`);
+      throw new Error(`Длина подписи ${caption.length} > 0-1024 символов`);
     if (callback_query_text.length > 1064)
       throw new Error(
-        `Длина подписи ${callback_query_text.length} больше 200 символов`
+        `Длина текста уведомления ${callback_query_text.length} > 200 символов`
       );
   }
 
