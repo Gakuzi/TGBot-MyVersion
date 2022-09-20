@@ -1,8 +1,8 @@
 /**
  * @class TGbot c version 28 через именованные аргументы в {options}.
  * @author Mikhail Nosaev <m.nosaev@gmail.com, https://t.me/nosaev_m> разработка Google таблиц и GAS скриптов.
- * @description Работа с API telegram.
- * @see https://core.telegram.org/bots/api.
+ * @description Класс для работы с API telegram.
+ * @see https://core.telegram.org/bots/api
  * @license Open Source GPL (при использовании требуется указывать имя автора).
  */
 class TGbot {
@@ -105,9 +105,21 @@ class TGbot {
 
     var response = UrlFetchApp.fetch(fullUrl, options);
 
-    if (response.getResponseCode() === 200)
+    const code = response.getResponseCode();
+    if (code in ResponseCodesHTTP.OTHERCODES) {
+      if (this._log_request)
+        console.log(
+          "RESPONSE >>>",
+          ResponseCodesHTTP.OTHERCODES[code],
+          "\n",
+          response.getContentText()
+        );
       return JSON.parse(response.getContentText());
-    else return JSON.parse(response.getContentText());
+    } else {
+      if (this._log_request)
+        console.log("RESPONSE >>>", ResponseCodesHTTP.SUCCESS[code]);
+      return JSON.parse(response.getContentText());
+    }
   }
 
   /**
@@ -2096,113 +2108,3 @@ class TGbot {
 function bot(botToken, webAppUrl, log_request) {
   return new TGbot({ botToken, webAppUrl, log_request });
 }
-
-const Methods = {
-  // Getting Updates
-  GET_UPDATES: "getUpdates", // не подходит
-  SET_WEBHOOK: "setWebhook", // +
-  DELETE_WEBHOOK: "deleteWebhook", // +
-  GET_WEBHOOK_INFO: "getWebhookInfo", // +
-
-  // Available methods
-  GET_ME: "getMe", // +
-  LOG_OUT: "logOut", // +
-  CLOSE: "close", // +
-  SEND_MESSAGE: "sendMessage", // +
-  FORWARD_MESSAGE: "forwardMessage",
-  COPY_MESSAGE: "copyMessage", // +
-  SEND_PHOTO: "sendPhoto", // +
-  SEND_AUDIO: "sendAudio", // +
-  SEND_DOCUMENT: "sendDocument", // +
-  SEND_VIDEO: "sendVideo", // +
-  SEND_ANIMATION: "sendAnimation",
-  SEND_VOICE: "sendVoice",
-  SEND_VIDEO_NOTE: "sendVideoNote",
-  SEND_MEDIA_GROUP: "sendMediaGroup", // +
-  SEND_LOCATION: "sendLocation",
-  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation",
-  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation",
-  SEND_VENUE: "sendVenue",
-  SEND_CONTACT: "sendContact",
-  SEND_POLL: "sendPoll", // +
-  SEND_DICE: "sendDice",
-  SEND_CHAT_ACTION: "sendChatAction", // +
-  GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos", // +
-  GET_FILE: "getFile", // +
-  KICK_CHAT_MEMBER: "kickChatMember",
-  BAN_CHAT_MEMBER: "banChatMember", // +
-  UNBAN_CHAT_MEMBER: "unbanChatMember", // +
-  RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
-  PROMOTE_CHAT_MEMBER: "promoteChatMember",
-  SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle", // +
-  BAN_CHAT_SENDER_CHAT: "banChatSenderChat",
-  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat",
-  SET_CHAT_PERMISSIONS: "setChatPermissions", // +
-  EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink",
-  CREATE_CHAT_INVITE_LINK: "createChatInviteLink",
-  EDIT_CHAT_INVITE_LINK: "editChatInviteLink",
-  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink",
-  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest",
-  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest",
-  SET_CHAT_PHOTO: "setChatPhoto", // +
-  DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
-  SET_CHAT_TITLE: "setChatTitle", // +
-  SET_CHAT_DESCRIPTION: "setChatDescription", // +
-  PIN_CHAT_MESSAGE: "pinChatMessage", // +
-  UNPIN_CHAT_MESSAGE: "unpinChatMessage", // +
-  UNPIN_ALL_CHAT_MESSAGES: "unpinAllChatMessages", // +
-  LEAVE_CHAT: "leaveChat", // +
-  GET_CHAT: "getChat", // +
-  GET_CHAT_ADMINISTRATORS: "getChatAdministrators", // +
-  GET_CHAT_MEMBER_COUNT: "getChatMemberCount", // +
-  GET_CHAT_MEMBER: "getChatMember", // +
-  SET_CHAT_STICKER_SET: "setChatStickerSet",
-  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet",
-  ANSWER_CALLBACK_QUERY: "answerCallbackQuery", // +
-  SET_MY_COMMANDS: "setMyCommands", // +
-  DELETE_MY_COMMANDS: "deleteMyCommands", // +
-  GET_MY_COMMANDS: "getMyCommands", // +
-
-  // Updating messages
-  EDIT_MESSAGE_TEXT: "editMessageText", // +
-  EDIT_MESSAGE_CAPTION: "editMessageCaption", // +
-  EDIT_MESSAGE_MEDIA: "editMessageMedia", // +
-  EDIT_MESSAGE_REPLY_MARKUP: "editMessageReplyMarkup", // +
-  STOP_POLL: "stopPoll", // +
-  DELETE_MESSAGE: "deleteMessage", // +
-
-  // Stickers
-  SEND_STICKER: "sendSticker", // +
-  GET_STICKER_SET: "getStickerSet", // +
-  UPLOAD_STICKER_FILE: "uploadStickerFile",
-  GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers",
-  CREATE_NEW_STICKER_SET: "createNewStickerSet",
-  ADD_STICKER_TO_SET: "addStickerToSet",
-  SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet",
-  DELETE_STICKER_FROM_SET: "deleteStickerFromSet",
-  SET_STICKER_SET_THUMB: "setStickerSetThumb",
-
-  // Inline mode
-  ANSWER_INLINE_QUERY: "answerInlineQuery", // +
-
-  ANSWER_WEB_APP_QUERY: "answerWebAppQuery",
-  SET_CHAT_MENU_BUTTON: "setChatMenuButton", // +
-  GET_CHAT_MENU_BUTTON: "getChatMenuButton", // +
-
-  SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
-  GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +
-
-  // Payments
-  SEND_INVOICE: "sendInvoice",
-  CREATE_INVOICE_LINK: "createInvoiceLink",
-  ANSWER_SHIPPING_QUERY: "answerShippingQuery",
-  ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery",
-
-  // Telegram Passport
-  SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors",
-
-  // Games
-  SEND_GAME: "sendGame",
-  SET_GAME_SCORE: "setGameScore",
-  GET_GAME_HIGH_SCORES: "getGameHighScores",
-};
