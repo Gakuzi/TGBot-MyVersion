@@ -40,9 +40,9 @@ const botToken = "<botToken>"
 const webAppUrl = "Optional[<webAppUrl>]"
 
 // печать URL и OPTIONS запроса при выполнении, по умочанию false.
-const log_request = "Optional[<log_request>]"
+const logRequest = "Optional[<logRequest>]"
 
-const Bot = TGbot.bot(botToken, webAppUrl, log_request);
+const Bot = TGbot.bot(botToken, webAppUrl, logRequest);
 
 ```
 
