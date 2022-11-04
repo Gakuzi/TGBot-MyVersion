@@ -11,12 +11,16 @@ class TGbot {
    * @param {Object} options параметры конструктора.
    * @param {string} options.botToken токен Telegram бота от \@BotFather.
    * @param {string} [options.webAppUrl] ссылка на WebApp Google для работы с ответами doGet(e).
-   * @param {boolean} [options.log_request] печать URL и OPTIONS запроса при выполнении, по умочанию false.
+   * @param {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
    */
-  constructor({ botToken, webAppUrl, log_request = false }) {
+  constructor({
+    botToken,
+    webAppUrl,
+    logRequest = false
+  }) {
     this._botToken = "";
     this._webAppUrl = "";
-    this._log_request = log_request;
+    this._logRequest = logRequest;
     this._apiBase = `https://api.telegram.org/`;
     this._apiTelegramUrl = `${this._apiBase}bot${botToken}/`;
     this._build = this._builder(botToken, webAppUrl);
@@ -80,8 +84,8 @@ class TGbot {
     const removeEmpty = (obj) => {
       Object.keys(obj).forEach(
         (key) =>
-          (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
-          ((obj[key] == null || obj[key] === undefined) && delete obj[key])
+        (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
+        ((obj[key] == null || obj[key] === undefined) && delete obj[key])
       );
       return obj;
     };
@@ -98,7 +102,7 @@ class TGbot {
       }
     }
 
-    if (this._log_request)
+    if (this._logRequest)
       console.log(
         `URL >>> ${fullUrl},\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
       );
@@ -107,7 +111,7 @@ class TGbot {
 
     const code = response.getResponseCode();
     if (code in ResponseCodesHTTP.OTHERCODES) {
-      if (this._log_request)
+      if (this._logRequest)
         console.log(
           "RESPONSE >>>",
           ResponseCodesHTTP.OTHERCODES[code],
@@ -116,7 +120,7 @@ class TGbot {
         );
       return JSON.parse(response.getContentText());
     } else {
-      if (this._log_request)
+      if (this._logRequest)
         console.log("RESPONSE >>>", ResponseCodesHTTP.SUCCESS[code]);
       return JSON.parse(response.getContentText());
     }
@@ -202,9 +206,9 @@ class TGbot {
    */
   _log(message) {
     return (
-      "string" == typeof message
-        ? console.log(message)
-        : console.log(JSON.stringify(message, null, 7)),
+      "string" == typeof message ?
+      console.log(message) :
+      console.log(JSON.stringify(message, null, 7)),
       !1
     );
   }
@@ -239,9 +243,9 @@ class TGbot {
         certificate: certificate ? JSON.stringify(certificate) : null,
         ip_address: ip_address ? String(ip_address) : null,
         max_connections: Number(max_connections),
-        allowed_updates: allowed_updates
-          ? JSON.stringify(allowed_updates)
-          : null,
+        allowed_updates: allowed_updates ?
+          JSON.stringify(allowed_updates) :
+          null,
         drop_pending_updates: Boolean(drop_pending_updates),
       };
 
@@ -742,7 +746,9 @@ class TGbot {
       );
     if (!title)
       this._miss_parameter("title новое название чата, 1-255 символов.");
-    this._lengthError({ chat_title: title });
+    this._lengthError({
+      chat_title: title
+    });
 
     if (chat_id && title)
       var payload = {
@@ -767,7 +773,9 @@ class TGbot {
       this._miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (description) this._lengthError({ chat_description: description });
+    if (description) this._lengthError({
+      chat_description: description
+    });
 
     var payload = {
       chat_id: String(chat_id),
@@ -1005,7 +1013,9 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-    this._lengthError({ msg_text: text });
+    this._lengthError({
+      msg_text: text
+    });
 
     if (chat_id && text)
       var payload = {
@@ -1017,9 +1027,9 @@ class TGbot {
         disable_web_page_preview: Boolean(disable_web_page_preview),
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1114,7 +1124,9 @@ class TGbot {
       this._miss_parameter(
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
-    this._lengthError({ caption_text: caption });
+    this._lengthError({
+      caption_text: caption
+    });
 
     if (chat_id && from_chat_id && message_id)
       var payload = {
@@ -1124,14 +1136,14 @@ class TGbot {
         caption: caption ? String(caption) : null,
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1156,7 +1168,10 @@ class TGbot {
   * @param {number} options.message_id идентификатор сообщения для удаления.
   * @return {boolean} возвращает True в случае успеха.
  */
-  deleteMessage({ chat_id, message_id }) {
+  deleteMessage({
+    chat_id,
+    message_id
+  }) {
     if (!chat_id)
       this._miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
@@ -1200,7 +1215,9 @@ class TGbot {
   }) {
     if (!text)
       this._miss_parameter("text новый текст сообщения, 1-4096 символов.");
-    this._lengthError({ msg_text: text });
+    this._lengthError({
+      msg_text: text
+    });
 
     if ((chat_id && message_id && text) || (inline_message_id && text))
       var payload = {
@@ -1244,7 +1261,9 @@ class TGbot {
       this._miss_parameter(
         "caption новый заголовок сообщения, 0-1024 символов."
       );
-    this._lengthError({ caption_text: caption });
+    this._lengthError({
+      caption_text: caption
+    });
 
     if ((chat_id && message_id && caption) || (inline_message_id && caption))
       var payload = {
@@ -1254,9 +1273,9 @@ class TGbot {
         caption: caption ? String(caption) : null,
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
       };
 
     return this._request(Methods.EDIT_MESSAGE_CAPTION, payload);
@@ -1379,7 +1398,9 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!photo) this._miss_parameter("photo фото для отправки.");
-    if (caption) this._lengthError({ caption_text: caption });
+    if (caption) this._lengthError({
+      caption_text: caption
+    });
 
     if (chat_id && photo)
       var payload = {
@@ -1387,14 +1408,14 @@ class TGbot {
         photo: photo,
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
@@ -1450,7 +1471,9 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!document) this._miss_parameter("document файл для отправки");
-    if (caption) this._lengthError({ caption_text: caption });
+    if (caption) this._lengthError({
+      caption_text: caption
+    });
 
     if (chat_id && document)
       var payload = {
@@ -1459,15 +1482,15 @@ class TGbot {
         caption: caption ? String(caption) : null,
         thumb: thumb ? thumb : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
         disable_content_type_detection: Boolean(disable_content_type_detection),
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
@@ -1523,7 +1546,9 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!video) this._miss_parameter("video видео для отправки.");
-    if (caption) this._lengthError({ caption_text: caption });
+    if (caption) this._lengthError({
+      caption_text: caption
+    });
 
     if (chat_id && video)
       var payload = {
@@ -1536,9 +1561,9 @@ class TGbot {
         supports_streaming: Boolean(supports_streaming),
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
         reply_to_message_id: Number(reply_to_message_id),
@@ -1595,7 +1620,9 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!audio) this._miss_parameter("audio аудио для отправки.");
-    if (caption) this._lengthError({ caption_text: caption });
+    if (caption) this._lengthError({
+      caption_text: caption
+    });
 
     if (chat_id && audio)
       var payload = {
@@ -1607,9 +1634,9 @@ class TGbot {
         duration: duration ? Number(duration) : null,
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
+        caption_entities: caption_entities ?
+          JSON.stringify(caption_entities) :
+          null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
         reply_to_message_id: Number(reply_to_message_id),
@@ -1659,9 +1686,9 @@ class TGbot {
         media: media,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1718,12 +1745,16 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!question) this._miss_parameter("question вопрос для отправки.");
-    this._lengthError({ question_text: question });
+    this._lengthError({
+      question_text: question
+    });
     if (!options)
       this._miss_parameter(
         "options JSON-сериализованный список вариантов ответа для отправки."
       );
-    if (explanation) this._lengthError({ explanation_text: explanation });
+    if (explanation) this._lengthError({
+      explanation_text: explanation
+    });
 
     if (chat_id && question && options)
       var payload = {
@@ -1736,9 +1767,9 @@ class TGbot {
         correct_option_id: correct_option_id ? Number(correct_option_id) : null,
         explanation: explanation ? String(explanation) : null,
         explanation_parse_mode: String(explanation_parse_mode),
-        explanation_entities: explanation_entities
-          ? JSON.stringify(explanation_entities)
-          : null,
+        explanation_entities: explanation_entities ?
+          JSON.stringify(explanation_entities) :
+          null,
         open_periode: open_periode ? Number(open_periode) : null,
         close_date: close_date ? Number(close_date) : null,
         is_closed: Boolean(is_closed),
@@ -1762,7 +1793,11 @@ class TGbot {
    * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Poll} В случае успеха возвращается остановленный опрос.
    */
-  stopPoll({ chat_id = "", message_id = "", reply_markup = "" }) {
+  stopPoll({
+    chat_id = "",
+    message_id = "",
+    reply_markup = ""
+  }) {
     if (!chat_id)
       this._miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
@@ -1802,7 +1837,9 @@ class TGbot {
       this._miss_parameter(
         "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
-    if (text) this._lengthError({ callback_query_text: text });
+    if (text) this._lengthError({
+      callback_query_text: text
+    });
 
     var payload = {
       callback_query_id: String(callback_query_id),
@@ -1856,9 +1893,9 @@ class TGbot {
       is_personal: Boolean(is_personal),
       next_offset: next_offset ? String(next_offset) : null,
       switch_pm_text: switch_pm_text ? String(switch_pm_text) : null,
-      switch_pm_parameter: switch_pm_parameter
-        ? String(switch_pm_parameter)
-        : null,
+      switch_pm_parameter: switch_pm_parameter ?
+        String(switch_pm_parameter) :
+        null,
     };
 
     return this._request(Methods.ANSWER_INLINE_QUERY, payload);
@@ -1906,9 +1943,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
+        reply_to_message_id: reply_to_message_id ?
+          Number(reply_to_message_id) :
+          null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -2026,7 +2063,9 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-    this._lengthError({ msg_text: text });
+    this._lengthError({
+      msg_text: text
+    });
 
     if (message && text)
       var payload = {
@@ -2078,7 +2117,9 @@ class TGbot {
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
-    this._lengthError({ msg_text: text });
+    this._lengthError({
+      msg_text: text
+    });
 
     if (message && text)
       var payload = {
@@ -2102,9 +2143,13 @@ class TGbot {
  * @description Вызываете методы конструктора class TGbot.
  * @param {string} botToken токен Telegram бота от \@BotFather.
  * @param {string} webAppUrl ссылка на WebApp Google, для работы с ответами doGet(e).
- * @param {boolean} log_request показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
+ * @param {boolean} logRequest показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
  * @return {TGbot} Экземпляр class TGbot.
  */
-function bot(botToken, webAppUrl, log_request) {
-  return new TGbot({ botToken, webAppUrl, log_request });
+function bot(botToken, webAppUrl, logRequest) {
+  return new TGbot({
+    botToken,
+    webAppUrl,
+    logRequest
+  });
 }
