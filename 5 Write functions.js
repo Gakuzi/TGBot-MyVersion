@@ -313,7 +313,10 @@ function markdown(msg) {
   );
 }
 
-function messageId(link) {
+function messageId(link, type = "chat") {
   // получить message_id из ссылки RichTextValue
-  return link.getLinkUrl().replace(/[^\d]/g, "");
+  if (type === "chat")
+    return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
+  if (type === "username")
+    return link.getLinkUrl().replace(/[^\d]/g, ""); // https://t.me/@username
 }
