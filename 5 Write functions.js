@@ -304,3 +304,16 @@ function savePhotoVideo(
   sh.getRange(sh.getLastRow() + 1, 1, 1, data[0].length).setValues(data);
   return fileUrl;
 }
+
+function markdown(msg) {
+  // обработка строки сообщения в MarkdownV2
+  return msg.replace(
+    /(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!-]/gi,
+    (x, y) => (y ? y : "\\" + x)
+  );
+}
+
+function messageId(link) {
+  // получить message_id из ссылки RichTextValue
+  return link.getLinkUrl().replace(/[^\d]/g, "");
+}
