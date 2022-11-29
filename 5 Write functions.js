@@ -307,12 +307,18 @@ function savePhotoVideo(
 
 function escapingCharactersMarkdown(message) {
   // обработка строки сообщения в MarkdownV2
-  // return msg.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/gi, (x, y) => (y ? y : "\\" + x));
   return message
     .replace(/(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!]/gi, (x, y) =>
       y ? y : "\\" + x
     )
     .replace(/(\[[^\][]*]\(http[^()-]*\))|[-]/gi, (x, y) => (y ? y : "\\" + x));
+
+  // .replace(/(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!]/gi, (x, y) =>
+  //   y ? y : "\\" + x
+  // )
+  // .replace(/[-]/gi, (x, y) => (y ? y : "\\" + x))
+  // .replace(/\\\\/gi, "\\");
+  // return msg.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/gi, (x, y) => (y ? y : "\\" + x));
 }
 
 function messageIdFromLinkRichTextValue(link, chat_id) {
