@@ -307,16 +307,69 @@ function savePhotoVideo(
 
 function markdown(msg) {
   // обработка строки сообщения в MarkdownV2
-  return msg.replace(
-    /(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!-]/gi,
-    (x, y) => (y ? y : "\\" + x)
-  );
+  // return msg.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/gi, (x, y) => (y ? y : "\\" + x));
+  return msg
+    .replace(/(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!]/gi, (x, y) =>
+      y ? y : "\\" + x
+    )
+    .replace(/(\[[^\][]*]\(http[^()-]*\))|[-]/gi, (x, y) => (y ? y : "\\" + x));
 }
 
-function messageId(link, type = "chat") {
+function messageId(link, chat_id) {
   // получить message_id из ссылки RichTextValue
-  if (type === "chat")
-    return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
-  if (type === "username")
+  if (/-?[0-9]+/.exec(chat_id)) return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
+  if (/@/.exec(chat_id))
     return link.getLinkUrl().replace(/[^\d]/g, ""); // https://t.me/@username
+  else
+    new Error(
+      "Не верный формат chat_id (id или имя пользователя в формате @channelusername)."
+    );
+}
+
+function isMessageSend({
+  range,
+  chat_id,
+  message_id,
+  col,
+  uncheck = true,
+  setColor = true,
+  color = "#93c47d",
+}) {
+  // сообщение отправлено
+  const link = SpreadsheetApp.newRichTextValue()
+    .setText(`SEND ${new Date().toLocaleString("ru-RU")}`)
+    .setLinkUrl(
+      `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+    )
+    .build();
+  range.offset(0, col).setRichTextValue(link);
+  if (uncheck) range.uncheck();
+  if (setColor) range.setBackground(color);
+}
+
+function isMessageNoSend({
+  range,
+  chat_id,
+  message_id,
+  col,
+  uncheck = true,
+  setColor = true,
+  color = "#ea9999",
+}) {
+  // сообщение не отправлено
+  const link = SpreadsheetApp.newRichTextValue()
+    .setText(
+      `NO SEND ${new Date().toLocaleString("ru-RU")}\n${TGbot.translateMessage({
+        message: description,
+        transferLanguage: "en",
+        sourceLanguage: "ru",
+      })}`
+    )
+    .setLinkUrl(
+      `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+    )
+    .build();
+  range.offset(0, col).setRichTextValue(link);
+  if (uncheck) range.uncheck();
+  if (setColor) range.setBackground(color);
 }
