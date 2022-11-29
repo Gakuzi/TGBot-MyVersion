@@ -305,17 +305,17 @@ function savePhotoVideo(
   return fileUrl;
 }
 
-function markdown(msg) {
+function escapingCharactersMarkdown(message) {
   // обработка строки сообщения в MarkdownV2
   // return msg.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/gi, (x, y) => (y ? y : "\\" + x));
-  return msg
+  return message
     .replace(/(\[[^\][]*]\(http[^()]*\))|[_[\]()~>#+=|{}.!]/gi, (x, y) =>
       y ? y : "\\" + x
     )
     .replace(/(\[[^\][]*]\(http[^()-]*\))|[-]/gi, (x, y) => (y ? y : "\\" + x));
 }
 
-function messageId(link, chat_id) {
+function messageIdFromLinkRichTextValue(link, chat_id) {
   // получить message_id из ссылки RichTextValue
   if (/-?[0-9]+/.exec(chat_id)) return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
   if (/@/.exec(chat_id))
@@ -350,6 +350,7 @@ function isMessageSend({
 function isMessageNoSend({
   range,
   chat_id,
+  description,
   message_id,
   col,
   uncheck = true,
