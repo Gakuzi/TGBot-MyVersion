@@ -323,12 +323,16 @@ function escapingCharactersMarkdown(message) {
 
 function messageIdFromLinkRichTextValue(link, chat_id) {
   // получить message_id из ссылки RichTextValue
+  if (!link.getLinkUrl()) {
+    console.log("Нет ссылки!!!");
+    return;
+  }
   if (/-?[0-9]+/.exec(chat_id)) return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
   if (/@/.exec(chat_id))
     return link.getLinkUrl().replace(/[^\d]/g, ""); // https://t.me/@username
   else
     new Error(
-      "Не верный формат chat_id (id или имя пользователя в формате @channelusername)."
+      "Не верный формат chat_id (id или имя пользователя в формате @channelusername)!!!"
     );
 }
 
@@ -366,7 +370,7 @@ function isMessageNoSend({
   // сообщение не отправлено
   const link = SpreadsheetApp.newRichTextValue()
     .setText(
-      `NO SEND ${new Date().toLocaleString("ru-RU")}\n${TGbot.translateMessage({
+      `NO SEND ${new Date().toLocaleString("ru-RU")}\n${translateMessage({
         message: description,
         transferLanguage: "en",
         sourceLanguage: "ru",
