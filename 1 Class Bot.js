@@ -107,7 +107,7 @@ class TGbot {
         `URL >>> ${fullUrl},\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
       );
 
-    var response = UrlFetchApp.fetch(fullUrl, options);
+    let response = UrlFetchApp.fetch(fullUrl, options);
 
     const code = response.getResponseCode();
     if (code in ResponseCodesHTTP.OTHERCODES) {

@@ -327,11 +327,12 @@ function messageIdFromLinkRichTextValue(link, chat_id) {
     console.log("Нет ссылки!!!");
     return;
   }
-  if (/-?[0-9]+/.exec(chat_id)) return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
-  if (/@/.exec(chat_id))
+  if (/-?[0-9]+/.exec(chat_id))
+    return link.getLinkUrl().split("/")[5]; // https://t.me/c/chat_id
+  else if (/@/.exec(chat_id))
     return link.getLinkUrl().replace(/[^\d]/g, ""); // https://t.me/@username
   else
-    new Error(
+    throw new Error(
       "Не верный формат chat_id (id или имя пользователя в формате @channelusername)!!!"
     );
 }
@@ -349,7 +350,11 @@ function isMessageSend({
   const link = SpreadsheetApp.newRichTextValue()
     .setText(`SEND ${new Date().toLocaleString("ru-RU")}`)
     .setLinkUrl(
-      `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+      /-?[0-9]+/.exec(chat_id)
+        ? `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+        : /@/.exec(chat_id)
+        ? `https://t.me/${chat_id.replace(/@/g, "")}/${message_id}`
+        : null
     )
     .build();
   range.offset(0, col).setRichTextValue(link);
@@ -377,7 +382,11 @@ function isMessageNoSend({
       })}`
     )
     .setLinkUrl(
-      `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+      /-?[0-9]+/.exec(chat_id)
+        ? `https://t.me/c/${chat_id.toString().replace(-100, "")}/${message_id}`
+        : /@/.exec(chat_id)
+        ? `https://t.me/${chat_id.replace(/@/g, "")}/${message_id}`
+        : null
     )
     .build();
   range.offset(0, col).setRichTextValue(link);
