@@ -8,16 +8,12 @@
 class TGbot {
   /**
    * @constructor
-   * @param {Object} options параметры конструктора.
-   * @param {string} options.botToken токен Telegram бота от \@BotFather.
-   * @param {string} [options.webAppUrl] ссылка на WebApp Google для работы с ответами doGet(e).
-   * @param {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
+   * @type {Object} options параметры конструктора.
+   * @property {string} options.botToken токен Telegram бота от \@BotFather.
+   * @property {string} [options.webAppUrl] ссылка на WebApp Google для работы с ответами doGet(e).
+   * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
    */
-  constructor({
-    botToken,
-    webAppUrl,
-    logRequest = false
-  }) {
+  constructor({ botToken, webAppUrl, logRequest = false }) {
     this._botToken = "";
     this._webAppUrl = "";
     this._logRequest = logRequest;
@@ -84,8 +80,8 @@ class TGbot {
     const removeEmpty = (obj) => {
       Object.keys(obj).forEach(
         (key) =>
-        (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
-        ((obj[key] == null || obj[key] === undefined) && delete obj[key])
+          (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
+          ((obj[key] == null || obj[key] === undefined) && delete obj[key])
       );
       return obj;
     };
@@ -206,9 +202,9 @@ class TGbot {
    */
   _log(message) {
     return (
-      "string" == typeof message ?
-      console.log(message) :
-      console.log(JSON.stringify(message, null, 7)),
+      "string" == typeof message
+        ? console.log(message)
+        : console.log(JSON.stringify(message, null, 7)),
       !1
     );
   }
@@ -220,14 +216,14 @@ class TGbot {
    * @description Метод, для указания URL-адреса и получения входящих обновлений через исходящий веб-перехватчик.
    * Всякий раз, когда для бота появляется обновление, мы отправляем HTTPS-запрос POST на указанный URL-адрес, содержащий сериализованное обновление JSON.
    * @see https://core.telegram.org/bots/api#setwebhook
-   * @param {Object} options параметры запроса.
-   * @param {string} options.url URL этого метода HTTPS для отправки обновлений.
-   * @param {InputFile} [options.certificate] сертификат открытого ключа, чтобы можно было проверить используемый корневой сертификат.
-   * @param {string} [options.ip_address] фиксированный IP-адрес, который будет использоваться для отправки запросов веб-перехватчика вместо IP-адреса, разрешенного через DNS.
-   * @param {number} [options.max_connections] max допустимое количество одновременных подключений HTTPS к веб-перехватчику для доставки обновлений: 1–100. По умолчанию 40. Используйте более низкие значения, чтобы ограничить нагрузку на сервер вашего бота, и более высокие значения, чтобы увеличить пропускную способность вашего бота.
-   * @param {String[]} [options.allowed_updates] JSON список типов обновлений, которые должен получать ваш бот. Укажите [“message”, “edited_channel_post”, “callback_query”], чтобы получать обновления только этих типов.
-   * @param {boolean} [options.drop_pending_updates] True, чтобы удалить все ожидающие обновления.
-   * @return {boolean} возвращает True в случае успеха.
+   * @type {Object} options параметры запроса.
+   * @property {string} options.url URL этого метода HTTPS для отправки обновлений.
+   * @property {InputFile} [options.certificate] сертификат открытого ключа, чтобы можно было проверить используемый корневой сертификат.
+   * @property {string} [options.ip_address] фиксированный IP-адрес, который будет использоваться для отправки запросов веб-перехватчика вместо IP-адреса, разрешенного через DNS.
+   * @property {number} [options.max_connections] max допустимое количество одновременных подключений HTTPS к веб-перехватчику для доставки обновлений: 1–100. По умолчанию 40. Используйте более низкие значения, чтобы ограничить нагрузку на сервер вашего бота, и более высокие значения, чтобы увеличить пропускную способность вашего бота.
+   * @property {String[]} [options.allowed_updates] JSON список типов обновлений, которые должен получать ваш бот. Укажите [“message”, “edited_channel_post”, “callback_query”], чтобы получать обновления только этих типов.
+   * @property {boolean} [options.drop_pending_updates] True, чтобы удалить все ожидающие обновления.
+   * @property {boolean} возвращает True в случае успеха.
    */
   setWebhook({
     url = this._webAppUrl,
@@ -243,9 +239,9 @@ class TGbot {
         certificate: certificate ? JSON.stringify(certificate) : null,
         ip_address: ip_address ? String(ip_address) : null,
         max_connections: Number(max_connections),
-        allowed_updates: allowed_updates ?
-          JSON.stringify(allowed_updates) :
-          null,
+        allowed_updates: allowed_updates
+          ? JSON.stringify(allowed_updates)
+          : null,
         drop_pending_updates: Boolean(drop_pending_updates),
       };
 
@@ -747,7 +743,7 @@ class TGbot {
     if (!title)
       this._miss_parameter("title новое название чата, 1-255 символов.");
     this._lengthError({
-      chat_title: title
+      chat_title: title,
     });
 
     if (chat_id && title)
@@ -773,9 +769,10 @@ class TGbot {
       this._miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (description) this._lengthError({
-      chat_description: description
-    });
+    if (description)
+      this._lengthError({
+        chat_description: description,
+      });
 
     var payload = {
       chat_id: String(chat_id),
@@ -980,7 +977,7 @@ class TGbot {
    * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
    * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
    * @param {string} options.text текст сообщения, 1-4096 символов.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
@@ -1014,7 +1011,7 @@ class TGbot {
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
-      msg_text: text
+      msg_text: text,
     });
 
     if (chat_id && text)
@@ -1027,9 +1024,9 @@ class TGbot {
         disable_web_page_preview: Boolean(disable_web_page_preview),
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1041,7 +1038,7 @@ class TGbot {
    * @description Метод, для пересылки сообщений любого типа.
    * Служебные сообщения не могут быть переадресованы.
    * @see https://core.telegram.org/bots/api#forwardmessage
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
    * @param {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername).
    * @param {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
@@ -1085,7 +1082,7 @@ class TGbot {
    * @metod copyMessage
    * @description Метод, для копирования сообщения.
    * @see https://core.telegram.org/bots/api#copymessage
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
    * @param {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате \@channelusername).
    * @param {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
@@ -1125,7 +1122,7 @@ class TGbot {
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
     this._lengthError({
-      caption_text: caption
+      caption_text: caption,
     });
 
     if (chat_id && from_chat_id && message_id)
@@ -1136,14 +1133,14 @@ class TGbot {
         caption: caption ? String(caption) : null,
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1163,15 +1160,12 @@ class TGbot {
    - Если бот является администратором группы, он может удалить там любое сообщение.
    - Если у бота есть разрешение can_delete_messages в супергруппе или канале, он может удалить там любое сообщение.
   * @see https://core.telegram.org/bots/api#deletemessage
-  * @param {Object} options
+  * @typedef {Object} options
   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername). 
   * @param {number} options.message_id идентификатор сообщения для удаления.
   * @return {boolean} возвращает True в случае успеха.
  */
-  deleteMessage({
-    chat_id,
-    message_id
-  }) {
+  deleteMessage({ chat_id, message_id }) {
     if (!chat_id)
       this._miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
@@ -1192,7 +1186,7 @@ class TGbot {
    * @metod editMessageText
    * @description Метод, для редактирования текстовых и игровых сообщений.
    * @see https://core.telegram.org/bots/api#editmessagetext
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
@@ -1216,7 +1210,7 @@ class TGbot {
     if (!text)
       this._miss_parameter("text новый текст сообщения, 1-4096 символов.");
     this._lengthError({
-      msg_text: text
+      msg_text: text,
     });
 
     if ((chat_id && message_id && text) || (inline_message_id && text))
@@ -1238,7 +1232,7 @@ class TGbot {
    * @metod editMessageCaption
    * @description Метод, для редактирования подписей к сообщениям.
    * @see https://core.telegram.org/bots/api#editmessagecaption
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
@@ -1262,7 +1256,7 @@ class TGbot {
         "caption новый заголовок сообщения, 0-1024 символов."
       );
     this._lengthError({
-      caption_text: caption
+      caption_text: caption,
     });
 
     if ((chat_id && message_id && caption) || (inline_message_id && caption))
@@ -1273,9 +1267,9 @@ class TGbot {
         caption: caption ? String(caption) : null,
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
       };
 
     return this._request(Methods.EDIT_MESSAGE_CAPTION, payload);
@@ -1287,7 +1281,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#editmessagemedia
    * Если сообщение является частью альбома сообщений, его можно отредактировать только в аудио для аудиоальбомов, в документ для альбомов документов и в фото или видео в остальных случаях.
    * При редактировании встроенного сообщения новый файл не может быть загружен; использовать ранее загруженный файл через его file_id или указать URL-адрес.
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
@@ -1323,7 +1317,7 @@ class TGbot {
    * @metod editMessageReplyMarkup
    * @description Метод, для редактирования разметки ответов сообщений.
    * @see https://core.telegram.org/bots/api#editmessagereplymarkup
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
@@ -1361,7 +1355,7 @@ class TGbot {
    * @metod sendPhoto
    * @description Метод, для отправки фотографий.
    * @see https://core.telegram.org/bots/api#sendphoto
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {(InputFile|string)} options.photo фото для отправки.
    * Передайте file_id в виде строки, чтобы отправить фотографию, которая существует на серверах Telegram (рекомендуется).
@@ -1398,9 +1392,10 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!photo) this._miss_parameter("photo фото для отправки.");
-    if (caption) this._lengthError({
-      caption_text: caption
-    });
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
 
     if (chat_id && photo)
       var payload = {
@@ -1408,14 +1403,14 @@ class TGbot {
         photo: photo,
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
@@ -1429,7 +1424,7 @@ class TGbot {
    * @metod sendDocument
    * @description Метод, для отправки общих файлов.
    * @see https://core.telegram.org/bots/api#senddocument
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {(InputFile|string)} options.document файл для отправки.
    * В настоящее время боты могут отправлять файлы любого типа размером до 50 МБ, может быть изменено в будущем.
@@ -1471,9 +1466,10 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!document) this._miss_parameter("document файл для отправки");
-    if (caption) this._lengthError({
-      caption_text: caption
-    });
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
 
     if (chat_id && document)
       var payload = {
@@ -1482,15 +1478,15 @@ class TGbot {
         caption: caption ? String(caption) : null,
         thumb: thumb ? thumb : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
         disable_content_type_detection: Boolean(disable_content_type_detection),
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
@@ -1504,7 +1500,7 @@ class TGbot {
    * @metod sendVideo
    * @description Метод, для отправки видео.
    * @see https://core.telegram.org/bots/api#sendvideo
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {(InputFile|string)} options.video видео для отправки.
    * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
@@ -1546,9 +1542,10 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!video) this._miss_parameter("video видео для отправки.");
-    if (caption) this._lengthError({
-      caption_text: caption
-    });
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
 
     if (chat_id && video)
       var payload = {
@@ -1561,9 +1558,9 @@ class TGbot {
         supports_streaming: Boolean(supports_streaming),
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
         reply_to_message_id: Number(reply_to_message_id),
@@ -1580,7 +1577,7 @@ class TGbot {
    * @metod sendAudio
    * @description Метод, для отправки отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали их в музыкальном проигрывателе. Ваш звук должен быть в формате .MP3 или .M4A. В случае успеха возвращается отправленное сообщение.
    * @see https://core.telegram.org/bots/api#sendaudio
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {(InputFile|string)} options.audio видео для отправки.
    * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
@@ -1620,9 +1617,10 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!audio) this._miss_parameter("audio аудио для отправки.");
-    if (caption) this._lengthError({
-      caption_text: caption
-    });
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
 
     if (chat_id && audio)
       var payload = {
@@ -1634,9 +1632,9 @@ class TGbot {
         duration: duration ? Number(duration) : null,
         caption: caption ? String(caption) : null,
         parse_mode: String(parse_mode),
-        caption_entities: caption_entities ?
-          JSON.stringify(caption_entities) :
-          null,
+        caption_entities: caption_entities
+          ? JSON.stringify(caption_entities)
+          : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
         reply_to_message_id: Number(reply_to_message_id),
@@ -1654,7 +1652,7 @@ class TGbot {
    * @description Метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
    * Документы и аудиофайлы могут быть сгруппированы в альбом только с сообщениями одного типа.
    * @see https://core.telegram.org/bots/api#sendmediagroup
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {Array.<(InputMediaAudio|InputMediaDocument|InputMediaPhoto|InputMediaVideo)>} options.media объект JSON для нового мультимедийного содержимого сообщения.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
@@ -1686,9 +1684,9 @@ class TGbot {
         media: media,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -1699,7 +1697,7 @@ class TGbot {
    * @metod sendPoll
    * @description Метод, для отправки отправки собственного опроса.
    * @see https://core.telegram.org/bots/api#sendpoll
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {string} options.question вопрос-опрос, 1-300 символов.
    * @param {string[]} options.options JSON-сериализованный список вариантов ответа, от 2 до 10 строк по 1-100 символов каждая.
@@ -1746,15 +1744,16 @@ class TGbot {
       );
     if (!question) this._miss_parameter("question вопрос для отправки.");
     this._lengthError({
-      question_text: question
+      question_text: question,
     });
     if (!options)
       this._miss_parameter(
         "options JSON-сериализованный список вариантов ответа для отправки."
       );
-    if (explanation) this._lengthError({
-      explanation_text: explanation
-    });
+    if (explanation)
+      this._lengthError({
+        explanation_text: explanation,
+      });
 
     if (chat_id && question && options)
       var payload = {
@@ -1767,9 +1766,9 @@ class TGbot {
         correct_option_id: correct_option_id ? Number(correct_option_id) : null,
         explanation: explanation ? String(explanation) : null,
         explanation_parse_mode: String(explanation_parse_mode),
-        explanation_entities: explanation_entities ?
-          JSON.stringify(explanation_entities) :
-          null,
+        explanation_entities: explanation_entities
+          ? JSON.stringify(explanation_entities)
+          : null,
         open_periode: open_periode ? Number(open_periode) : null,
         close_date: close_date ? Number(close_date) : null,
         is_closed: Boolean(is_closed),
@@ -1787,17 +1786,13 @@ class TGbot {
    * @metod stopPoll
    * @description Метод, для остановки опроса, отправленный ботом.
    * @see https://core.telegram.org/bots/api#stoppoll
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {string} options.message_id идентификатор исходного сообщения с опросом.
    * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Poll} В случае успеха возвращается остановленный опрос.
    */
-  stopPoll({
-    chat_id = "",
-    message_id = "",
-    reply_markup = ""
-  }) {
+  stopPoll({ chat_id = "", message_id = "", reply_markup = "" }) {
     if (!chat_id)
       this._miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
@@ -1837,9 +1832,10 @@ class TGbot {
       this._miss_parameter(
         "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
-    if (text) this._lengthError({
-      callback_query_text: text
-    });
+    if (text)
+      this._lengthError({
+        callback_query_text: text,
+      });
 
     var payload = {
       callback_query_id: String(callback_query_id),
@@ -1859,7 +1855,7 @@ class TGbot {
    * @description Метод, для отправки ответов на встроенный запрос.
    * Допускается не более 50 результатов на запрос.
    * @see https://core.telegram.org/bots/api#answerinlinequery
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {string} options.inline_query_id уникальный идентификатор ответа на запрос.
    * @param {InlineQueryResult[]} options.results сериализованный в формате JSON массив результатов для встроенного запроса.
    * @param {number} [options.cache_time] max время в секундах, в течение которого результат встроенного запроса может кэшироваться на сервере. По умолчанию 300.
@@ -1893,9 +1889,9 @@ class TGbot {
       is_personal: Boolean(is_personal),
       next_offset: next_offset ? String(next_offset) : null,
       switch_pm_text: switch_pm_text ? String(switch_pm_text) : null,
-      switch_pm_parameter: switch_pm_parameter ?
-        String(switch_pm_parameter) :
-        null,
+      switch_pm_parameter: switch_pm_parameter
+        ? String(switch_pm_parameter)
+        : null,
     };
 
     return this._request(Methods.ANSWER_INLINE_QUERY, payload);
@@ -1907,7 +1903,7 @@ class TGbot {
    * @metod sendSticker
    * @description Метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
    * @see https://core.telegram.org/bots/api#sendsticker
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {(InputFile|string)} options.sticker наклейка для отправки.
    * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
@@ -1943,9 +1939,9 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id ?
-          Number(reply_to_message_id) :
-          null,
+        reply_to_message_id: reply_to_message_id
+          ? Number(reply_to_message_id)
+          : null,
         allow_sending_without_reply: Boolean(allow_sending_without_reply),
       };
 
@@ -2034,7 +2030,7 @@ class TGbot {
    * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
    * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {JSON} options.message полученное сообщение.
    * @param {string} options.text текст сообщения, 1-4096 символов.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
@@ -2064,7 +2060,7 @@ class TGbot {
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
-      msg_text: text
+      msg_text: text,
     });
 
     if (message && text)
@@ -2089,7 +2085,7 @@ class TGbot {
    * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
    * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
-   * @param {Object} options
+   * @typedef {Object} options
    * @param {JSON} options.message полученное сообщение.
    * @param {string} options.text текст сообщения, 1-4096 символов.
    * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
@@ -2118,7 +2114,7 @@ class TGbot {
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
-      msg_text: text
+      msg_text: text,
     });
 
     if (message && text)
@@ -2150,6 +2146,6 @@ function bot(botToken, webAppUrl, logRequest) {
   return new TGbot({
     botToken,
     webAppUrl,
-    logRequest
+    logRequest,
   });
 }
