@@ -1069,7 +1069,7 @@ class TGbot {
     if (chat_id && from_chat_id && message_id)
       var payload = {
         chat_id: String(chat_id),
-        from_chat_id: String(text),
+        from_chat_id: String(from_chat_id),
         message_id: Number(message_id),
         disable_notification: Boolean(disable_notification),
         protect_content: Boolean(protect_content),
