@@ -19,8 +19,12 @@ function isTextMessage(message) {
 }
 
 function isPhotoMessage(message) {
-  if (message.hasOwnProperty("photo")) return true;
-  return false;
+  if (
+    message.hasOwnProperty("photo") ||
+    message?.document?.mime_type.split("/")[0] === "image"
+  )
+    return true;
+  else return false;
 }
 
 function isVideoMessage(message) {
@@ -29,8 +33,12 @@ function isVideoMessage(message) {
 }
 
 function isDocumentMessage(message) {
-  if (message.hasOwnProperty("document")) return true;
-  return false;
+  if (
+    message.hasOwnProperty("document") &&
+    message?.document?.mime_type.split("/")[0] !== "image"
+  )
+    return true;
+  else return false;
 }
 
 function isBotCommandMessage(message) {

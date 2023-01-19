@@ -181,6 +181,8 @@ function writeLogByUser(message) {
 
   const pfileId = message.hasOwnProperty("photo")
     ? message.photo[2].file_id
+    : message?.document?.mime_type.split("/")[0] === "image"
+    ? message.document.file_id
     : ""; // 2 качество
   const vfileId = message.hasOwnProperty("video") ? message.video.file_id : "";
 
