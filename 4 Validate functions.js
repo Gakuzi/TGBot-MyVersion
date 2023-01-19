@@ -101,12 +101,19 @@ function isValideDate(message) {
 }
 
 function isBadWord(message) {
-  const words = (message?.text ? message.text : message.caption)
-    .toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
-    .split(" ")
-    .filter((e) => e);
-  for (const word of words) if (badWordsArray.includes(word)) return true;
+  const text = message?.text
+    ? message.text
+    : message?.caption
+    ? message.caption
+    : null;
+  if (text) {
+    const words = text
+      .toLowerCase()
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+      .split(" ")
+      .filter((e) => e);
+    for (const word of words) if (badWordsArray.includes(word)) return true;
+  } else return false;
 }
 
 function replaceBadWords(message) {
@@ -120,13 +127,20 @@ function replaceBadWords(message) {
     return word;
   };
 
-  return (message?.text ? message.text : message.caption)
-    .toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
-    .split(" ")
-    .filter((e) => e)
-    .map(replacer)
-    .join(" ");
+  const text = message?.text
+    ? message.text
+    : message?.caption
+    ? message.caption
+    : null;
+  if (text) {
+    return text
+      .toLowerCase()
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+      .split(" ")
+      .filter((e) => e)
+      .map(replacer)
+      .join(" ");
+  } else return false;
 }
 
 const badWordsArray = [
