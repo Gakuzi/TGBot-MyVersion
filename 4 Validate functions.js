@@ -112,7 +112,9 @@ function isBadWord(message) {
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
       .split(" ")
       .filter((e) => e);
-    for (const word of words) if (badWordsArray.includes(word)) return true;
+    for (const word of words)
+      if (badWordsArray.includes(word)) return true;
+      else return false;
   } else return false;
 }
 
