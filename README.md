@@ -7,14 +7,14 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
-Актуальная версия: 68 от 19 янв., 23:48
+Актуальная версия: 69 от 28 янв., 17:34
 
 > Поддерживает работу с ответами doPost(e) только через Webhook.
 
 [Пример бота](https://t.me/guf_hub_test_bot)<br/>
 [Баги отправлять сюда](https://t.me/nosaev_m)<br/>
 Канал автора [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
-Телеграмм канал про [Google Таблицы](https://t.me/nosaev_m)<br/>
+Телеграмм канал про [Google Таблицы](https://t.me/google_sheets)<br/>
 Помощь [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)
 
 ## Подключение
@@ -226,6 +226,11 @@ function doPost(e) {
 
     try {
       if (contents.message) {
+        /** Копируйте содержимое из файла Types.js в свой проект.
+         * Позволяет использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
+        */
+
+        /** @type {Message}*/
         const msg = contents.message;
         const text = msg.text;
         const chat_id = msg.from.id;
@@ -268,6 +273,13 @@ function doPost(e) {
 }
 
 ```
+
+## Обновление:
+
+**28.01** Добавлен файл Types.js, автор **Alexander Ivanov**.<br/>
+Копируйте содержимое из файла Types.js в свой проект.<br/>
+После добавления, вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
+![](types.png)
 
 ## Методы библиотеки (официальные):
 
