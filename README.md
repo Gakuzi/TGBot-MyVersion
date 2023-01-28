@@ -98,7 +98,8 @@ Bot.sendMediaGroup({ chat_id: chat_id, media: data });
 // отправка изображения или документа с использованием Blob
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 const sheet = ss.getSheetByName("Название листа");
-const blob = sheet.getCharts()[0].getBlob(); // пример, отправка графика (фото .png) с листа Google Sheets
+// пример, отправка графика (фото .png) с листа Google Sheets
+const blob = sheet.getCharts()[0].getBlob();
 
 Bot.sendPhoto({
   chat_id: chat_id,
@@ -113,8 +114,10 @@ Bot.sendDocument({
 });
 
 // отправка архива с данными
-const filename = 'Test'; // название файла передавать только на латинице, используйте для транслитерации TGbot.translit(filename);
-const zip = Utilities.zip([blob], `${filename}.zip`); // [blob, ...] можно указать несколько файлов Blob (используйте разные имена для blob)
+// название файла передавать только на латинице, используйте для транслитерации TGbot.translit(filename);
+const filename = 'Test';
+// [blob, ...] можно указать несколько файлов Blob (используйте разные имена для blob)
+const zip = Utilities.zip([blob], `${filename}.zip`);
 
 Bot.sendDocument({
   chat_id: chat_id,
@@ -148,7 +151,8 @@ Bot.stopPoll({
 });
 
 /**
- * Сохранение файла xlsx отправленного в бот Webhook - doPost(e) на Goole Drive (необходимо подключить к проекту Drive API).
+ * Сохранение файла xlsx отправленного в бот Webhook - doPost(e)
+ * на Goole Drive (необходимо подключить к проекту Drive API).
  * @param {Message} message полученное сообщение.
  * @param {string} folderId ID папки куда будет сохранен файл.
  * @return {string} file id сохранённого файла.
@@ -234,7 +238,8 @@ function doPost(e) {
       if (contents.message) {
         /**
          * Копируйте содержимое из файла Types.js в свой проект.
-         * Позволяет использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
+         * Позволяет использовать JSDoc для уточнения типов переменных, что
+         * открывает возможности для подсказок в онлайн-редакторе.
         */
 
         /** @type {Message}*/
