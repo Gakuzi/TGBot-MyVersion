@@ -9,13 +9,12 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 ![Lines of code](https://img.shields.io/tokei/lines/github/Guf-Hub/TGBot)
 ![javascript](https://img.shields.io/badge/lang-javascript-red)
 ![GAS](https://img.shields.io/badge/google-apps%20script-red)
-![telegram](https://img.shields.io/badge/telegram-@nosaev_m-blue)
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
 Актуальная версия: 69 от 28 янв., 17:34
 
-> Поддерживает работу с ответами doPost(e) только через Webhook.
+> Поддерживает работу только через Webhook (doPost(e)).
 
 [Пример бота](https://t.me/guf_hub_test_bot)<br/>
 [Баги отправлять сюда](https://t.me/nosaev_m)<br/>
