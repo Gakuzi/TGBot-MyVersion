@@ -104,7 +104,7 @@ class Keyboard {
   inputPlaceholder(placeholder) {
     if (placeholder && placeholder.length > 64)
       throw new Error(
-        "Input placeholder must be between 1 and 64 characters long"
+        "Вводимый заполнитель должен содержать от 1 до 64 символов."
       );
     return this.setOption("input_field_placeholder", placeholder);
   }
@@ -135,7 +135,7 @@ class Keyboard {
 
   construct(...args) {
     if (!this.makeFunction)
-      throw new Error("You didn't pass a function to the make method");
+      throw new Error("Вы не передали функцию makeFunction");
     const makeResult = this.makeFunction(...args);
     if (makeResult instanceof Keyboard)
       return Keyboard.make(makeResult.buttons, makeResult.makeOptions);
