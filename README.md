@@ -5,6 +5,10 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 
 [![Donate](https://img.shields.io/badge/Donate-Yoomoney-green.svg)](https://yoomoney.ru/to/410019620244262)
 ![GitHub last commit](https://img.shields.io/github/last-commit/Guf-Hub/TGBot)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Guf-Hub/TGBot)
+![Lines of code](https://img.shields.io/tokei/lines/github/Guf-Hub/TGBot)
+![GAS](https://img.shields.io/badge/google-apps%20script-blue)
+![telegram](https://img.shields.io/badge/telegram-@nosaev_m)
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
