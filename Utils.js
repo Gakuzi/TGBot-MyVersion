@@ -15,7 +15,7 @@ const Methods = {
   LOG_OUT: "logOut", // +
   CLOSE: "close", // +
   SEND_MESSAGE: "sendMessage", // +
-  FORWARD_MESSAGE: "forwardMessage",
+  FORWARD_MESSAGE: "forwardMessage", // +
   COPY_MESSAGE: "copyMessage", // +
   SEND_PHOTO: "sendPhoto", // +
   SEND_AUDIO: "sendAudio", // +
@@ -35,21 +35,21 @@ const Methods = {
   SEND_CHAT_ACTION: "sendChatAction", // +
   GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos", // +
   GET_FILE: "getFile", // +
-  KICK_CHAT_MEMBER: "kickChatMember",
+  KICK_CHAT_MEMBER: "kickChatMember", // !!!!!!!!!!!!!!
   BAN_CHAT_MEMBER: "banChatMember", // +
   UNBAN_CHAT_MEMBER: "unbanChatMember", // +
   RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
-  PROMOTE_CHAT_MEMBER: "promoteChatMember",
+  PROMOTE_CHAT_MEMBER: "promoteChatMember", // !!!!!!!!!!!!!!
   SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle", // +
-  BAN_CHAT_SENDER_CHAT: "banChatSenderChat",
-  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat",
+  BAN_CHAT_SENDER_CHAT: "banChatSenderChat", // !!!!!!!!!!!!!!
+  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat", // !!!!!!!!!!!!!!
   SET_CHAT_PERMISSIONS: "setChatPermissions", // +
   EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink", // +
   CREATE_CHAT_INVITE_LINK: "createChatInviteLink", // +
-  EDIT_CHAT_INVITE_LINK: "editChatInviteLink",
-  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink",
-  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest",
-  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest",
+  EDIT_CHAT_INVITE_LINK: "editChatInviteLink", // !!!!!!!!!!!!!!
+  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink", // !!!!!!!!!!!!!!
+  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest", // !!!!!!!!!!!!!!
+  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest", // !!!!!!!!!!!!!!
   SET_CHAT_PHOTO: "setChatPhoto", // +
   DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
   SET_CHAT_TITLE: "setChatTitle", // +
@@ -62,8 +62,8 @@ const Methods = {
   GET_CHAT_ADMINISTRATORS: "getChatAdministrators", // +
   GET_CHAT_MEMBER_COUNT: "getChatMemberCount", // +
   GET_CHAT_MEMBER: "getChatMember", // +
-  SET_CHAT_STICKER_SET: "setChatStickerSet",
-  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet",
+  SET_CHAT_STICKER_SET: "setChatStickerSet", // !!!!!!!!!!!!!!
+  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet", // !!!!!!!!!!!!!!
   ANSWER_CALLBACK_QUERY: "answerCallbackQuery", // +
   SET_MY_COMMANDS: "setMyCommands", // +
   DELETE_MY_COMMANDS: "deleteMyCommands", // +
@@ -81,12 +81,12 @@ const Methods = {
   SEND_STICKER: "sendSticker", // +
   GET_STICKER_SET: "getStickerSet", // +
   UPLOAD_STICKER_FILE: "uploadStickerFile",
-  GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers",
-  CREATE_NEW_STICKER_SET: "createNewStickerSet",
-  ADD_STICKER_TO_SET: "addStickerToSet",
-  SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet",
-  DELETE_STICKER_FROM_SET: "deleteStickerFromSet",
-  SET_STICKER_SET_THUMB: "setStickerSetThumb",
+  GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers", // !!!!!!!!!!!!!!
+  CREATE_NEW_STICKER_SET: "createNewStickerSet", // !!!!!!!!!!!!!!
+  ADD_STICKER_TO_SET: "addStickerToSet", // !!!!!!!!!!!!!!
+  SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet", // !!!!!!!!!!!!!!
+  DELETE_STICKER_FROM_SET: "deleteStickerFromSet", // !!!!!!!!!!!!!!
+  SET_STICKER_SET_THUMB: "setStickerSetThumb", // !!!!!!!!!!!!!!
 
   // Inline mode
   ANSWER_INLINE_QUERY: "answerInlineQuery", // +
@@ -99,18 +99,18 @@ const Methods = {
   GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +
 
   // Payments
-  SEND_INVOICE: "sendInvoice",
-  CREATE_INVOICE_LINK: "createInvoiceLink",
+  SEND_INVOICE: "sendInvoice", // !!!!!!!!!!!!!!
+  CREATE_INVOICE_LINK: "createInvoiceLink", // !!!!!!!!!!!!!!
   ANSWER_SHIPPING_QUERY: "answerShippingQuery", // +
   ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery", // +
 
   // Telegram Passport
-  SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors",
+  SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors", // !!!!!!!!!!!!!!
 
   // Games
-  SEND_GAME: "sendGame",
-  SET_GAME_SCORE: "setGameScore",
-  GET_GAME_HIGH_SCORES: "getGameHighScores",
+  SEND_GAME: "sendGame", // !!!!!!!!!!!!!!
+  SET_GAME_SCORE: "setGameScore", // !!!!!!!!!!!!!!
+  GET_GAME_HIGH_SCORES: "getGameHighScores", // !!!!!!!!!!!!!!
 };
 
 /**
