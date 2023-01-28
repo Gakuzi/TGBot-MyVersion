@@ -4,7 +4,9 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 Работайте удобнее в GAS используя Google Таблицы.
 
 [![Donate](https://img.shields.io/badge/Donate-Yoomoney-green.svg)](https://yoomoney.ru/to/410019620244262)
-![GitHub](https://img.shields.io/github/license/Guf-Hub/TGBot)
+
+<!-- ![GitHub](https://img.shields.io/github/license/Guf-Hub/TGBot) -->
+
 ![GitHub last commit](https://img.shields.io/github/last-commit/Guf-Hub/TGBot)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Guf-Hub/TGBot)
 ![Lines of code](https://img.shields.io/tokei/lines/github/Guf-Hub/TGBot)
@@ -351,6 +353,8 @@ function doPost(e) {
 - [replyMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2053) ответ по message_id на получнное сообщение. Передать объект message в качестве первого аргумента.
 
 ## Copyright & License
+
+MIT License
 
 Copyright (©) 2022 by [Mikhail Nosaev](https://github.com/Guf-Hub)
 
