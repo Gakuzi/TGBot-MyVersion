@@ -4,6 +4,7 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 Работайте удобнее в GAS используя Google Таблицы.
 
 [![Donate](https://img.shields.io/badge/Donate-Yoomoney-green.svg)](https://yoomoney.ru/to/410019620244262)
+![GitHub last commit](https://img.shields.io/github/last-commit/Guf-Hub/TGBot)
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
