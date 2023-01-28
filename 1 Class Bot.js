@@ -366,7 +366,7 @@ class TGbot {
    * @description Метод, для установки списока команд бота.
    * @see https://core.telegram.org/bots/api#setmycommands
    * @param {BotCommand[]} commands список комманд.
-   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
    * @return {boolean} возвращает True в случае успеха.
    */
@@ -389,7 +389,7 @@ class TGbot {
    * @metod getMyCommands
    * @description Метод, для получения списка команд бота.
    * @see https://core.telegram.org/bots/api#getmycommands
-   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
    * @return {BotCommand[]|[]} возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
    */
@@ -405,7 +405,7 @@ class TGbot {
    * @metod deleteMyCommands
    * @description Метод, для удаления списока команд бота.
    * @see https://core.telegram.org/bots/api#deletemycommands
-   * @param {BotCommandScope[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
+   * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
    * @return {boolean} возвращает True в случае успеха.
    */
@@ -445,7 +445,7 @@ class TGbot {
    * @description Метод, для получения списка администраторов в чате.
    * @see https://core.telegram.org/bots/api#getchatadministrators
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @return {ChatMember} В случае успеха возвращает массив объектов ChatMember, содержащий информацию обо всех администраторах чата, кроме других ботов. Если чат является группой или супергруппой и не были назначены администраторы, будет возвращен только создатель.
+   * @return {(ChatMemberOwner|ChatMemberAdministrator|ChatMemberMember|ChatMemberRestricted|ChatMemberLeft|ChatMemberBanned)} В случае успеха возвращает массив объектов ChatMember, содержащий информацию обо всех администраторах чата, кроме других ботов. Если чат является группой или супергруппой и не были назначены администраторы, будет возвращен только создатель.
    */
   getChatAdministrators(chat_id) {
     if (!chat_id)
@@ -519,7 +519,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#getchatmember
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
-   * @return {ChatMember} возвращает объект ChatMember в случае успеха.
+   * @return {(ChatMemberOwner|ChatMemberAdministrator|ChatMemberMember|ChatMemberRestricted|ChatMemberLeft|ChatMemberBanned)} возвращает объект ChatMember в случае успеха.
    */
   getChatMember(chat_id, user_id) {
     if (!chat_id)
@@ -788,7 +788,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#setchatmenubutton
    * @param {(string|number)} [chat_id] уникальный идентификатор целевого приватного чата.
    * Если не указано, кнопка меню бота по умолчанию будет изменена.
-   * @param {MenuButton} [menu_button] JSON объект для новой кнопки меню бота, по умолчанию MenuButtonDefault.
+   * @param {(MenuButtonCommands|MenuButtonWebApp|MenuButtonDefault)} [menu_button] JSON объект для новой кнопки меню бота, по умолчанию MenuButtonDefault.
    * @return {boolean} возвращает True в случае успеха.
    */
   setChatMenuButton(chat_id = "", menu_button = "") {
@@ -806,7 +806,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#getchatmenubutton
    * @param {(string|number)} chat_id уникальный идентификатор целевого приватного чата.
    * Если не указано, будет возвращена кнопка меню бота по умолчанию.
-   * @return {MenuButton} возвращает MenuButton в случае успеха.
+   * @return {(MenuButtonCommands|MenuButtonWebApp|MenuButtonDefault)} возвращает MenuButton в случае успеха.
    */
   getChatMenuButton(chat_id = "") {
     var payload = {
