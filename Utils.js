@@ -21,17 +21,17 @@ const Methods = {
   SEND_AUDIO: "sendAudio", // +
   SEND_DOCUMENT: "sendDocument", // +
   SEND_VIDEO: "sendVideo", // +
-  SEND_ANIMATION: "sendAnimation",
-  SEND_VOICE: "sendVoice",
-  SEND_VIDEO_NOTE: "sendVideoNote",
+  SEND_ANIMATION: "sendAnimation", // +
+  SEND_VOICE: "sendVoice", // +
+  SEND_VIDEO_NOTE: "sendVideoNote", // +
   SEND_MEDIA_GROUP: "sendMediaGroup", // +
-  SEND_LOCATION: "sendLocation",
-  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation",
-  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation",
-  SEND_VENUE: "sendVenue",
-  SEND_CONTACT: "sendContact",
+  SEND_LOCATION: "sendLocation", // +
+  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation", // +
+  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation", // +
+  SEND_VENUE: "sendVenue", // +
+  SEND_CONTACT: "sendContact", // +
   SEND_POLL: "sendPoll", // +
-  SEND_DICE: "sendDice",
+  SEND_DICE: "sendDice", // +
   SEND_CHAT_ACTION: "sendChatAction", // +
   GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos", // +
   GET_FILE: "getFile", // +
@@ -44,8 +44,8 @@ const Methods = {
   BAN_CHAT_SENDER_CHAT: "banChatSenderChat",
   UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat",
   SET_CHAT_PERMISSIONS: "setChatPermissions", // +
-  EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink",
-  CREATE_CHAT_INVITE_LINK: "createChatInviteLink",
+  EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink", // +
+  CREATE_CHAT_INVITE_LINK: "createChatInviteLink", // +
   EDIT_CHAT_INVITE_LINK: "editChatInviteLink",
   REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink",
   APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest",
@@ -101,8 +101,8 @@ const Methods = {
   // Payments
   SEND_INVOICE: "sendInvoice",
   CREATE_INVOICE_LINK: "createInvoiceLink",
-  ANSWER_SHIPPING_QUERY: "answerShippingQuery",
-  ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery",
+  ANSWER_SHIPPING_QUERY: "answerShippingQuery", // +
+  ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery", // +
 
   // Telegram Passport
   SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors",

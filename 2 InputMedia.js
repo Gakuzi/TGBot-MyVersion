@@ -11,13 +11,21 @@ class InputMediaPhoto {
    * @param {string} options.caption заголовок отправляемого фото, 0-1024 символа.
    * @param {string} options.parse_mode "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.caption_entities список специальных сущностей, появляющихся в заголовке, которые можно указать вместо parse_mode.
+   * @param {boolean} [options.has_spoiler] True, если фото нужно прикрыть анимацией спойлера.
    */
-  constructor({ media, caption, parse_mode = "HTML", caption_entities }) {
+  constructor({
+    media,
+    caption,
+    parse_mode = "HTML",
+    caption_entities,
+    has_spoiler = false,
+  }) {
     this.type = "photo";
     this.media = String(media);
     this.caption = String(caption);
     this.parse_mode = String(parse_mode);
     this.caption_entities = JSON.stringify(caption_entities);
+    this.has_spoiler = Boolean(has_spoiler);
   }
 }
 
@@ -39,6 +47,7 @@ class InputMediaVideo {
    * @param {number} options.height высота.
    * @param {number} options.duration продолжительность в секундах.
    * @param {boolean} options.supports_streaming True, если загруженное видео подходит для потоковой передачи.
+   * @param {boolean} [options.has_spoiler] True, если видео нужно покрыть анимацией спойлера.
    */
   constructor({
     media,
@@ -50,6 +59,7 @@ class InputMediaVideo {
     height,
     duration,
     supports_streaming = false,
+    has_spoiler = false,
   }) {
     this.type = "video";
     this.media = String(media);
@@ -61,6 +71,7 @@ class InputMediaVideo {
     this.height = Number(height);
     this.duration = Number(duration);
     this.supports_streaming = Boolean(supports_streaming);
+    this.has_spoiler = Boolean(has_spoiler);
   }
 }
 
@@ -81,6 +92,7 @@ class InputMediaAnimation {
    * @param {number} options.width ширина.
    * @param {number} options.height высота.
    * @param {number} options.duration продолжительность в секундах.
+   * @param {boolean} [options.has_spoiler] True, если анимацию нужно закрыть анимацией спойлера.
    */
   constructor({
     media,
@@ -91,6 +103,7 @@ class InputMediaAnimation {
     width,
     height,
     duration,
+    has_spoiler = false,
   }) {
     this.type = "animation";
     this.media = String(media);
@@ -101,6 +114,7 @@ class InputMediaAnimation {
     this.width = Number(width);
     this.height = Number(height);
     this.duration = Number(duration);
+    this.has_spoiler = Boolean(has_spoiler);
   }
 }
 
@@ -186,13 +200,21 @@ class InputMediaDocument {
  * @param {string} options.caption заголовок отправляемого фото, 0-1024 символа.
  * @param {string} options.parse_mode "HTML" | "MarkdownV2".
  * @param {MessageEntity[]} options.caption_entities список специальных сущностей, появляющихся в заголовке, которые можно указать вместо parse_mode.
+ * @param {boolean} [options.has_spoiler] True, если фото нужно прикрыть анимацией спойлера.
  */
-function inputMediaPhoto({ media, caption, parse_mode, caption_entities }) {
+function inputMediaPhoto({
+  media,
+  caption,
+  parse_mode,
+  caption_entities,
+  has_spoiler,
+}) {
   return new InputMediaPhoto({
     media,
     caption,
     parse_mode,
     caption_entities,
+    has_spoiler,
   });
 }
 
@@ -208,6 +230,7 @@ function inputMediaPhoto({ media, caption, parse_mode, caption_entities }) {
  * @param {number} options.height высота.
  * @param {number} options.duration продолжительность в секундах.
  * @param {boolean} options.supports_streaming True, если загруженное видео подходит для потоковой передачи.
+ * @param {boolean} [options.has_spoiler] True, если видео нужно покрыть анимацией спойлера.
  */
 function inputMediaVideo({
   media,
@@ -219,6 +242,7 @@ function inputMediaVideo({
   height,
   duration,
   supports_streaming,
+  has_spoiler,
 }) {
   return new InputMediaVideo({
     media,
@@ -230,6 +254,7 @@ function inputMediaVideo({
     height,
     duration,
     supports_streaming,
+    has_spoiler,
   });
 }
 
@@ -244,6 +269,7 @@ function inputMediaVideo({
  * @param {number} options.width ширина.
  * @param {number} options.height высота.
  * @param {number} options.duration продолжительность в секундах.
+ * @param {boolean} [options.has_spoiler] True, если анимацию нужно закрыть анимацией спойлера.
  */
 function inputMediaAnimation({
   media,
@@ -254,6 +280,7 @@ function inputMediaAnimation({
   width,
   height,
   duration,
+  has_spoiler,
 }) {
   return new InputMediaAnimation({
     media,
@@ -264,6 +291,7 @@ function inputMediaAnimation({
     width,
     height,
     duration,
+    has_spoiler,
   });
 }
 

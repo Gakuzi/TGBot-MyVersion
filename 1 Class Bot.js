@@ -58,14 +58,14 @@ class TGbot {
    * @method _request
    * @description Метод, для отправки запроса к API.
    * @param {string} method метод по которому делается запрос.
-   * @param {string} payload дополнительные параметры запроса.
+   * @param {string} query дополнительные параметры запроса.
    * @param {string} [options.contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data"
    * @return {JSON} В случае успеха возвращается объект JSON.
    */
-  _request(method, payload, contentType = "application/json") {
+  _request(method, query, contentType = "application/json") {
     if (!method)
       this._miss_parameter(
-        "method не указан метод по которому делается запрос."
+        "method, не указан метод по которому делается запрос."
       );
 
     const fullUrl = `${this._apiTelegramUrl}${method}`;
@@ -86,15 +86,15 @@ class TGbot {
       return obj;
     };
 
-    if (payload) {
-      removeEmpty(payload);
+    if (query) {
+      removeEmpty(query);
       if (contentType === "multipart/form-data") {
         delete options.contentType;
         options["Content-Type"] = contentType;
-        options.payload = payload;
+        options.query = query;
       } else {
         options["contentType"] = contentType;
-        options.payload = JSON.stringify(payload);
+        options.query = JSON.stringify(query);
       }
     }
 
@@ -150,6 +150,8 @@ class TGbot {
     question_text,
     explanation_text,
     callback_query_text,
+    link_name,
+    member_limit,
   }) {
     if (msg_text && msg_text.length > 4096)
       throw new Error(
@@ -178,6 +180,16 @@ class TGbot {
     if (callback_query_text && callback_query_text.length > 200)
       throw new Error(
         `Длина текста уведомления ${callback_query_text.length} > 200 символов.`
+      );
+
+    if (link_name && link_name.length > 32)
+      throw new Error(
+        `Имя пригласительной ссылки ${member_limit.length} > 0 - 32 символа.`
+      );
+
+    if (member_limit && member_limit > 99999)
+      throw new Error(
+        `Передано ${member_limit}, максимальное кол-во пользователей не может быть > 99999.`
       );
   }
 
@@ -234,7 +246,7 @@ class TGbot {
     drop_pending_updates = false,
   }) {
     if (this._botToken && url)
-      var payload = {
+      var query = {
         url: url,
         certificate: certificate ? JSON.stringify(certificate) : null,
         ip_address: ip_address ? String(ip_address) : null,
@@ -246,7 +258,7 @@ class TGbot {
       };
 
     return console.log(
-      JSON.stringify(this._request(Methods.SET_WEBHOOK, payload), null, 5)
+      JSON.stringify(this._request(Methods.SET_WEBHOOK, query), null, 5)
     );
   }
 
@@ -259,12 +271,12 @@ class TGbot {
    */
   deleteWebhook(drop_pending_updates = false) {
     if (this._botToken && this._webAppUrl)
-      var payload = {
+      var query = {
         drop_pending_updates: Boolean(drop_pending_updates),
       };
 
     return console.log(
-      JSON.stringify(this._request(Methods.DELETE_WEBHOOK, payload), null, 5)
+      JSON.stringify(this._request(Methods.DELETE_WEBHOOK, query), null, 5)
     );
   }
 
@@ -276,12 +288,12 @@ class TGbot {
    */
   getWebhookInfo() {
     if (this._botToken && this._webAppUrl)
-      var payload = {
+      var query = {
         url: String(this._webAppUrl),
       };
 
     return console.log(
-      JSON.stringify(this._request(Methods.GET_WEBHOOK_INFO, payload), null, 5)
+      JSON.stringify(this._request(Methods.GET_WEBHOOK_INFO, query), null, 5)
     );
   }
 
@@ -337,12 +349,12 @@ class TGbot {
         "rights объект JSON, описывающий новые права администратора по умолчанию."
       );
 
-    var payload = {
+    const query = {
       rights: JSON.stringify(rights),
       for_channels: Boolean(for_channels),
     };
 
-    return this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload);
+    return this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
   }
 
   /**
@@ -354,11 +366,11 @@ class TGbot {
    * @return {ChatAdministratorRights} возвращает ChatAdministratorRights в случае успеха.
    */
   getMyDefaultAdministratorRights(for_channels = false) {
-    var payload = {
+    const query = {
       for_channels: Boolean(for_channels),
     };
 
-    return this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, payload);
+    return this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
   }
 
   /**
@@ -376,13 +388,13 @@ class TGbot {
         "commands объект JSON, описывающий новые права администратора по умолчанию."
       );
 
-    var payload = {
+    const query = {
       commands: JSON.stringify(commands),
       scope: scope ? JSON.stringify(scope) : null,
       language_code: language_code ? language_code : null,
     };
 
-    return this._request(Methods.SET_MY_COMMANDS, payload);
+    return this._request(Methods.SET_MY_COMMANDS, query);
   }
 
   /**
@@ -394,11 +406,11 @@ class TGbot {
    * @return {BotCommand[]|[]} возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
    */
   getMyCommands(scope = "", language_code = "") {
-    var payload = {
+    const query = {
       scope: scope ? JSON.stringify(scope) : null,
       language_code: language_code ? language_code : null,
     };
-    return this._request(Methods.GET_MY_COMMANDS, payload);
+    return this._request(Methods.GET_MY_COMMANDS, query);
   }
 
   /**
@@ -410,12 +422,12 @@ class TGbot {
    * @return {boolean} возвращает True в случае успеха.
    */
   deleteMyCommands(scope = "", language_code = "") {
-    var payload = {
+    const query = {
       scope: scope ? JSON.stringify(scope) : null,
       language_code: language_code ? language_code : null,
     };
 
-    return this._request(Methods.DELETE_MY_COMMANDS, payload);
+    return this._request(Methods.DELETE_MY_COMMANDS, query);
   }
 
   // Chat
@@ -433,11 +445,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT, payload);
+    return this._request(Methods.GET_CHAT, query);
   }
 
   /**
@@ -453,11 +465,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT_ADMINISTRATORS, payload);
+    return this._request(Methods.GET_CHAT_ADMINISTRATORS, query);
   }
 
   /**
@@ -483,14 +495,13 @@ class TGbot {
         "custom_title новый пользовательский титул для администратора 0-16 символов."
       );
 
-    if (chat_id && user_id && custom_title)
-      var payload = {
-        chat_id: String(chat_id),
-        user_id: String(user_id),
-        custom_title: String(custom_title),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      user_id: String(user_id),
+      custom_title: String(custom_title),
+    };
 
-    return this._request(Methods.SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE, payload);
+    return this._request(Methods.SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE, query);
   }
 
   /**
@@ -506,11 +517,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT_MEMBER_COUNT, payload);
+    return this._request(Methods.GET_CHAT_MEMBER_COUNT, query);
   }
 
   /**
@@ -531,13 +542,12 @@ class TGbot {
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
-    if (chat_id && user_id)
-      var payload = {
-        chat_id: String(chat_id),
-        user_id: String(user_id),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      user_id: String(user_id),
+    };
 
-    return this._request(Methods.GET_CHAT_MEMBER, payload);
+    return this._request(Methods.GET_CHAT_MEMBER, query);
   }
 
   /**
@@ -562,15 +572,14 @@ class TGbot {
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
-    if (chat_id && user_id)
-      var payload = {
-        chat_id: String(chat_id),
-        user_id: String(user_id),
-        until_date: until_date ? Number(until_date) : null,
-        revoke_messages: Boolean(revoke_messages),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      user_id: String(user_id),
+      until_date: until_date ? Number(until_date) : null,
+      revoke_messages: Boolean(revoke_messages),
+    };
 
-    return this._request(Methods.BAN_CHAT_MEMBER, payload);
+    return this._request(Methods.BAN_CHAT_MEMBER, query);
   }
 
   /**
@@ -596,14 +605,13 @@ class TGbot {
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
-    if (chat_id && user_id)
-      var payload = {
-        chat_id: String(chat_id),
-        user_id: String(user_id),
-        only_if_banned: Boolean(only_if_banned),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      user_id: String(user_id),
+      only_if_banned: Boolean(only_if_banned),
+    };
 
-    return this._request(Methods.UNBAN_CHAT_MEMBER, payload);
+    return this._request(Methods.UNBAN_CHAT_MEMBER, query);
   }
 
   /**
@@ -631,15 +639,14 @@ class TGbot {
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
 
-    if (chat_id && user_id && permissions)
-      var payload = {
-        chat_id: String(chat_id),
-        user_id: Number(user_id),
-        permissions: JSON.stringify(permissions),
-        until_date: until_date ? Number(until_date) : null,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      user_id: Number(user_id),
+      permissions: JSON.stringify(permissions),
+      until_date: until_date ? Number(until_date) : null,
+    };
 
-    return this._request(Methods.RESTRICT_CHAT_MEMBER, payload);
+    return this._request(Methods.RESTRICT_CHAT_MEMBER, query);
   }
 
   /**
@@ -661,13 +668,117 @@ class TGbot {
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
 
-    if (chat_id && permissions)
-      var payload = {
-        chat_id: String(chat_id),
-        permissions: JSON.stringify(permissions),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      permissions: JSON.stringify(permissions),
+    };
 
-    return this._request(Methods.SET_CHAT_PERMISSIONS, payload);
+    return this._request(Methods.SET_CHAT_PERMISSIONS, query);
+  }
+
+  /**
+   * @metod exportChatInviteLink
+   * @description Метод, для создания новой основной ссылки-приглашения для чата (любая ранее созданная первичная ссылка аннулируется).
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
+   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
+   * @return {string} возвращает новую ссылку-приглашение в виде строки в случае успеха.
+   */
+  exportChatInviteLink(chat_id) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+      );
+
+    const query = {
+      chat_id: String(chat_id),
+    };
+
+    return this._request(Methods.EXPORT_CHAT_INVITE_LINK, query);
+  }
+
+  /**
+   * @metod createChatInviteLink
+   * @description Метод, чтобы создать дополнительную ссылку для приглашения в чат.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * Ссылку можно отозвать с помощью метода revokeChatInviteLink.
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
+   * @param {string} [options.link_name] имя пригласительной ссылки, 0-32 символа.
+   * @param {number} [options.expire_date] момент времени (временная метка Unix), когда срок действия ссылки истечет.
+   * @param {number} [options.member_limit] max кол-во пользователей, которые могут одновременно быть участниками чата после присоединения к чату по данной инвайт-ссылке (1-99999).
+   * @param {boolean} [options.creates_join_request] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @return {ChatInviteLink} возвращает новую ссылку-приглашение в виде объекта ChatInviteLink.
+   */
+  createChatInviteLink({
+    chat_id,
+    link_name = "",
+    expire_date = "",
+    member_limit = "",
+    creates_join_request = false,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+      );
+    this._lengthError({ link_name: link_name });
+    this._lengthError({ member_limit: member_limit });
+
+    const query = {
+      chat_id: String(chat_id),
+      name: link_name ? String(link_name) : null,
+      expire_date: expire_date ? Number(expire_date) : null,
+      member_limit: member_limit ? Number(member_limit) : null,
+      creates_join_request: Boolean(creates_join_request),
+    };
+
+    return this._request(Methods.CREATE_CHAT_INVITE_LINK, query);
+  }
+
+  /**
+   * @metod editChatInviteLink
+   * @description Метод, для редактирования неосновной ссылки-приглашения, созданной ботом.
+   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
+   * @see https://core.telegram.org/bots/api#editchatinvitelink
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
+   * @param {string} options.invite_link пригласительная ссылка для редактирования
+   * @param {string} [options.link_name] имя пригласительной ссылки, 0-32 символа.
+   * @param {number} [options.expire_date] момент времени (временная метка Unix), когда срок действия ссылки истечет.
+   * @param {number} [options.member_limit] max кол-во пользователей, которые могут одновременно быть участниками чата после присоединения к чату по данной инвайт-ссылке (1-99999).
+   * @param {boolean} [options.creates_join_request] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @return {ChatInviteLink} возвращает отредактированную ссылку-приглашение в виде объекта ChatInviteLink.
+   */
+  editChatInviteLink({
+    chat_id,
+    invite_link,
+    link_name = "",
+    expire_date = "",
+    member_limit = "",
+    creates_join_request = false,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+      );
+    if (!invite_link)
+      this._miss_parameter(
+        "invite_link уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+      );
+    this._lengthError({ link_name: link_name });
+    this._lengthError({ member_limit: member_limit });
+
+    const query = {
+      chat_id: String(chat_id),
+      invite_link: String(invite_link),
+      name: link_name ? String(link_name) : null,
+      expire_date: expire_date ? Number(expire_date) : null,
+      member_limit: member_limit ? Number(member_limit) : null,
+      creates_join_request: Boolean(creates_join_request),
+    };
+
+    return this._request(Methods.EDIT_CHAT_INVITE_LINK, query);
   }
 
   /**
@@ -690,17 +801,12 @@ class TGbot {
         "photo новое фото чата, загруженное с помощью multipart/form-data."
       );
 
-    if (chat_id && photo)
-      var payload = {
-        chat_id: String(chat_id),
-        photo: photo,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      photo: photo,
+    };
 
-    return this._request(
-      Methods.SET_CHAT_PHOTO,
-      payload,
-      "multipart/form-data"
-    );
+    return this._request(Methods.SET_CHAT_PHOTO, query, "multipart/form-data");
   }
 
   /**
@@ -718,11 +824,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.DELETE_CHAT_PHOTO, payload);
+    return this._request(Methods.DELETE_CHAT_PHOTO, query);
   }
 
   /**
@@ -746,13 +852,12 @@ class TGbot {
       chat_title: title,
     });
 
-    if (chat_id && title)
-      var payload = {
-        chat_id: String(chat_id),
-        title: title,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      title: title,
+    };
 
-    return this._request(Methods.SET_CHAT_TITLE, payload);
+    return this._request(Methods.SET_CHAT_TITLE, query);
   }
 
   /**
@@ -774,12 +879,12 @@ class TGbot {
         chat_description: description,
       });
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
       description: description ? String(description) : null,
     };
 
-    return this._request(Methods.SET_CHAT_DESCRIPTION, payload);
+    return this._request(Methods.SET_CHAT_DESCRIPTION, query);
   }
 
   /**
@@ -792,12 +897,12 @@ class TGbot {
    * @return {boolean} возвращает True в случае успеха.
    */
   setChatMenuButton(chat_id = "", menu_button = "") {
-    var payload = {
+    const query = {
       chat_id: chat_id ? String(chat_id) : null,
       menu_button: menu_button ? menu_button : null,
     };
 
-    return this._request(Methods.SET_CHAT_MENU_BUTTON, payload);
+    return this._request(Methods.SET_CHAT_MENU_BUTTON, query);
   }
 
   /**
@@ -809,11 +914,11 @@ class TGbot {
    * @return {(MenuButtonCommands|MenuButtonWebApp|MenuButtonDefault)} возвращает MenuButton в случае успеха.
    */
   getChatMenuButton(chat_id = "") {
-    var payload = {
+    const query = {
       chat_id: chat_id ? String(chat_id) : null,
     };
 
-    return this._request(Methods.GET_CHAT_MENU_BUTTON, payload);
+    return this._request(Methods.GET_CHAT_MENU_BUTTON, query);
   }
 
   /**
@@ -837,14 +942,13 @@ class TGbot {
         "message_id идентификатор сообщения для закрепления."
       );
 
-    if (chat_id && message_id)
-      var payload = {
-        chat_id: String(chat_id),
-        message_id: Number(message_id),
-        disable_notification: Boolean(disable_notification),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_id: Number(message_id),
+      disable_notification: Boolean(disable_notification),
+    };
 
-    return this._request(Methods.PIN_CHAT_MESSAGE, payload);
+    return this._request(Methods.PIN_CHAT_MESSAGE, query);
   }
 
   /**
@@ -863,12 +967,12 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
       message_id: message_id ? Number(message_id) : null,
     };
 
-    return this._request(Methods.UNPIN_CHAT_MESSAGE, payload);
+    return this._request(Methods.UNPIN_CHAT_MESSAGE, query);
   }
 
   /**
@@ -885,11 +989,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.UNPIN_ALL_CHAT_MESSAGES, payload);
+    return this._request(Methods.UNPIN_ALL_CHAT_MESSAGES, query);
   }
 
   /**
@@ -905,11 +1009,11 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.LEAVE_CHAT, payload);
+    return this._request(Methods.LEAVE_CHAT, query);
   }
 
   /**
@@ -936,13 +1040,12 @@ class TGbot {
       );
     if (!action) this._miss_parameter("action тип действия для трансляции.");
 
-    if (chat_id && action)
-      var payload = {
-        chat_id: String(chat_id),
-        action: String(action),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      action: String(action),
+    };
 
-    return this._request(Methods.SEND_CHAT_ACTION, payload);
+    return this._request(Methods.SEND_CHAT_ACTION, query);
   }
 
   /**
@@ -960,13 +1063,13 @@ class TGbot {
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    var payload = {
+    const query = {
       chat_id: String(chat_id),
       offset: offset ? Number(offset) : null,
       limit: limit ? Number(limit) : null,
     };
 
-    return this._request(Methods.GET_USER_PROFILE_PHOTOS, payload);
+    return this._request(Methods.GET_USER_PROFILE_PHOTOS, query);
   }
 
   // Message
@@ -979,8 +1082,8 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendmessage
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {string} options.text текст сообщения, 1-4096 символов.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
@@ -988,12 +1091,13 @@ class TGbot {
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
    * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   sendMessage({
     chat_id = "",
+    message_thread_id = "",
     text = "",
-    reply_markup = "",
     parse_mode = "HTML",
     entities = "",
     disable_web_page_preview = false,
@@ -1001,6 +1105,7 @@ class TGbot {
     protect_content = false,
     reply_to_message_id = "",
     allow_sending_without_reply = false,
+    reply_markup = "",
   }) {
     if (!chat_id)
       this._miss_parameter(
@@ -1014,23 +1119,23 @@ class TGbot {
       msg_text: text,
     });
 
-    if (chat_id && text)
-      var payload = {
-        chat_id: String(chat_id),
-        text: String(text),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-        parse_mode: String(parse_mode),
-        entities: entities ? JSON.stringify(entities) : null,
-        disable_web_page_preview: Boolean(disable_web_page_preview),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      text: String(text),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      parse_mode: String(parse_mode),
+      entities: entities ? JSON.stringify(entities) : null,
+      disable_web_page_preview: Boolean(disable_web_page_preview),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
-    return this._request(Methods.SEND_MESSAGE, payload);
+    return this._request(Methods.SEND_MESSAGE, query);
   }
 
   /**
@@ -1040,6 +1145,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#forwardmessage
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername).
    * @param {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
@@ -1048,6 +1154,7 @@ class TGbot {
    */
   forwardMessage({
     chat_id = "",
+    message_thread_id = "",
     from_chat_id = "",
     message_id = "",
     disable_notification = false,
@@ -1066,16 +1173,16 @@ class TGbot {
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
 
-    if (chat_id && from_chat_id && message_id)
-      var payload = {
-        chat_id: String(chat_id),
-        from_chat_id: String(from_chat_id),
-        message_id: Number(message_id),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      from_chat_id: String(from_chat_id),
+      message_id: Number(message_id),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+    };
 
-    return this._request(Methods.FORWARD_MESSAGE, payload);
+    return this._request(Methods.FORWARD_MESSAGE, query);
   }
 
   /**
@@ -1084,6 +1191,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#copymessage
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате \@channelusername).
    * @param {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
    * @param {string} [options.caption] новая подпись для медиа, 0-1024 символов. Если не указано, исходная подпись сохраняется.
@@ -1098,6 +1206,7 @@ class TGbot {
    */
   copyMessage({
     chat_id = "",
+    message_thread_id = "",
     from_chat_id = "",
     message_id = "",
     caption = "",
@@ -1125,26 +1234,26 @@ class TGbot {
       caption_text: caption,
     });
 
-    if (chat_id && from_chat_id && message_id)
-      var payload = {
-        chat_id: String(chat_id),
-        from_chat_id: String(from_chat_id),
-        message_id: Number(message_id),
-        caption: caption ? String(caption) : null,
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-        parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      from_chat_id: String(from_chat_id),
+      message_id: Number(message_id),
+      caption: caption ? String(caption) : null,
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
-    return this._request(Methods.COPY_MESSAGE, payload);
+    return this._request(Methods.COPY_MESSAGE, query);
   }
 
   // Updating messages
@@ -1173,13 +1282,12 @@ class TGbot {
     if (!message_id)
       this._miss_parameter("message_id идентификатор сообщения для удаления.");
 
-    if (chat_id && message_id)
-      var payload = {
-        chat_id: String(chat_id),
-        message_id: Number(message_id),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_id: Number(message_id),
+    };
 
-    return this._request(Methods.DELETE_MESSAGE, payload);
+    return this._request(Methods.DELETE_MESSAGE, query);
   }
 
   /**
@@ -1191,10 +1299,10 @@ class TGbot {
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
    * @param {string} options.text новый текст сообщения, 1-4096 символов.
-   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в тексте сообщения, который можно указать вместо parse_mode.
    * @param {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
+   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageText({
@@ -1214,18 +1322,18 @@ class TGbot {
     });
 
     if ((chat_id && message_id && text) || (inline_message_id && text))
-      var payload = {
+      var query = {
         chat_id: chat_id ? String(chat_id) : null,
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
         text: String(text),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
         entities: entities ? JSON.stringify(entities) : null,
         disable_web_page_preview: Boolean(disable_web_page_preview),
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_TEXT, payload);
+    return this._request(Methods.EDIT_MESSAGE_TEXT, query);
   }
 
   /**
@@ -1237,9 +1345,9 @@ class TGbot {
    * @param {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @param {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
    * @param {string} [options.caption] новый заголовок сообщения, 0-1024 символов.
-   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageCaption({
@@ -1260,19 +1368,19 @@ class TGbot {
     });
 
     if ((chat_id && message_id && caption) || (inline_message_id && caption))
-      var payload = {
+      var query = {
         chat_id: chat_id ? String(chat_id) : null,
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
         caption: caption ? String(caption) : null,
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
         parse_mode: String(parse_mode),
         caption_entities: caption_entities
           ? JSON.stringify(caption_entities)
           : null,
+        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_CAPTION, payload);
+    return this._request(Methods.EDIT_MESSAGE_CAPTION, query);
   }
 
   /**
@@ -1302,7 +1410,7 @@ class TGbot {
       );
 
     if ((chat_id && message_id && media) || (inline_message_id && media))
-      var payload = {
+      var query = {
         chat_id: chat_id ? String(chat_id) : null,
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
@@ -1310,7 +1418,7 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_MEDIA, payload);
+    return this._request(Methods.EDIT_MESSAGE_MEDIA, query);
   }
 
   /**
@@ -1339,14 +1447,14 @@ class TGbot {
       (chat_id && message_id && reply_markup) ||
       (inline_message_id && reply_markup)
     )
-      var payload = {
+      var query = {
         chat_id: chat_id ? String(chat_id) : null,
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_REPLY_MARKUP, payload);
+    return this._request(Methods.EDIT_MESSAGE_REPLY_MARKUP, query);
   }
 
   // Other
@@ -1357,6 +1465,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendphoto
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {(InputFile|string)} options.photo фото для отправки.
    * Передайте file_id в виде строки, чтобы отправить фотографию, которая существует на серверах Telegram (рекомендуется).
    * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить фотографию из Интернета, или загрузите новую фотографию, используя multipart/form-data.
@@ -1364,27 +1473,30 @@ class TGbot {
    * Суммарная ширина и высота фотографии не должны превышать 10000.
    * Соотношение ширины и высоты должно быть не более 20.
    * @param {string} [options.caption] подпись к фото (может использоваться при повторной отправке по file_id), 0-1024 символа.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} [options.has_spoiler] True, если фото нужно прикрыть анимацией спойлера.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
    * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   sendPhoto({
     chat_id = "",
+    message_thread_id = "",
     photo = "",
     caption = "",
-    reply_markup = "",
     parse_mode = "HTML",
     caption_entities = "",
+    has_spoiler = false,
     disable_notification = false,
     protect_content = false,
     reply_to_message_id = "",
     allow_sending_without_reply = false,
+    reply_markup = "",
     contentType,
   }) {
     if (!chat_id)
@@ -1397,180 +1509,28 @@ class TGbot {
         caption_text: caption,
       });
 
-    if (chat_id && photo)
-      var payload = {
-        chat_id: String(chat_id),
-        photo: photo,
-        caption: caption ? String(caption) : null,
-        parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      photo: photo,
+      caption: caption ? String(caption) : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      has_spoiler: Boolean(has_spoiler),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
 
     if (contentType)
-      return this._request(Methods.SEND_PHOTO, payload, contentType);
-    else return this._request(Methods.SEND_PHOTO, payload);
-  }
-
-  /**
-   * @metod sendDocument
-   * @description Метод, для отправки общих файлов.
-   * @see https://core.telegram.org/bots/api#senddocument
-   * @typedef {Object} options
-   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {(InputFile|string)} options.document файл для отправки.
-   * В настоящее время боты могут отправлять файлы любого типа размером до 50 МБ, может быть изменено в будущем.
-   * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
-   * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить файл из Интернета, или загрузите новый, используя multipart/form-data.
-   * @param {string} [options.caption] подпись к документу (также может использоваться при повторной отправке документа по file_id), 0-1024 символа.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла, можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера, формат JPEG и иметь размер не более 200К.
-   * Ширина и высота эскиза не > 320, игнорируется, если файл загружен не с помощью multipart/form-data.
-   * Миниатюры не могут быть повторно использованы и могут быть загружены только как новый файл.
-   * Поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>
-   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @param {boolean} [options.disable_content_type_detection] отключает автоматическое определение типа контента на стороне сервера для файлов, загруженных с помощью multipart/form-data.
-   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
-   */
-  sendDocument({
-    chat_id = "",
-    document = "",
-    caption = "",
-    reply_markup = "",
-    thumb = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    disable_content_type_detection = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    contentType,
-  }) {
-    if (!chat_id)
-      this._miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
-      );
-    if (!document) this._miss_parameter("document файл для отправки");
-    if (caption)
-      this._lengthError({
-        caption_text: caption,
-      });
-
-    if (chat_id && document)
-      var payload = {
-        chat_id: String(chat_id),
-        document: document,
-        caption: caption ? String(caption) : null,
-        thumb: thumb ? thumb : null,
-        parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
-        disable_content_type_detection: Boolean(disable_content_type_detection),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
-
-    if (contentType)
-      return this._request(Methods.SEND_DOCUMENT, payload, contentType);
-    else return this._request(Methods.SEND_DOCUMENT, payload);
-  }
-
-  /**
-   * @metod sendVideo
-   * @description Метод, для отправки видео.
-   * @see https://core.telegram.org/bots/api#sendvideo
-   * @typedef {Object} options
-   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {(InputFile|string)} options.video видео для отправки.
-   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
-   * @param {number} [options.width] ширина.
-   * @param {number} [options.height] высота.
-   * @param {number} [options.duration] продолжительность в секундах.
-   * @param {boolean} [options.supports_streaming] True, если загруженное видео подходит для потоковой передачи.
-   * @param {string} [options.caption] подпись к видео (может использоваться при повторной отправке по file_id), 0-1024 символа.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
-   */
-  sendVideo({
-    chat_id = "",
-    video = "",
-    thumb = "",
-    width = "",
-    height = "",
-    duration = "",
-    supports_streaming = false,
-    caption = "",
-    reply_markup,
-    parse_mode = "HTML",
-    caption_entities = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    contentType,
-  }) {
-    if (!chat_id)
-      this._miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
-      );
-    if (!video) this._miss_parameter("video видео для отправки.");
-    if (caption)
-      this._lengthError({
-        caption_text: caption,
-      });
-
-    if (chat_id && video)
-      var payload = {
-        chat_id: String(chat_id),
-        video: video,
-        thumb: thumb ? thumb : null,
-        width: width ? Number(width) : null,
-        height: height ? Number(height) : null,
-        duration: duration ? Number(duration) : null,
-        supports_streaming: Boolean(supports_streaming),
-        caption: caption ? String(caption) : null,
-        parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: Number(reply_to_message_id),
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
-
-    if (contentType)
-      return this._request(Methods.SEND_VIDEO, payload, contentType);
-    else return this._request(Methods.SEND_VIDEO, payload);
+      return this._request(Methods.SEND_PHOTO, query, contentType);
+    else return this._request(Methods.SEND_PHOTO, query);
   }
 
   /**
@@ -1579,37 +1539,39 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendaudio
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @param {(InputFile|string)} options.audio видео для отправки.
-   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.audio аудио для отправки.
+   * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
+   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {number} [options.duration] продолжительность в секундах.
    * @param {string} [options.performer] исполнитель аудио.
    * @param {string} [options.title] название аудио.
-   * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
    * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   sendAudio({
     chat_id = "",
+    message_thread_id = "",
     audio = "",
-    thumb = "",
-    performer = "",
-    title = "",
-    duration = "",
     caption = "",
-    reply_markup,
     parse_mode = "HTML",
     caption_entities = "",
+    duration = "",
+    performer = "",
+    title = "",
+    thumb = "",
     disable_notification = false,
     protect_content = false,
     reply_to_message_id = "",
     allow_sending_without_reply = false,
+    reply_markup,
     contentType,
   }) {
     if (!chat_id)
@@ -1622,29 +1584,406 @@ class TGbot {
         caption_text: caption,
       });
 
-    if (chat_id && audio)
-      var payload = {
-        chat_id: String(chat_id),
-        audio: audio,
-        thumb: thumb ? thumb : null,
-        performer: performer ? String(performer) : null,
-        title: title ? String(title) : null,
-        duration: duration ? Number(duration) : null,
-        caption: caption ? String(caption) : null,
-        parse_mode: String(parse_mode),
-        caption_entities: caption_entities
-          ? JSON.stringify(caption_entities)
-          : null,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: Number(reply_to_message_id),
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      audio: audio,
+      caption: caption ? String(caption) : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      duration: duration ? Number(duration) : null,
+      performer: performer ? String(performer) : null,
+      title: title ? String(title) : null,
+      thumb: thumb ? thumb : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
 
     if (contentType)
-      return this._request(Methods.SEND_AUDIO, payload, contentType);
-    else return this._request(Methods.SEND_AUDIO, payload);
+      return this._request(Methods.SEND_AUDIO, query, contentType);
+    else return this._request(Methods.SEND_AUDIO, query);
+  }
+
+  /**
+   * @metod sendDocument
+   * @description Метод, для отправки общих файлов.
+   * @see https://core.telegram.org/bots/api#senddocument
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.document файл для отправки.
+   * В настоящее время боты могут отправлять файлы любого типа размером до 50 МБ, может быть изменено в будущем.
+   * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
+   * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить файл из Интернета, или загрузите новый, используя multipart/form-data.
+   * @param {string} [options.caption] подпись к документу (также может использоваться при повторной отправке документа по file_id), 0-1024 символа.
+   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла, можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера, формат JPEG и иметь размер не более 200К.
+   * Ширина и высота эскиза не > 320, игнорируется, если файл загружен не с помощью multipart/form-data.
+   * Миниатюры не могут быть повторно использованы и могут быть загружены только как новый файл.
+   * Поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>
+   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} [options.disable_content_type_detection] отключает автоматическое определение типа контента на стороне сервера для файлов, загруженных с помощью multipart/form-data.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendDocument({
+    chat_id = "",
+    message_thread_id = "",
+    document = "",
+    caption = "",
+    thumb = "",
+    parse_mode = "HTML",
+    caption_entities = "",
+    disable_content_type_detection = false,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = "",
+    contentType,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+      );
+    if (!document) this._miss_parameter("document файл для отправки");
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      document: document,
+      caption: caption ? String(caption) : null,
+      thumb: thumb ? thumb : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      disable_content_type_detection: Boolean(disable_content_type_detection),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    if (contentType)
+      return this._request(Methods.SEND_DOCUMENT, query, contentType);
+    else return this._request(Methods.SEND_DOCUMENT, query);
+  }
+
+  /**
+   * @metod sendVideo
+   * @description Метод, для отправки видео.
+   * @see https://core.telegram.org/bots/api#sendvideo
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.video видео для отправки.
+   * @param {number} [options.duration] продолжительность в секундах.
+   * @param {number} [options.width] ширина.
+   * @param {number} [options.height] высота.
+   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
+   * @param {boolean} [options.has_spoiler] True, если видео нужно покрыть анимацией спойлера.
+   * @param {boolean} [options.supports_streaming] True, если загруженное видео подходит для потоковой передачи.
+   * @param {string} [options.caption] подпись к видео (может использоваться при повторной отправке по file_id), 0-1024 символа.
+   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendVideo({
+    chat_id = "",
+    message_thread_id = "",
+    video = "",
+    duration = "",
+    width = "",
+    height = "",
+    thumb = "",
+    caption = "",
+    parse_mode = "HTML",
+    caption_entities = "",
+    has_spoiler = false,
+    supports_streaming = false,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup,
+    contentType,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!video) this._miss_parameter("video видео для отправки.");
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      video: video,
+      duration: duration ? Number(duration) : null,
+      width: width ? Number(width) : null,
+      height: height ? Number(height) : null,
+      thumb: thumb ? thumb : null,
+      caption: caption ? String(caption) : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      has_spoiler: Boolean(has_spoiler),
+      supports_streaming: Boolean(supports_streaming),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    if (contentType)
+      return this._request(Methods.SEND_VIDEO, query, contentType);
+    else return this._request(Methods.SEND_VIDEO, query);
+  }
+
+  /**
+   * @metod sendAnimation
+   * @description Метод, для отправки файлов анимации (видео GIF или H.264/MPEG-4 AVC без звука). В случае успеха возвращается отправленное сообщение.
+   * В настоящее время боты могут отправлять анимационные файлы размером до 50 МБ, это ограничение может быть изменено в будущем.
+   * @see https://core.telegram.org/bots/api#sendanimation
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.animation анимация для отправки.
+   * @param {number} [options.duration] продолжительность в секундах.
+   * @param {number} [options.width]
+   * @param {number} [options.height]
+   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
+   * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
+   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} [options.has_spoiler] True, если анимацию нужно закрыть анимацией спойлера.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendAnimation(
+    chat_id = "",
+    message_thread_id = "",
+    animation = "",
+    duration = "",
+    width = "",
+    height = "",
+    thumb = "",
+    caption = "",
+    parse_mode = "HTML",
+    caption_entities = "",
+    has_spoiler = false,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup,
+    contentType
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!animation) this._miss_parameter("animation анимация для отправки.");
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      animation: animation,
+      duration: duration ? Number(duration) : null,
+      width: width ? Number(width) : null,
+      height: height ? Number(height) : null,
+      caption: caption ? String(caption) : null,
+      thumb: thumb ? thumb : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      has_spoiler: Boolean(has_spoiler),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    if (contentType)
+      return this._request(Methods.SEND_ANIMATION, query, contentType);
+    else return this._request(Methods.SEND_ANIMATION, query);
+  }
+
+  /**
+   * @metod sendVoice
+   * @description Метод, для отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали файл как воспроизводимое голосовое сообщение.
+   * Чтобы это работало, ваше аудио должно быть в файле .OGG, закодированном с помощью OPUS (другие форматы могут быть отправлены как аудио или документ). В случае успеха возвращается отправленное сообщение.
+   * @see https://core.telegram.org/bots/api#sendvoice
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.voice аудио для отправки.
+   * @param {number} [options.duration] продолжительность в секундах.
+   * @param {string} [options.caption] подпись к аудио, 0-1024 символа.
+   * @param {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
+   * @param {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendVoice({
+    chat_id = "",
+    message_thread_id = "",
+    voice = "",
+    duration = "",
+    caption = "",
+    parse_mode = "HTML",
+    caption_entities = "",
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup,
+    contentType,
+  }) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!voice) this._miss_parameter("voice аудио для отправки.");
+    if (caption)
+      this._lengthError({
+        caption_text: caption,
+      });
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      voice: voice,
+      duration: duration ? Number(duration) : null,
+      caption: caption ? String(caption) : null,
+      parse_mode: String(parse_mode),
+      caption_entities: caption_entities
+        ? JSON.stringify(caption_entities)
+        : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    if (contentType)
+      return this._request(Methods.SEND_VOICE, query, contentType);
+    else return this._request(Methods.SEND_VOICE, query);
+  }
+
+  /**
+   * @metod sendVideoNote
+   * @description Начиная с версии 4.0, клиенты Telegram поддерживают закругленные квадратные видео MPEG4 продолжительностью до 1 минуты. Используйте этот метод для отправки видеосообщений. В случае успеха возвращается отправленное сообщение.
+   * @see https://core.telegram.org/bots/api#sendvideonote
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {(InputFile|string)} options.video_note видеозаметка для отправки.
+   * @param {number} [options.duration] продолжительность в секундах.
+   * @param {number} [options.length] ширина и высота видео, т.е. диаметр видеосообщения.
+   * @param {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendVideoNote(
+    chat_id = "",
+    message_thread_id = "",
+    video_note = "",
+    duration = "",
+    length = "",
+    thumb = "",
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup,
+    contentType
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!video_note)
+      this._miss_parameter("video_note видеозаметка для отправки.");
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      video_note: video_note,
+      duration: duration ? Number(duration) : null,
+      length: length ? Number(length) : null,
+      thumb: thumb ? thumb : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    if (contentType)
+      return this._request(Methods.SEND_VIDEO_NOTE, query, contentType);
+    else return this._request(Methods.SEND_VIDEO_NOTE, query);
   }
 
   /**
@@ -1654,6 +1993,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendmediagroup
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {Array.<(InputMediaAudio|InputMediaDocument|InputMediaPhoto|InputMediaVideo)>} options.media объект JSON для нового мультимедийного содержимого сообщения.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
@@ -1663,6 +2003,7 @@ class TGbot {
    */
   sendMediaGroup({
     chat_id = "",
+    message_thread_id = "",
     media = "",
     disable_notification = false,
     protect_content = false,
@@ -1678,19 +2019,375 @@ class TGbot {
         "media объект JSON для нового мультимедийного содержимого сообщения."
       );
 
-    if (chat_id && media)
-      var payload = {
-        chat_id: String(chat_id),
-        media: media,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      media: media,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
-    return this._request(Methods.SEND_MEDIA_GROUP, payload);
+    return this._request(Methods.SEND_MEDIA_GROUP, query);
+  }
+
+  /**
+   * @metod sendLocation
+   * @description Метод, для отправки точки на карте.
+   * @see https://core.telegram.org/bots/api#sendlocation
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {number} options.latitude широта местоположения.
+   * @param {number} options.longitude долгота местоположения.
+   * @param {string} [options.horizontal_accuracy] радиус неопределенности местоположения, измеряемый в метрах (0-1500).
+   * @param {string} [options.live_period] период в секундах, в течение которого будет обновляться местоположение (должно быть от 60 до 86400).
+   * @param {string} [options.heading] для живых местоположений — направление, в котором движется пользователь, в градусах.
+   * Должно быть от 1 до 360, если указано.
+   * @param {string} [options.proximity_alert_radius] расстояние для предупреждений о приближении к другому участнику чата в метрах.
+   * Должно быть от 1 до 100000, если указано.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendLocation(
+    chat_id,
+    message_thread_id = "",
+    latitude,
+    longitude,
+    horizontal_accuracy = "",
+    live_period = "",
+    heading = "",
+    proximity_alert_radius = "",
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = ""
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!latitude) this._miss_parameter("latitude широта местоположения.");
+    if (!longitude) this._miss_parameter("longitude долгота местоположения.");
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      horizontal_accuracy: horizontal_accuracy
+        ? String(horizontal_accuracy)
+        : null,
+      live_period: live_period ? String(live_period) : null,
+      heading: heading ? String(heading) : null,
+      proximity_alert_radius: proximity_alert_radius
+        ? String(proximity_alert_radius)
+        : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.SEND_LOCATION, query);
+  }
+
+  /**
+   * @metod editMessageLiveLocation
+   * @description Метод, для редактирования сообщений о местоположении в реальном времени.
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   * @typedef {Object} options
+   * @param {(string|number)} [options.chat_id] Требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
+   * @param {number} [options.message_id] Требуется, если inline_message_id не указан. Идентификатор сообщения для редактирования.
+   * @param {string} [options.inline_message_id] Требуется, если chat_id и message_id не указаны. Идентификатор встроенного сообщения.
+   * @param {number} options.latitude широта нового местоположения.
+   * @param {number} options.longitude долгота нового местоположения.
+   * @param {string} [options.horizontal_accuracy] радиус неопределенности местоположения, измеряемый в метрах (0-1500).
+   * @param {string} [options.live_period] период в секундах, в течение которого будет обновляться местоположение (должно быть от 60 до 86400).
+   * @param {string} [options.heading] для живых местоположений — направление, в котором движется пользователь, в градусах.
+   * Должно быть от 1 до 360, если указано.
+   * @param {string} [options.proximity_alert_radius] расстояние для предупреждений о приближении к другому участнику чата в метрах.
+   * Должно быть от 1 до 100000, если указано.
+   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  editMessageLiveLocation(
+    chat_id,
+    message_id,
+    inline_message_id,
+    latitude,
+    longitude,
+    horizontal_accuracy = "",
+    live_period = "",
+    heading = "",
+    proximity_alert_radius = "",
+    reply_markup = ""
+  ) {
+    if (!chat_id && !inline_message_id)
+      this._miss_parameter(
+        "передайте chat_id и message_id или inline_message_id"
+      );
+    if (chat_id && !message_id)
+      this._miss_parameter(
+        "message_id идентификатор сообщения для редактирования."
+      );
+    if (!chat_id && !inline_message_id)
+      this._miss_parameter(
+        "inline_message_id идентификатор встроенного сообщения."
+      );
+
+    const query = {
+      chat_id: chat_id ? String(chat_id) : null,
+      message_id: message_id ? Number(message_id) : null,
+      inline_message_id: inline_message_id ? String(inline_message_id) : null,
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      horizontal_accuracy: horizontal_accuracy
+        ? String(horizontal_accuracy)
+        : null,
+      live_period: live_period ? String(live_period) : null,
+      heading: heading ? String(heading) : null,
+      proximity_alert_radius: proximity_alert_radius
+        ? String(proximity_alert_radius)
+        : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.EDIT_MESSAGE_LIVE_LOCATION, query);
+  }
+
+  /**
+   * @metod stopMessageLiveLocation
+   * @description Метод, для остановки обновления сообщения о текущем местоположении до истечения срока действия live_period.
+   * @see https://core.telegram.org/bots/api#stopmessagelivelocation
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
+   * @param {number} [options.message_id] требуется, если inline_message_id не указан. Идентификатор сообщения для редактирования.
+   * @param {string} [options.inline_message_id] требуется, если chat_id и message_id не указаны. Идентификатор встроенного сообщения.
+   * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message|boolean} В случае успеха, если сообщение не является встроенным сообщением, возвращается отредактированное сообщение, иначе True.
+   */
+  stopMessageLiveLocation(
+    chat_id,
+    message_id,
+    inline_message_id,
+    reply_markup = ""
+  ) {
+    if (!chat_id && !inline_message_id)
+      this._miss_parameter(
+        "передайте chat_id и message_id или inline_message_id"
+      );
+    if (chat_id && !message_id)
+      this._miss_parameter(
+        "message_id идентификатор сообщения для редактирования."
+      );
+    if (!chat_id && !inline_message_id)
+      this._miss_parameter(
+        "inline_message_id идентификатор встроенного сообщения."
+      );
+
+    const query = {
+      chat_id: chat_id ? String(chat_id) : null,
+      message_id: message_id ? Number(message_id) : null,
+      inline_message_id: inline_message_id ? String(inline_message_id) : null,
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.STOP_MESSAGE_LIVE_LOCATION, query);
+  }
+
+  /**
+   * @metod sendVenue
+   * @description Метод, для отправки информации о месте проведения.
+   * @see https://core.telegram.org/bots/api#sendvenue
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {number} options.latitude широта места проведения.
+   * @param {number} options.longitude долгота места проведения.
+   * @param {string} options.title название места.
+   * @param {string} options.address адрес места проведения.
+   * @param {string} [options.foursquare_id] идентификатор Foursquare места проведения.
+   * @param {string} [options.foursquare_type] тип площадки Foursquare, если известен.
+   * (Например, «искусство_развлечения/по умолчанию», «искусство_развлечения/аквариум» или «еда/мороженое».).
+   * @param {string} [options.google_place_id] идентификатор места проведения в Google Places.
+   * @param {string} [options.google_place_type] тип заведения в Google Places.
+   * @see https://developers.google.com/maps/documentation/places/web-service/supported_types
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendVenue(
+    chat_id,
+    message_thread_id = "",
+    latitude,
+    longitude,
+    title,
+    address,
+    foursquare_id = "",
+    foursquare_type = "",
+    google_place_id = "",
+    google_place_type = "",
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = ""
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!latitude) this._miss_parameter("latitude широта места проведения.");
+    if (!longitude) this._miss_parameter("longitude долгота места проведения.");
+    if (!title) this._miss_parameter("title название места.");
+    if (!address) this._miss_parameter("address адрес места проведения.");
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      title: String(title),
+      address: String(address),
+      foursquare_id: foursquare_id ? String(foursquare_id) : null,
+      foursquare_type: foursquare_type ? String(foursquare_type) : null,
+      google_place_id: google_place_id ? String(google_place_id) : null,
+      google_place_type: google_place_type ? String(google_place_type) : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.SEND_VENUE, query);
+  }
+
+  /**
+   * @metod sendContact
+   * @description Метод, для отправки телефонных контактов.
+   * @see https://core.telegram.org/bots/api#sendcontact
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {string} options.phone_number телефон контакта.
+   * @param {string} options.first_name имя контакта.
+   * @param {string} [options.last_name] фамилия контакта.
+   * @param {string} [options.vcard] дополнительные данные о контакте в виде vCard, 0-2048 байт.
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendContact(
+    chat_id,
+    message_thread_id = "",
+    phone_number,
+    first_name,
+    last_name = "",
+    vcard = "",
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = ""
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+    if (!phone_number) this._miss_parameter("phone_number телефон контакта.");
+    if (!first_name) this._miss_parameter("first_name фамилия контакта.");
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      phone_number: String(phone_number),
+      first_name: String(first_name),
+      last_name: last_name ? String(last_name) : null,
+      vcard: vcard ? String(vcard) : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.SEND_DICE, query);
+  }
+
+  /**
+   * @metod sendDice
+   * @description Метод, для отправики анимированный эмодзи, который будет отображать случайное значение.
+   * @see https://core.telegram.org/bots/api#senddice
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {string} [options.emoji] эмодзи, на котором основана анимация броска костей.
+   * В настоящее время должен быть одним из «🎲», «🎯», «🏀», «⚽», «🎳» или «🎰». Кости могут иметь значения от 1 до 6 для «🎲», «🎯» и «🎳», значения от 1 до 5 для «🏀» и «⚽» и значения от 1 до 64 для «🎰». По умолчанию «🎲».
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается Message отправленное сообщение.
+   */
+  sendDice(
+    chat_id,
+    message_thread_id = "",
+    emoji,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = ""
+  ) {
+    if (!chat_id)
+      this._miss_parameter(
+        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+      );
+
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      emoji: emoji ? String(emoji) : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this._request(Methods.SEND_DICE, query);
   }
 
   /**
@@ -1699,6 +2396,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendpoll
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {string} options.question вопрос-опрос, 1-300 символов.
    * @param {string[]} options.options JSON-сериализованный список вариантов ответа, от 2 до 10 строк по 1-100 символов каждая.
    * @param {boolean} [options.is_anonymous] True, если опрос должен быть анонимным, по умолчанию True.
@@ -1720,6 +2418,7 @@ class TGbot {
    */
   sendPoll({
     chat_id = "",
+    message_thread_id = "",
     question = "",
     options = "",
     is_anonymous = true,
@@ -1755,31 +2454,33 @@ class TGbot {
         explanation_text: explanation,
       });
 
-    if (chat_id && question && options)
-      var payload = {
-        chat_id: String(chat_id),
-        question: String(question),
-        options: JSON.stringify(options),
-        is_anonymous: Boolean(is_anonymous),
-        type: type,
-        allows_multiple_answers: Boolean(allows_multiple_answers),
-        correct_option_id: correct_option_id ? Number(correct_option_id) : null,
-        explanation: explanation ? String(explanation) : null,
-        explanation_parse_mode: String(explanation_parse_mode),
-        explanation_entities: explanation_entities
-          ? JSON.stringify(explanation_entities)
-          : null,
-        open_periode: open_periode ? Number(open_periode) : null,
-        close_date: close_date ? Number(close_date) : null,
-        is_closed: Boolean(is_closed),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: Number(reply_to_message_id),
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      question: String(question),
+      options: JSON.stringify(options),
+      is_anonymous: Boolean(is_anonymous),
+      type: type,
+      allows_multiple_answers: Boolean(allows_multiple_answers),
+      correct_option_id: correct_option_id ? Number(correct_option_id) : null,
+      explanation: explanation ? String(explanation) : null,
+      explanation_parse_mode: String(explanation_parse_mode),
+      explanation_entities: explanation_entities
+        ? JSON.stringify(explanation_entities)
+        : null,
+      open_periode: open_periode ? Number(open_periode) : null,
+      close_date: close_date ? Number(close_date) : null,
+      is_closed: Boolean(is_closed),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
 
-    return this._request(Methods.SEND_POLL, payload);
+    return this._request(Methods.SEND_POLL, query);
   }
 
   /**
@@ -1792,21 +2493,20 @@ class TGbot {
    * @param {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @return {Poll} В случае успеха возвращается остановленный опрос.
    */
-  stopPoll({ chat_id = "", message_id = "", reply_markup = "" }) {
+  stopPoll({ chat_id, message_id, reply_markup = "" }) {
     if (!chat_id)
       this._miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!message_id) this._miss_parameter("message_id для отправки.");
 
-    if (chat_id && message_id)
-      var payload = {
-        chat_id: String(chat_id),
-        message_id: Number(message_id),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      };
+    const query = {
+      chat_id: String(chat_id),
+      message_id: Number(message_id),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
 
-    return this._request(Methods.STOP_POLL, payload);
+    return this._request(Methods.STOP_POLL, query);
   }
 
   /**
@@ -1837,7 +2537,7 @@ class TGbot {
         callback_query_text: text,
       });
 
-    var payload = {
+    const query = {
       callback_query_id: String(callback_query_id),
       text: text ? String(text) : null,
       show_alert: Boolean(show_alert),
@@ -1845,7 +2545,7 @@ class TGbot {
       cache_time: cache_time ? Number(cache_time) : null,
     };
 
-    return this._request(Methods.ANSWER_CALLBACK_QUERY, payload);
+    return this._request(Methods.ANSWER_CALLBACK_QUERY, query);
   }
 
   // Inline mode
@@ -1882,7 +2582,7 @@ class TGbot {
         "inline_query_id уникальный идентификатор ответа на запрос."
       );
 
-    var payload = {
+    const query = {
       inline_query_id: String(inline_query_id),
       results: results ? JSON.stringify(results) : null,
       cache_time: cache_time ? Number(cache_time) : null,
@@ -1894,7 +2594,7 @@ class TGbot {
         : null,
     };
 
-    return this._request(Methods.ANSWER_INLINE_QUERY, payload);
+    return this._request(Methods.ANSWER_INLINE_QUERY, query);
   }
 
   // Stickers
@@ -1919,11 +2619,11 @@ class TGbot {
   sendSticker({
     chat_id = "",
     sticker = "",
-    reply_markup = "",
     disable_notification = false,
     protect_content = false,
     reply_to_message_id = "",
     allow_sending_without_reply = false,
+    reply_markup = "",
     contentType,
   }) {
     if (!chat_id)
@@ -1932,22 +2632,21 @@ class TGbot {
       );
     if (!sticker) this._miss_parameter("sticker наклейка для отправки.");
 
-    if (chat_id && sticker)
-      var payload = {
-        chat_id: String(chat_id),
-        sticker: sticker,
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: reply_to_message_id
-          ? Number(reply_to_message_id)
-          : null,
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: String(chat_id),
+      sticker: sticker,
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
     if (contentType)
-      return this._request(Methods.SEND_STICKER, payload, contentType);
-    else return this._request(Methods.SEND_STICKER, payload);
+      return this._request(Methods.SEND_STICKER, query, contentType);
+    else return this._request(Methods.SEND_STICKER, query);
   }
 
   /**
@@ -1958,13 +2657,161 @@ class TGbot {
    * @return {StickerSet} В случае успеха возвращается объект StickerSet.
    */
   getStickerSet(name) {
-    if (!name) this._miss_parameter("name название набора наклеек.)");
+    if (!name) this._miss_parameter("name название набора наклеек.");
 
-    var payload = {
+    const query = {
       name: String(name),
     };
 
-    return this._request(Methods.GET_STICKER_SET, payload);
+    return this._request(Methods.GET_STICKER_SET, query);
+  }
+
+  // Payments
+
+  // /**
+  //  * @metod sendInvoice
+  //  * @description Метод для отправки счетов.
+  //  * @see https://core.telegram.org/bots/api#sendinvoice
+  //  * @typedef {Object} options
+  //  * @param {string} options.shipping_query_id уникальный идентификатор запроса, на который нужно ответить.
+  //  * @param {boolean} options.ok True, если доставка по указанному адресу возможна и False,
+  //  * если есть какие-либо проблемы (например, если доставка по указанному адресу невозможна). По умолчанию True.
+  //  * @param {ShippingOption[]} [options.shipping_options] Требуется, если ok равно True.
+  //  * Сериализованный в формате JSON массив доступных вариантов доставки.
+  //  * @param {string} [options.error_message] Требуется, если ok имеет значение False.
+  //  * Сообщение об ошибке в удобочитаемой форме, объясняющее, почему невозможно выполнить заказ (например, «Извините, доставка по указанному вами адресу недоступна»). Telegram отобразит это сообщение пользователю.
+  //  * @return {Message} В случае успеха возвращается отправленное сообщение.
+  //  */
+  // sendInvoice({
+  //   chat_id,
+  //   message_thread_id = "",
+  //   title,
+  //   description,
+  //   payload,
+  //   provider_token,
+  //   currency,
+  //   prices,
+  //   max_tip_amount = "",
+  //   suggested_tip_amounts = "",
+  //   start_parameter,
+  //   provider_data = "",
+  //   photo_url = "",
+  //   photo_size = "",
+  //   photo_width = "",
+  //   photo_height = "",
+  //   need_name = false,
+  //   need_phone_number = false,
+  //   need_email = false,
+  //   need_shipping_address = false,
+  //   send_phone_number_to_provider = false,
+  //   send_email_to_provider = false,
+  //   is_flexible = false,
+  //   disable_notification = false,
+  //   protect_content = false,
+  //   reply_to_message_id = "",
+  //   allow_sending_without_reply = false,
+  //   reply_markup = "",
+  // }) {
+  //   if (!shipping_query_id)
+  //     this._miss_parameter(
+  //       "shipping_query_id уникальный идентификатор запроса, на который нужно ответить."
+  //     );
+
+  //   if (shipping_query_id)
+  //     var query = {
+  //       shipping_query_id: String(shipping_query_id),
+  //       ok: Boolean(ok),
+  //       shipping_options: shipping_options ? String(shipping_options) : null,
+  //       error_message: error_message ? String(error_message) : null,
+  //     };
+
+  //   return this._request(Methods.SEND_INVOICE, query);
+  // }
+
+  /**
+   * @metod answerShippingQuery
+   * @description Метод, для ответа на запросы о доставке.
+   * Если вы отправили счет-фактуру с запросом адреса доставки и был указан параметр is_flexible,
+   * Bot API отправит боту обновление с полем shipping_query.
+   * @see https://core.telegram.org/bots/api#answershippingquery
+   * @typedef {Object} options
+   * @param {string} options.shipping_query_id уникальный идентификатор запроса, на который нужно ответить.
+   * @param {boolean} options.ok True, если доставка по указанному адресу возможна и False,
+   * если есть какие-либо проблемы (например, если доставка по указанному адресу невозможна). По умолчанию True.
+   * @param {ShippingOption[]} [options.shipping_options] Требуется, если ok равно True.
+   * Сериализованный в формате JSON массив доступных вариантов доставки.
+   * @param {string} [options.error_message] Требуется, если ok имеет значение False.
+   * Сообщение об ошибке в удобочитаемой форме, объясняющее, почему невозможно выполнить заказ (например, «Извините, доставка по указанному вами адресу недоступна»). Telegram отобразит это сообщение пользователю.
+   * @return {boolean} В случае успеха возвращается True.
+   */
+  answerShippingQuery({
+    shipping_query_id,
+    ok = true,
+    shipping_options = "",
+    error_message = "",
+  }) {
+    if (!shipping_query_id)
+      this._miss_parameter(
+        "shipping_query_id уникальный идентификатор запроса, на который нужно ответить."
+      );
+
+    if (!ok && !shipping_options)
+      this._miss_parameter(
+        "shipping_options: Сериализованный в формате JSON массив доступных вариантов доставки."
+      );
+
+    if (!ok && !error_message)
+      this._miss_parameter(
+        "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
+      );
+
+    const query = {
+      shipping_query_id: String(shipping_query_id),
+      ok: Boolean(ok),
+      shipping_options: shipping_options ? String(shipping_options) : null,
+      error_message: error_message ? String(error_message) : null,
+    };
+
+    return this._request(Methods.ANSWER_SHIPPING_QUERY, query);
+  }
+
+  /**
+   * @metod answerPreCheckoutQuery
+   * @description Метод, для ответа запросы перед оформлением заказа.
+   * Как только пользователь подтвердит свои данные об оплате и доставке,
+   * Bot API отправляет окончательное подтверждение в виде обновления с полем pre_checkout_query.
+   * Примечание. Bot API должен получить ответ в течение 10 секунд после отправки запроса на предварительную проверку.
+   * @see https://core.telegram.org/bots/api#answerprecheckoutquery
+   * @typedef {Object} options
+   * @param {string} options.pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить.
+   * @param {boolean} options.ok True, если все в порядке (товар есть в наличии и т.д.) и бот готов приступить к оформлению заказа.
+   * Используйте False, если есть какие-либо проблемы. По умолчанию True.
+   * @param {string} [options.error_message] Требуется, если ok имеет значение False.
+   * Сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа (например, «Извините, кто-то только что купил последнюю из наших потрясающих черных футболок, пока вы заполняли платежные реквизиты. Пожалуйста, выберите другой цвет или одежда!»). Telegram отобразит это сообщение пользователю.
+   * @return {boolean} В случае успеха возвращается True.
+   */
+  answerPreCheckoutQuery({
+    pre_checkout_query_id,
+    ok = true,
+    error_message = "",
+  }) {
+    if (!pre_checkout_query_id)
+      this._miss_parameter(
+        "pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить."
+      );
+
+    if (!ok && !error_message)
+      this._miss_parameter(
+        "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
+      );
+
+    const query = {
+      pre_checkout_query_id: String(pre_checkout_query_id),
+      ok: Boolean(ok),
+      error_message: error_message ? String(error_message) : null,
+    };
+
+    return this._request(Methods.ANSWER_PRE_CHECKOUT_QUERY, query);
   }
 
   /**
@@ -2063,20 +2910,19 @@ class TGbot {
       msg_text: text,
     });
 
-    if (message && text)
-      var payload = {
-        chat_id: message.from.id,
-        text: String(text),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-        parse_mode: String(parse_mode),
-        entities: entities ? JSON.stringify(entities) : null,
-        disable_web_page_preview: Boolean(disable_web_page_preview),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: message.from.id,
+      text: String(text),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      parse_mode: String(parse_mode),
+      entities: entities ? JSON.stringify(entities) : null,
+      disable_web_page_preview: Boolean(disable_web_page_preview),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
-    return this._request(Methods.SEND_MESSAGE, payload);
+    return this._request(Methods.SEND_MESSAGE, query);
   }
 
   /**
@@ -2117,21 +2963,22 @@ class TGbot {
       msg_text: text,
     });
 
-    if (message && text)
-      var payload = {
-        chat_id: message.from.id,
-        text: String(text),
-        reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-        parse_mode: String(parse_mode),
-        entities: entities ? JSON.stringify(entities) : null,
-        disable_web_page_preview: Boolean(disable_web_page_preview),
-        disable_notification: Boolean(disable_notification),
-        protect_content: Boolean(protect_content),
-        reply_to_message_id: Number(message.message_id),
-        allow_sending_without_reply: Boolean(allow_sending_without_reply),
-      };
+    const query = {
+      chat_id: message.from.id,
+      text: String(text),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+      parse_mode: String(parse_mode),
+      entities: entities ? JSON.stringify(entities) : null,
+      disable_web_page_preview: Boolean(disable_web_page_preview),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+    };
 
-    return this._request(Methods.SEND_MESSAGE, payload);
+    return this._request(Methods.SEND_MESSAGE, query);
   }
 }
 

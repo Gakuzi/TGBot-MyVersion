@@ -290,7 +290,31 @@ function doPost(e) {
 **28.01.2023** Добавлен файл Types.js, автор [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br/>
 Копируйте содержимое из файла Types.js в свой проект.<br/>
 После добавления, вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
-![](types.png)
+![](types.png)<br/>
+
+### Добавлены новые методы:
+
+- exportChatInviteLink
+- createChatInviteLink
+- editchatinvitelink
+- sendAnimation
+- sendVoice
+- sendVideoNote
+- sendLocation
+- editMessageLiveLocation
+- stopMessageLiveLocation
+- sendVenue
+- sendContact
+- sendDice
+<!--
+
+#### Payments
+
+- sendInvoice https://core.telegram.org/bots/api#sendinvoice
+- createInvoiceLink
+- answerShippingQuery
+- answerPreCheckoutQuery
+  -->
 
 ## Методы библиотеки (официальные):
 
@@ -313,6 +337,9 @@ function doPost(e) {
 - [banChatMember](https://core.telegram.org/bots/api#banchatmember) метод, для блокировки пользователя в группе, супергруппе или канале.
 - [unbanChatMember](https://core.telegram.org/bots/api#unbanchatmember) метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
 - [setChatPermissions](https://core.telegram.org/bots/api#setchatpermissions) метод, для установки разрешений чата по умолчанию для всех участников.
+- [exportChatInviteLink](https://core.telegram.org/bots/api#exportchatinvitelink) метод, для создания новой основной ссылки-приглашения для чата.
+- [createChatInviteLink](https://core.telegram.org/bots/api#createchatinvitelink) метод, , чтобы создать дополнительную ссылку для приглашения в чат.
+- [editchatinvitelink](https://core.telegram.org/bots/api#editchatinvitelink) метод, для редактирования неосновной ссылки-приглашения, созданной ботом.
 - [restrictChatMember](https://core.telegram.org/bots/api#restrictchatmember) метод, чтобы ограничить пользователя в супергруппе.
 - [setChatPhoto](https://core.telegram.org/bots/api#setchatphoto) метод, чтобы установить новую фотографию профиля для чата.
 - [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) метод, чтобы удалить фотографию чата.
@@ -335,15 +362,26 @@ function doPost(e) {
 - [editMessageMedia](https://core.telegram.org/bots/api#editmessagemedia) метод, для редактирования анимации, аудио, документа, фото или видео сообщения.
 - [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup) метод, для редактирования разметки ответов сообщений.
 - [sendPhoto](https://core.telegram.org/bots/api#editmessagereplymarkup) метод, для отправки фотографий.
+- [sendAudio](https://core.telegram.org/bots/api#sendaudio) метод, для отправки отправки аудиофайлов.
 - [sendDocument](https://core.telegram.org/bots/api#senddocument) метод, для отправки общих файлов.
 - [sendVideo](https://core.telegram.org/bots/api#sendvideo) метод, для отправки видео.
-- [sendAudio](https://core.telegram.org/bots/api#sendaudio) метод, для отправки отправки аудиофайлов.
+- [sendAnimation](https://core.telegram.org/bots/api#sendanimation) метод, для отправки файлов анимации (видео GIF или H.264/MPEG-4 AVC без звука).
+- [sendVoice](https://core.telegram.org/bots/api#sendvoice) метод, для отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали файл как воспроизводимое голосовое сообщение.
+- [sendVideoNote](https://core.telegram.org/bots/api#sendvideonote) метод, для отправки закругленных видео MPEG4 продолжительностью до 1 минуты.
 - [sendMediaGroup](https://core.telegram.org/bots/api#sendmediagroup) метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
+- [sendLocation](https://core.telegram.org/bots/api#sendlocation) метод, для отправки точки на карте.
+- [editMessageLiveLocation](https://core.telegram.org/bots/api#editmessagelivelocation) метод, для редактирования сообщений о местоположении в реальном времени.
+- [stopMessageLiveLocation](https://core.telegram.org/bots/api#stopmessagelivelocation) метод, для остановки обновления сообщения о текущем местоположении до истечения срока действия live_period.
+- [sendVenue](https://core.telegram.org/bots/api#sendvenue) Метод, для отправки информации о месте проведения.
+- [sendContact](https://core.telegram.org/bots/api#sendcontact) метод, для отправки телефонных контактов.
+- [sendDice](https://core.telegram.org/bots/api#senddice) метод, для отправики анимированный эмодзи, который будет отображать случайное значение.
 - [sendPoll](https://core.telegram.org/bots/api#sendpoll) метод, для отправки отправки собственного опроса.
 - [stopPoll](https://core.telegram.org/bots/api#stoppoll) метод, для остановки опроса, отправленный ботом.
 - [sendSticker](https://core.telegram.org/bots/api#sendsticker) метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
 - [getStickerSet](https://core.telegram.org/bots/api#getstickerset) метод, для получения набора наклеек по названию набора.
 - [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
+- [answerShippingQuery](https://core.telegram.org/bots/api#answershippingquery) метод, для ответа на запросы о доставке.
+- [answerPreCheckoutQuery](https://core.telegram.org/bots/api#answerprecheckoutquery) метод, для ответа запросы перед оформлением заказа.
 - [getFile](https://core.telegram.org/bots/api#getfile) метод, для получения основной информации о файле и подготовки его к загрузке.
 
 ## Неофициальные методы:
