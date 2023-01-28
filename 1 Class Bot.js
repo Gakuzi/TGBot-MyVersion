@@ -1976,7 +1976,7 @@ class TGbot {
    * Когда срок действия ссылки истекает, можно запросить новую, снова вызвав getFile.
    * @see https://core.telegram.org/bots/api#getfile
    * @param {string} file_id идентификатор файла для получения информации.
-   * @return {File} В случае успеха возвращается объект File.
+   * @return {Bot.File} В случае успеха возвращается объект File.
    */
   getFile(file_id) {
     if (!file_id)
