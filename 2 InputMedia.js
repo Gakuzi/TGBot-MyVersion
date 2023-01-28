@@ -324,5 +324,4 @@ function inputMediaDocument({
     caption_entities,
     disable_content_type_detection,
   });
-}
-// inputMediaDocument = ({ media, caption }) => new InputMediaDocument({ media, caption });
+
