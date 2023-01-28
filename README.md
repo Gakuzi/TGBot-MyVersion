@@ -9,7 +9,7 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Guf-Hub/TGBot)
 ![Lines of code](https://img.shields.io/tokei/lines/github/Guf-Hub/TGBot)
 ![javascript](https://img.shields.io/badge/lang-javascript-red)
-![GAS](https://img.shields.io/badge/google-apps%20script-blue)
+![GAS](https://img.shields.io/badge/google-apps%20script-red)
 ![telegram](https://img.shields.io/badge/telegram-@nosaev_m-blue)
 
 ID библиотеки:
@@ -233,7 +233,8 @@ function doPost(e) {
 
     try {
       if (contents.message) {
-        /** Копируйте содержимое из файла Types.js в свой проект.
+        /**
+         * Копируйте содержимое из файла Types.js в свой проект.
          * Позволяет использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
         */
 
