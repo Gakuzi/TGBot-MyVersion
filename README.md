@@ -296,7 +296,7 @@ function doPost(e) {
 
 - exportChatInviteLink
 - createChatInviteLink
-- editchatinvitelink
+- editChatInviteLink
 - sendAnimation
 - sendVoice
 - sendVideoNote
