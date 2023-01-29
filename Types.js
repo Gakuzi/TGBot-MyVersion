@@ -796,6 +796,153 @@
 
 /**
  * @typedef {{
+ *   id: string;
+ *   from: User;
+ *   query: string;
+ *   offset: string;
+ *   chat_type?: string;
+ *   location?: Location;
+ * }} InlineQuery
+ */
+
+/**
+ * @typedef {{
+ *   type: string;
+ *   id: string;
+ *   title: string;
+ *   input_message_content: InputMessageContent;
+ *   reply_markup?: InlineKeyboardMarkup;
+ *   url?: string;
+ *   hide_url?: boolean;
+ *   description?:string;
+ *   thumb_url?: string;
+ *   thumb_width?: number;
+ *   thumb_height?: number;
+ * }} InlineQueryResultArticle
+ */
+
+/**
+ * @typedef {{
+ *   type: string;
+ *   id: string;
+ *   photo_url: string;
+ *   thumb_url: string;
+ *   photo_width?: number;
+ *   photo_height?: number;
+ *   title?: string;
+ *   description?:string;
+ *   caption?:string;
+ *   parse_mode?: string;
+ *   caption_entities?: MessageEntity[];
+ *   reply_markup?: InlineKeyboardMarkup;
+ *   input_message_content?: InputMessageContent;
+ * }} InlineQueryResultPhoto
+ */
+
+// InlineQueryResultCachedAudio
+// InlineQueryResultCachedDocument
+// InlineQueryResultCachedGif
+// InlineQueryResultCachedMpeg4Gif
+// InlineQueryResultCachedPhoto
+// InlineQueryResultCachedSticker
+// InlineQueryResultCachedVideo
+// InlineQueryResultCachedVoice
+// InlineQueryResultContact
+// InlineQueryResultGame
+// InlineQueryResultDocument
+// InlineQueryResultGif
+// InlineQueryResultLocation
+// InlineQueryResultMpeg4Gif
+// InlineQueryResultAudio
+// InlineQueryResultVenue
+// InlineQueryResultVideo
+// InlineQueryResultVoice
+
+/**
+ * @typedef {{
+ *   message_text: string;
+ *   parse_mode?: string;
+ *   entities?: MessageEntity[];
+ *   disable_web_page_preview?: boolean;
+ * }} InputTextMessageContent
+ */
+
+/**
+ * @typedef {{
+ *   latitude: number;
+ *   longitude: number;
+ *   horizontal_accuracy?: number;
+ *   live_period?: number;
+ *   heading?: number;
+ *   proximity_alert_radius?: number;
+ * }} InputLocationMessageContent
+ */
+
+/**
+ * @typedef {{
+ *   latitude: number;
+ *   longitude: number;
+ *   title: string;
+ *   address: string;
+ *   foursquare_id?: string;
+ *   foursquare_type?: string;
+ *   google_place_id?: string;
+ *   google_place_type?: string;
+ * }} InputVenueMessageContent
+ */
+
+/**
+ * @typedef {{
+ *   phone_number: string;
+ *   first_name: string;
+ *   last_name?: string;
+ *   vcard?: string;
+ * }} InputContactMessageContent
+ */
+
+/**
+ * @typedef {{
+ *   title: string;
+ *   description: string;
+ *   payload: string;
+ *   provider_token: string;
+ *   currency: string;
+ *   prices: LabeledPrice[];
+ *   max_tip_amount?: number;
+ *   suggested_tip_amounts ?: number[];
+ *   provider_data?: string;
+ *   photo_url?: string;
+ *   photo_size?: number;
+ *   photo_width?: number;
+ *   photo_height?: number;
+ *   need_name?:	boolean;
+ *   need_phone_number?:	boolean;
+ *   need_email?:	boolean;
+ *   need_shipping_address?:	boolean;
+ *   send_phone_number_to_provider?:	boolean;
+ *   send_email_to_provider?:	boolean;
+ *   is_flexible?:boolean;
+ * }} InputInvoiceMessageContent
+ */
+
+/**
+ * @typedef {{
+ *   result_id: string;
+ *   from: User;
+ *   location: Location;
+ *   inline_message_id?: string;
+ *   query: string;
+ * }} ChosenInlineResult
+ */
+
+/**
+ * @typedef {{
+ *   inline_message_id?: string;
+ * }} SentWebAppMessage
+ */
+
+/**
+ * @typedef {{
  *   label: string;
  *   amount: number;
  * }} LabeledPrice
@@ -871,4 +1018,43 @@
  *   shipping_option_id?: string;
  *   order_info?: OrderInfo;
  * }} PreCheckoutQuery
+ */
+
+/**
+ * @typedef {{
+ *   file_id: string;
+ *   file_unique_id: string;
+ *   type: string;
+ *   width: number;
+ *   height: number;
+ *   is_animated: boolean;
+ *   is_video: boolean;
+ *   thumb?: PhotoSize;
+ *   emoji?: string;
+ *   set_name?: string;
+ *   premium_animation?: Bot.File;
+ *   mask_position?: MaskPosition;
+ *   custom_emoji_id?: string;
+ *   file_size?: number;
+ * }} StickerSet
+ */
+
+/**
+ * @typedef {{
+ *   name: string;
+ *   title: string;
+ *   sticker_type: string;
+ *   is_animated: boolean;
+ *   stickers: Sticker[];
+ *   thumb?: PhotoSize;
+ * }} StickerSet
+ */
+
+/**
+ * @typedef {{
+ *   point: string;
+ *   x_shift: number;
+ *   y_shift: number;
+ *   scale: number;
+ * }} MaskPosition
  */

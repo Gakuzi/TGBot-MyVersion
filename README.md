@@ -380,6 +380,7 @@ function doPost(e) {
 - [sendSticker](https://core.telegram.org/bots/api#sendsticker) метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
 - [getStickerSet](https://core.telegram.org/bots/api#getstickerset) метод, для получения набора наклеек по названию набора.
 - [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
+- [sendInvoice](https://core.telegram.org/bots/api#sendinvoice) метод, для отправки счетов.
 - [answerShippingQuery](https://core.telegram.org/bots/api#answershippingquery) метод, для ответа на запросы о доставке.
 - [answerPreCheckoutQuery](https://core.telegram.org/bots/api#answerprecheckoutquery) метод, для ответа запросы перед оформлением заказа.
 - [getFile](https://core.telegram.org/bots/api#getfile) метод, для получения основной информации о файле и подготовки его к загрузке.

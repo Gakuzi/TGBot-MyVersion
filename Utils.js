@@ -68,6 +68,10 @@ const Methods = {
   SET_MY_COMMANDS: "setMyCommands", // +
   DELETE_MY_COMMANDS: "deleteMyCommands", // +
   GET_MY_COMMANDS: "getMyCommands", // +
+  SET_CHAT_MENU_BUTTON: "setChatMenuButton", // +
+  GET_CHAT_MENU_BUTTON: "getChatMenuButton", // +
+  SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
+  GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +
 
   // Updating messages
   EDIT_MESSAGE_TEXT: "editMessageText", // +
@@ -90,13 +94,7 @@ const Methods = {
 
   // Inline mode
   ANSWER_INLINE_QUERY: "answerInlineQuery", // +
-
-  ANSWER_WEB_APP_QUERY: "answerWebAppQuery",
-  SET_CHAT_MENU_BUTTON: "setChatMenuButton", // +
-  GET_CHAT_MENU_BUTTON: "getChatMenuButton", // +
-
-  SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
-  GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "getMyDefaultAdministratorRights", // +
+  ANSWER_WEB_APP_QUERY: "answerWebAppQuery", // +
 
   // Payments
   SEND_INVOICE: "sendInvoice", // !!!!!!!!!!!!!!

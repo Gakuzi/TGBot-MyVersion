@@ -3,7 +3,7 @@
  * @author Mikhail Nosaev <m.nosaev@gmail.com, https://t.me/nosaev_m> разработка Google таблиц и GAS скриптов.
  * @description Класс для работы с API telegram.
  * @see https://core.telegram.org/bots/api
- * @license Open Source GPL (при использовании требуется указывать имя автора).
+ * @license MIT
  */
 class TGbot {
   /**
@@ -245,17 +245,14 @@ class TGbot {
     allowed_updates = [],
     drop_pending_updates = false,
   }) {
-    if (this._botToken && url)
-      var query = {
-        url: url,
-        certificate: certificate ? JSON.stringify(certificate) : null,
-        ip_address: ip_address ? String(ip_address) : null,
-        max_connections: Number(max_connections),
-        allowed_updates: allowed_updates
-          ? JSON.stringify(allowed_updates)
-          : null,
-        drop_pending_updates: Boolean(drop_pending_updates),
-      };
+    const query = {
+      url: url,
+      certificate: certificate ? JSON.stringify(certificate) : null,
+      ip_address: ip_address ? String(ip_address) : null,
+      max_connections: Number(max_connections),
+      allowed_updates: allowed_updates ? JSON.stringify(allowed_updates) : null,
+      drop_pending_updates: Boolean(drop_pending_updates),
+    };
 
     return console.log(
       JSON.stringify(this._request(Methods.SET_WEBHOOK, query), null, 5)
@@ -270,10 +267,9 @@ class TGbot {
    * @return {boolean} возвращает True в случае успеха.
    */
   deleteWebhook(drop_pending_updates = false) {
-    if (this._botToken && this._webAppUrl)
-      var query = {
-        drop_pending_updates: Boolean(drop_pending_updates),
-      };
+    const query = {
+      drop_pending_updates: Boolean(drop_pending_updates),
+    };
 
     return console.log(
       JSON.stringify(this._request(Methods.DELETE_WEBHOOK, query), null, 5)
@@ -287,17 +283,16 @@ class TGbot {
    * @return {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
   getWebhookInfo() {
-    if (this._botToken && this._webAppUrl)
-      var query = {
-        url: String(this._webAppUrl),
-      };
+    const query = {
+      url: String(this._webAppUrl),
+    };
 
     return console.log(
       JSON.stringify(this._request(Methods.GET_WEBHOOK_INFO, query), null, 5)
     );
   }
 
-  // Methods
+  // Available methods
 
   /**
    * @metod getMe
@@ -2522,7 +2517,7 @@ class TGbot {
    * @return {boolean} возвращает True в случае успеха.
    */
   answerCallbackQuery(
-    callback_query_id = "",
+    callback_query_id,
     text = "",
     show_alert = false,
     url = "",
@@ -2569,8 +2564,8 @@ class TGbot {
    * @return {boolean} В случае успеха возвращается True.
    */
   answerInlineQuery({
-    inline_query_id = "",
-    results = "",
+    inline_query_id,
+    results,
     cache_time = "",
     is_personal = true,
     next_offset = "",
@@ -2581,10 +2576,14 @@ class TGbot {
       this._miss_parameter(
         "inline_query_id уникальный идентификатор ответа на запрос."
       );
+    if (!results)
+      this._miss_parameter(
+        "results InlineQueryResult[] сериализованный в формате JSON массив результатов для встроенного запроса."
+      );
 
     const query = {
       inline_query_id: String(inline_query_id),
-      results: results ? JSON.stringify(results) : null,
+      results: JSON.stringify(results),
       cache_time: cache_time ? Number(cache_time) : null,
       is_personal: Boolean(is_personal),
       next_offset: next_offset ? String(next_offset) : null,
@@ -2597,6 +2596,34 @@ class TGbot {
     return this._request(Methods.ANSWER_INLINE_QUERY, query);
   }
 
+  /**
+   * @metod answerWebAppQuery
+   * @description Метод, чтобы установить результат взаимодействия с веб-приложением и отправить
+   * соответствующее сообщение от имени пользователя в чат, из которого исходит запрос.
+   * @see https://core.telegram.org/bots/api#answerwebappquery
+   * @typedef {Object} options
+   * @param {string} options.web_app_query_id идентификатор запроса, на который нужно ответить.
+   * @param {InlineQueryResult[]} options.results cериализованный объект JSON, описывающий отправляемое сообщение.
+   * @return {SentWebAppMessage} В случае успеха возвращается объект SentWebAppMessage.
+   */
+  answerWebAppQuery({ web_app_query_id, results }) {
+    if (!web_app_query_id)
+      this._miss_parameter(
+        "web_app_query_id идентификатор запроса, на который нужно ответить."
+      );
+    if (!results)
+      this._miss_parameter(
+        "results InlineQueryResult[] cериализованный объект JSON, описывающий отправляемое сообщение."
+      );
+
+    const query = {
+      web_app_query_id: String(web_app_query_id),
+      results: JSON.stringify(results),
+    };
+
+    return this._request(Methods.ANSWER_WEB_APP_QUERY, query);
+  }
+
   // Stickers
 
   /**
@@ -2605,20 +2632,22 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendsticker
    * @typedef {Object} options
    * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {(InputFile|string)} options.sticker наклейка для отправки.
    * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
    * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить файл .WEBP из Интернета, или загрузите новый, используя multipart/form-data.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
    * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
    * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
    * @param {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   sendSticker({
-    chat_id = "",
-    sticker = "",
+    chat_id,
+    message_thread_id = "",
+    sticker,
     disable_notification = false,
     protect_content = false,
     reply_to_message_id = "",
@@ -2634,14 +2663,15 @@ class TGbot {
 
     const query = {
       chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       sticker: sticker,
-      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       disable_notification: Boolean(disable_notification),
       protect_content: Boolean(protect_content),
       reply_to_message_id: reply_to_message_id
         ? Number(reply_to_message_id)
         : null,
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
     if (contentType)
@@ -2668,65 +2698,107 @@ class TGbot {
 
   // Payments
 
-  // /**
-  //  * @metod sendInvoice
-  //  * @description Метод для отправки счетов.
-  //  * @see https://core.telegram.org/bots/api#sendinvoice
-  //  * @typedef {Object} options
-  //  * @param {string} options.shipping_query_id уникальный идентификатор запроса, на который нужно ответить.
-  //  * @param {boolean} options.ok True, если доставка по указанному адресу возможна и False,
-  //  * если есть какие-либо проблемы (например, если доставка по указанному адресу невозможна). По умолчанию True.
-  //  * @param {ShippingOption[]} [options.shipping_options] Требуется, если ok равно True.
-  //  * Сериализованный в формате JSON массив доступных вариантов доставки.
-  //  * @param {string} [options.error_message] Требуется, если ok имеет значение False.
-  //  * Сообщение об ошибке в удобочитаемой форме, объясняющее, почему невозможно выполнить заказ (например, «Извините, доставка по указанному вами адресу недоступна»). Telegram отобразит это сообщение пользователю.
-  //  * @return {Message} В случае успеха возвращается отправленное сообщение.
-  //  */
-  // sendInvoice({
-  //   chat_id,
-  //   message_thread_id = "",
-  //   title,
-  //   description,
-  //   payload,
-  //   provider_token,
-  //   currency,
-  //   prices,
-  //   max_tip_amount = "",
-  //   suggested_tip_amounts = "",
-  //   start_parameter,
-  //   provider_data = "",
-  //   photo_url = "",
-  //   photo_size = "",
-  //   photo_width = "",
-  //   photo_height = "",
-  //   need_name = false,
-  //   need_phone_number = false,
-  //   need_email = false,
-  //   need_shipping_address = false,
-  //   send_phone_number_to_provider = false,
-  //   send_email_to_provider = false,
-  //   is_flexible = false,
-  //   disable_notification = false,
-  //   protect_content = false,
-  //   reply_to_message_id = "",
-  //   allow_sending_without_reply = false,
-  //   reply_markup = "",
-  // }) {
-  //   if (!shipping_query_id)
-  //     this._miss_parameter(
-  //       "shipping_query_id уникальный идентификатор запроса, на который нужно ответить."
-  //     );
+  /**
+   * @metod sendInvoice
+   * @description Метод для отправки счетов.
+   * @see https://core.telegram.org/bots/api#sendinvoice
+   * @typedef {Object} options
+   * @param {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
+   * @param {string} options.title
+   * @param {string} options.description
+   * @param {string} options.payload
+   * @param {string} options.provider_token
+   * @param {string} options.currency
+   * @param {number} options.max_tip_amount
+   * @param {number[]} options.suggested_tip_amounts
+   * @param {string} options.start_parameter
+   * @param {string} options.provider_data
+   * @param {string} options.photo_url
+   * @param {number} options.photo_size
+   * @param {number} options.photo_width
+   * @param {number} options.photo_height
+   * @param {boolean} options.need_name
+   * @param {boolean} options.need_phone_number
+   * @param {boolean} options.need_email
+   * @param {boolean} options.need_shipping_address
+   * @param {boolean} options.send_phone_number_to_provider
+   * @param {boolean} options.send_email_to_provider
+   * @param {boolean} options.is_flexible
+   * @param {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
+   * @param {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
+   * @param {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
+   * @param {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
+   * @return {Message} В случае успеха возвращается отправленное сообщение.
+   */
+  sendInvoice({
+    chat_id,
+    message_thread_id = "",
+    title,
+    description,
+    payload,
+    provider_token,
+    currency,
+    prices,
+    max_tip_amount = "",
+    suggested_tip_amounts = "",
+    start_parameter = "",
+    provider_data = "",
+    photo_url = "",
+    photo_size = "",
+    photo_width = "",
+    photo_height = "",
+    need_name = false,
+    need_phone_number = false,
+    need_email = false,
+    need_shipping_address = false,
+    send_phone_number_to_provider = false,
+    send_email_to_provider = false,
+    is_flexible = false,
+    disable_notification = false,
+    protect_content = false,
+    reply_to_message_id = "",
+    allow_sending_without_reply = false,
+    reply_markup = "",
+  }) {
+    var query = {
+      chat_id: String(chat_id),
+      message_thread_id: message_thread_id ? message_thread_id : null,
+      title: String(title),
+      description: String(description),
+      payload: String(payload),
+      provider_token: String(provider_token),
+      currency: String(currency),
+      prices: String(prices),
+      max_tip_amount: max_tip_amount ? Number(max_tip_amount) : null,
+      suggested_tip_amounts: suggested_tip_amounts
+        ? suggested_tip_amounts
+        : null,
+      start_parameter: start_parameter ? String(start_parameter) : null,
+      provider_data: provider_data ? String(provider_data) : null,
+      photo_url: photo_url ? String(photo_url) : null,
+      photo_size: photo_size ? Number(photo_size) : null,
+      photo_width: photo_width ? Number(photo_width) : null,
+      photo_height: photo_height ? Number(photo_height) : null,
+      need_name: Boolean(need_name),
+      need_phone_number: Boolean(need_phone_number),
+      need_email: Boolean(need_email),
+      need_shipping_address: Boolean(need_shipping_address),
+      send_phone_number_to_provider: Boolean(send_phone_number_to_provider),
+      send_email_to_provider: Boolean(send_email_to_provider),
+      is_flexible: Boolean(is_flexible),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
 
-  //   if (shipping_query_id)
-  //     var query = {
-  //       shipping_query_id: String(shipping_query_id),
-  //       ok: Boolean(ok),
-  //       shipping_options: shipping_options ? String(shipping_options) : null,
-  //       error_message: error_message ? String(error_message) : null,
-  //     };
-
-  //   return this._request(Methods.SEND_INVOICE, query);
-  // }
+    return this._request(Methods.SEND_INVOICE, query);
+  }
 
   /**
    * @metod answerShippingQuery
