@@ -1,3 +1,5 @@
+// var logRequest = false;
+
 /**
  * @class TGbot c version 28 через именованные аргументы в {options}.
  * @author Mikhail Nosaev <m.nosaev@gmail.com, https://t.me/nosaev_m> разработка Google таблиц и GAS скриптов.
@@ -58,44 +60,34 @@ class TGbot {
    * @method _request
    * @description Метод, для отправки запроса к API.
    * @param {string} method метод по которому делается запрос.
-   * @param {string} query дополнительные параметры запроса.
+   * @param {string} payload дополнительные параметры запроса.
    * @param {string} [options.contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data"
    * @return {JSON} В случае успеха возвращается объект JSON.
    */
-  _request(method, query, contentType = "application/json") {
-    if (!method)
-      this._miss_parameter(
-        "method, не указан метод по которому делается запрос."
-      );
+  _request(method, payload, contentType = "application/json") {
+    if (!method) this._miss_parameter("method, не указан метод для запроса.");
 
     const fullUrl = `${this._apiTelegramUrl}${method}`;
 
     const options = {
-      method: "post",
+      method: payload ? "post" : "get",
       muteHttpExceptions: true,
       followRedirects: true,
       validateHttpsCertificates: true,
     };
 
-    const removeEmpty = (obj) => {
-      Object.keys(obj).forEach(
-        (key) =>
-          (obj[key] && typeof obj[key] === "object" && removeEmpty(obj[key])) ||
-          ((obj[key] == null || obj[key] === undefined) && delete obj[key])
-      );
-      return obj;
-    };
-
-    if (query) {
-      removeEmpty(query);
+    if (payload) {
+      payload = helper.removeEmpty(payload);
+      const len = Object.entries(payload).length;
       if (contentType === "multipart/form-data") {
         delete options.contentType;
         options["Content-Type"] = contentType;
-        options.payload = query;
+        options.payload = payload;
       } else {
         options["contentType"] = contentType;
-        options.payload = JSON.stringify(query);
+        len ? (options.payload = JSON.stringify(payload)) : null;
       }
+      options.method = len ? "post" : "get";
     }
 
     if (this._logRequest)
@@ -193,34 +185,6 @@ class TGbot {
       );
   }
 
-  /**
-   * @private
-   * @method _fixedEncodeURIComponent
-   * @description Метод, кодирующий компонент универсального идентификатора ресурса (URI)
-   * @param {string} str строка для кодировки
-   * @return {string} закодированная строка
-   */
-  _fixedEncodeURIComponent(str) {
-    return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
-      return "%" + c.charCodeAt(0).toString(16);
-    });
-  }
-
-  /**
-   * @private
-   * @method _log(message)
-   * @description Печть лога сообщения
-   * @param {string} message
-   */
-  _log(message) {
-    return (
-      "string" == typeof message
-        ? console.log(message)
-        : console.log(JSON.stringify(message, null, 7)),
-      !1
-    );
-  }
-
   // Getting updates
 
   /**
@@ -245,6 +209,9 @@ class TGbot {
     allowed_updates = [],
     drop_pending_updates = false,
   }) {
+    // const _ = arguments[0];
+    // _.url = url;
+
     const query = {
       url: url,
       certificate: certificate ? JSON.stringify(certificate) : null,
@@ -254,7 +221,7 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return this._log(this._request(Methods.SET_WEBHOOK, query));
+    return helper.log(this._request(Methods.SET_WEBHOOK, query));
   }
 
   /**
@@ -269,7 +236,7 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return this._log(this._request(Methods.DELETE_WEBHOOK, query));
+    return helper.log(this._request(Methods.DELETE_WEBHOOK, query));
   }
 
   /**
@@ -283,7 +250,7 @@ class TGbot {
       url: String(this._webAppUrl),
     };
 
-    return this._log(this._request(Methods.GET_WEBHOOK_INFO, query));
+    return helper.log(this._request(Methods.GET_WEBHOOK_INFO, query));
   }
 
   // Available methods

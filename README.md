@@ -394,7 +394,7 @@ function doPost(e) {
 
 ## Copyright & License
 
-MIT License
+[MIT License](src/LICENSE)
 
 Copyright (©) 2022 by [Mikhail Nosaev](https://github.com/Guf-Hub)
 
