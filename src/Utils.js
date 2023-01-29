@@ -112,6 +112,38 @@ const Methods = {
 };
 
 /**
+ * @typedef {{
+ *   botToken: string;
+ *   webAppUrl?: string;
+ *   logRequest?: boolean;
+ * }} Client
+ */
+
+const BLOB_FIELDS = [
+  "thumb",
+  "photo",
+  "audio",
+  "document",
+  "video",
+  "animation",
+  "video_note",
+  "sticker",
+  "png_sticker",
+  "tgs_sticker",
+  "certificate",
+];
+
+const DEFAULT_EXTENSIONS = {
+  audio: "mp3",
+  photo: "jpg",
+  sticker: "webp",
+  video: "mp4",
+  animation: "mp4",
+  video_note: "mp4",
+  voice: "ogg",
+};
+
+/**
  * Расшифровка кодов ответа (состояния) HTTP.
  * @see https://developer.mozilla.org/ru/docs/Web/HTTP/Status
  * @enum {string}

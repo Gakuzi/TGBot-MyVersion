@@ -254,9 +254,7 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.SET_WEBHOOK, query), null, 5)
-    );
+    return this._log(this._request(Methods.SET_WEBHOOK, query));
   }
 
   /**
@@ -271,9 +269,7 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.DELETE_WEBHOOK, query), null, 5)
-    );
+    return this._log(this._request(Methods.DELETE_WEBHOOK, query));
   }
 
   /**
@@ -287,9 +283,7 @@ class TGbot {
       url: String(this._webAppUrl),
     };
 
-    return console.log(
-      JSON.stringify(this._request(Methods.GET_WEBHOOK_INFO, query), null, 5)
-    );
+    return this._log(this._request(Methods.GET_WEBHOOK_INFO, query));
   }
 
   // Available methods
@@ -3064,7 +3058,7 @@ class TGbot {
  * @param {string} botToken токен Telegram бота от \@BotFather.
  * @param {string} webAppUrl ссылка на WebApp Google, для работы с ответами doGet(e).
  * @param {boolean} logRequest показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
- * @return {TGbot} Экземпляр class TGbot.
+ * @return {TGbot} экземпляр class TGbot.
  */
 function bot(botToken, webAppUrl, logRequest) {
   return new TGbot({
