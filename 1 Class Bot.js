@@ -2951,6 +2951,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendmessage
    * @typedef {Object} options
    * @param {Message} options.message полученное сообщение.
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {string} options.text текст сообщения, 1-4096 символов.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
@@ -2965,6 +2966,7 @@ class TGbot {
    */
   answerMessage({
     message,
+    message_thread_id = "",
     text,
     parse_mode = "HTML",
     entities = "",
@@ -2985,6 +2987,7 @@ class TGbot {
 
     const query = {
       chat_id: message.from.id,
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       text: String(text),
       parse_mode: String(parse_mode),
       entities: entities ? JSON.stringify(entities) : null,
@@ -3006,6 +3009,7 @@ class TGbot {
    * @see https://core.telegram.org/bots/api#sendmessage
    * @typedef {Object} options
    * @param {Message} options.message полученное сообщение.
+   * @param {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
    * @param {string} options.text текст сообщения, 1-4096 символов.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
@@ -3018,6 +3022,7 @@ class TGbot {
    */
   replyMessage({
     message,
+    message_thread_id = "",
     text,
     parse_mode = "HTML",
     entities = "",
@@ -3039,6 +3044,8 @@ class TGbot {
     const query = {
       chat_id: message.from.id,
       text: String(text),
+      reply_to_message_id: Number(message.message_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       parse_mode: String(parse_mode),
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
