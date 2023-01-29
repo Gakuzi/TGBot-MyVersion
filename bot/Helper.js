@@ -22,6 +22,30 @@ class Helper {
   }
 
   /**
+   * build query из array
+   */
+  buildQuery(array) {
+    var query = {};
+    if (array) {
+      for (var index in array) {
+        if (array[index]) {
+          var value = array[index];
+          if (index == "extras") {
+            for (var ix in value) {
+              if (value[ix]) {
+                query[ix] = value[ix];
+              }
+            }
+          } else {
+            query[index] = value;
+          }
+        }
+      }
+    }
+    return query;
+  }
+
+  /**
    * @method fixedEncodeURIComponent
    * @description Метод, кодирующий компонент универсального идентификатора ресурса (URI)
    * @param {string} str строка для кодировки
