@@ -97,7 +97,7 @@ const Methods = {
   ANSWER_WEB_APP_QUERY: "answerWebAppQuery", // +
 
   // Payments
-  SEND_INVOICE: "sendInvoice", // !!!!!!!!!!!!!!
+  SEND_INVOICE: "sendInvoice", // + !!
   CREATE_INVOICE_LINK: "createInvoiceLink", // !!!!!!!!!!!!!!
   ANSWER_SHIPPING_QUERY: "answerShippingQuery", // +
   ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery", // +
