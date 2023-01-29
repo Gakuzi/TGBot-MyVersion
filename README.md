@@ -12,7 +12,7 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 
 ID библиотеки:
 **1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
-Актуальная версия: 69 от 28 янв., 17:34
+Актуальная версия: 71 от 29 янв., 03:54
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
