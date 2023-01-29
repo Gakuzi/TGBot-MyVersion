@@ -91,10 +91,10 @@ class TGbot {
       if (contentType === "multipart/form-data") {
         delete options.contentType;
         options["Content-Type"] = contentType;
-        options.query = query;
+        options.payload = query;
       } else {
         options["contentType"] = contentType;
-        options.query = JSON.stringify(query);
+        options.payload = JSON.stringify(query);
       }
     }
 
@@ -1090,9 +1090,9 @@ class TGbot {
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   sendMessage({
-    chat_id = "",
+    chat_id,
     message_thread_id = "",
-    text = "",
+    text,
     parse_mode = "HTML",
     entities = "",
     disable_web_page_preview = false,
@@ -2950,30 +2950,31 @@ class TGbot {
    * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
    * @typedef {Object} options
-   * @param {JSON} options.message полученное сообщение.
+   * @param {Message} options.message полученное сообщение.
    * @param {string} options.text текст сообщения, 1-4096 символов.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} options.disable_web_page_preview отключить предварительный просмотр ссылок в этом сообщении.
    * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
    * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {number} options.reply_to_message_id если сообщение является ответом, ID исходного сообщения.
-   * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не
+   * найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   answerMessage({
-    message = "",
-    text = "",
-    reply_markup = "",
+    message,
+    text,
     parse_mode = "HTML",
     entities = "",
     disable_web_page_preview = false,
     disable_notification = false,
     protect_content = false,
     allow_sending_without_reply = false,
+    reply_markup = "",
   }) {
-    if (!message) this._miss_parameter("message");
+    if (!message) this._miss_parameter("Message");
     if (!text)
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
@@ -2985,13 +2986,13 @@ class TGbot {
     const query = {
       chat_id: message.from.id,
       text: String(text),
-      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       parse_mode: String(parse_mode),
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
       disable_notification: Boolean(disable_notification),
       protect_content: Boolean(protect_content),
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
     return this._request(Methods.SEND_MESSAGE, query);
@@ -3004,29 +3005,29 @@ class TGbot {
    * Форматы @see https://core.telegram.org/bots/api#formatting-options
    * @see https://core.telegram.org/bots/api#sendmessage
    * @typedef {Object} options
-   * @param {JSON} options.message полученное сообщение.
+   * @param {Message} options.message полученное сообщение.
    * @param {string} options.text текст сообщения, 1-4096 символов.
-   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @param {string} options.parse_mode режим разбора сущностей "HTML" | "MarkdownV2".
    * @param {MessageEntity[]} options.entities JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @param {boolean} options.disable_web_page_preview отключить предварительный просмотр ссылок в этом сообщении.
    * @param {boolean} options.disable_notification True, пользователи получат уведомление без звука.
    * @param {boolean} options.protect_content защищает содержимое отправленного сообщения от пересылки и сохранения.
    * @param {boolean} options.allow_sending_without_reply True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
+   * @param {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
    * @return {Message} В случае успеха возвращается Message отправленное сообщение.
    */
   replyMessage({
-    message = "",
-    text = "",
-    reply_markup = "",
+    message,
+    text,
     parse_mode = "HTML",
     entities = "",
     disable_web_page_preview = false,
     disable_notification = false,
     protect_content = false,
     allow_sending_without_reply = false,
+    reply_markup = "",
   }) {
-    if (!message) this._miss_parameter("message");
+    if (!message) this._miss_parameter("Message");
     if (!text)
       this._miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
@@ -3038,16 +3039,13 @@ class TGbot {
     const query = {
       chat_id: message.from.id,
       text: String(text),
-      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       parse_mode: String(parse_mode),
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
       disable_notification: Boolean(disable_notification),
       protect_content: Boolean(protect_content),
-      reply_to_message_id: reply_to_message_id
-        ? Number(reply_to_message_id)
-        : null,
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
     return this._request(Methods.SEND_MESSAGE, query);
