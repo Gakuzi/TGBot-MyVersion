@@ -46,6 +46,14 @@ class Helper {
   }
 
   /**
+   * build query из object
+   */
+  buildObjectQuery(a, b = {}) {
+    // { ...a, ...b };
+    return Object.assign(a, b);
+  }
+
+  /**
    * @method fixedEncodeURIComponent
    * @description Метод, кодирующий компонент универсального идентификатора ресурса (URI)
    * @param {string} str строка для кодировки
