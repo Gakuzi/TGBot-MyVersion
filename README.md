@@ -1,8 +1,13 @@
 # TGbot
 
 <!-- HEADER START -->
-<p style='text-align: center;'>
-  <img src="src/tg.webp" width="650" height="350">
+<p style='
+    display: block; 
+    text-align: center; 
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 5px;'>
+  <img src="src/tg.webp">
 </p>
 <hr />
 <!-- HEADER END -->
