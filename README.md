@@ -1,5 +1,5 @@
 <!-- HEADER START -->
-<p style=' text-align: right'>
+<p>
 
 # TGbot <img src="src/tg.webp" width="30" height="30">
 
