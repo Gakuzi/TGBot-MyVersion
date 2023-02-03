@@ -7,7 +7,7 @@
     font-style: italic;
     margin-top: 0;
     margin-bottom: 5px;'>
-  <img src="src/tg.webp">
+  <img src="src/tg.webp" width="720" height="380">
 </p>
 <hr />
 <!-- HEADER END -->
