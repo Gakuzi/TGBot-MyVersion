@@ -4,10 +4,9 @@
 <p style='
     display: block; 
     text-align: center; 
-    font-style: italic;
-    margin-top: 0;
-    margin-bottom: 5px;'>
-  <img src="src/tg.webp" width="720" height="380">
+    margin-top: 0px;
+    margin-bottom: 0px;'>
+  <img src="src/tg.webp"  width="250" height="250">
 </p>
 <hr />
 <!-- HEADER END -->
