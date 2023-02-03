@@ -1,7 +1,7 @@
 <!-- HEADER START -->
 <p>
 
-# TGbot <img src="src/tg.webp" width="30" height="30">
+# TGbot <a href="https://core.telegram.org/bots/api"><img src="src/tg.webp" width="30" height="30"></a>
 
 </p>
 <!-- HEADER END -->
