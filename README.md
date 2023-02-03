@@ -21,6 +21,7 @@ ID библиотеки:
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
+[Пример бота](https://t.me/guf_hub_test_bot)<br/>
 [Баги отправлять сюда](https://t.me/nosaev_m)<br/>
 Канал автора [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
 Телеграмм канал про [Google Таблицы](https://t.me/google_sheets)<br/>
