@@ -1,14 +1,12 @@
-# TGbot
-
 <!-- HEADER START -->
-<p style='
-    display: block; 
-    text-align: center; 
+<p style=' text-align: left;
     margin-top: 0px;
     margin-bottom: 0px;'>
-  <img src="src/tg.webp"  width="250" height="250">
+
+# TGbot <img src="src/tg.webp"  width="30" height="30">
+
 </p>
-<hr />
+
 <!-- HEADER END -->
 
 Google Apps Script Library для работы с [API Telegram](https://core.telegram.org/bots/api).<br/>
