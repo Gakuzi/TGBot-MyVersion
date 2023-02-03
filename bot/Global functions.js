@@ -250,11 +250,21 @@ function convertCsvToSpreadsheet(f, delemiter = ";") {
 /**
  * Создает лист, если он отсутствует в книге и возвращет его
  * @param {string} name название листа
- * @param {string} color цвет ярлыка
- * @return {SpreadsheetApp.Sheet} sheet
+ * @param {string} [color] цвет ярлыка
+ * @param {SpreadsheetApp.ActiveSpreadsheet} [spreadsheet] книга, если используется не текущая
+ * @return {SpreadsheetApp.ActiveSpreadsheet.Sheet} sheet
  */
-function setSheet(name, color = null) {
-  return ss.getSheetByName(name) || ss.insertSheet(name).setTabColor(color);
+function setSheet(name, color, spreadsheet) {
+  if (spreadsheet)
+    return (
+      spreadsheet.getSheetByName(name) ||
+      spreadsheet.insertSheet(name).setTabColor(color ? color : null)
+    );
+  else
+    return (
+      ss.getSheetByName(name) ||
+      ss.insertSheet(name).setTabColor(color ? color : null)
+    );
 }
 
 /**

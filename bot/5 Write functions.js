@@ -38,7 +38,7 @@ user_id: ${message.contact?.user_id}
   const Bot = new TGbot({ botToken: botToken });
 
   adminIds.map((id) =>
-    Bot.sendMessage({
+   Bot.sendMessage({
       chat_id: id,
       text: msg,
       reply_markup: KEYBOARD_AUTHORIZATION,
