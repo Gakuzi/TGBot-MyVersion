@@ -1,7 +1,5 @@
 <!-- HEADER START -->
-<p style=' text-align: right;
-    margin-top: 0px;
-    margin-bottom: 0px;'>
+<p style=' text-align: right'>
 
 # TGbot <img src="src/tg.webp" width="30" height="30">
 
@@ -23,7 +21,6 @@ ID библиотеки:
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
-[Пример бота](https://t.me/guf_hub_test_bot)<br/>
 [Баги отправлять сюда](https://t.me/nosaev_m)<br/>
 Канал автора [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
 Телеграмм канал про [Google Таблицы](https://t.me/google_sheets)<br/>
