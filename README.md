@@ -16,8 +16,12 @@ Google Apps Script Library для работы с [API Telegram](https://core.te
 ![GAS](https://img.shields.io/badge/google-apps%20script-red)
 
 ID библиотеки:
-**1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg**<br/>
-Актуальная версия: 75 от 3 февр., 20:24
+
+```
+1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg
+```
+
+**Актуальная версия**: 75 от 3 февр., 20:24
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
