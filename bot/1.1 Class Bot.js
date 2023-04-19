@@ -1,13 +1,13 @@
 // var logRequest = false;
 
 /**
- * A GAS wrapper for the Telegram API
+ * A GAS wrapper for the
+ * {@link https://core.telegram.org/bots/api Telegram API}
  * @author Mikhail Nosaev <m.nosaev@gmail.com>
  * @see {@link https://t.me/nosaev_m Telegram} разработка Google таблиц и GAS скриптов
- * @see {@link https://core.telegram.org/bots/api Telegram API}
  * @license MIT
  */
-class TGbot {
+class TGbot extends _Client {
   /**
    * @constructor
    * @type {object} options параметры конструктора.
@@ -16,13 +16,7 @@ class TGbot {
    * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
    */
   constructor({ botToken, webAppUrl, logRequest }) {
-    this.apiVersion = "6.6";
-    this._botToken = "";
-    this._webAppUrl = "";
-    this._logRequest = logRequest || false;
-    this._apiBase = `https://api.telegram.org/`;
-    this._apiTelegramUrl = `${this._apiBase}bot${botToken}/`;
-    this._build = this._builder(botToken, webAppUrl);
+    super({ botToken, webAppUrl, logRequest });
     this.InputMediaDocument = InputMediaPhoto;
     this.InputMediaDocument = InputMediaVideo;
     this.InputMediaDocument = InputMediaAnimation;
@@ -30,106 +24,19 @@ class TGbot {
     this.InputMediaDocument = InputMediaDocument;
   }
 
-  /**
-   * @private
-   * @method _builder
-   * @param {string} botToken токен Telegram бота от \@BotFather.
-   * @param {string} webAppUrl ссылка на WebApp Google для работы с ответами doGet(e).
-   */
-  _builder(botToken, webAppUrl) {
-    if (!botToken)
-      throw new Error(
-        `Укажите token to access the HTTP API { botToken: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }`
-      );
-
-    if (botToken && webAppUrl) {
-      this._botToken = botToken;
-      this._webAppUrl = webAppUrl;
-      delete this._build;
-      return;
-    }
-
-    if (!webAppUrl) {
-      this._botToken = botToken;
-      delete this._build;
-      return;
-    }
-  }
-
-  /**
-   * @private
-   * @method _request
-   * @description Метод, для отправки запроса к API.
-   * @param {string} method метод по которому делается запрос.
-   * @param {string} payload дополнительные параметры запроса.
-   * @param {string} [options.contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data"
-   * @returns {JSON} В случае успеха возвращается объект JSON.
-   */
-  _request(method, payload, contentType = "application/json") {
-    if (!method) this._miss_parameter("method, не указан метод для запроса.");
-
-    const fullUrl = `${this._apiTelegramUrl}${method}`;
-
-    const options = {
-      method: payload ? "post" : "get",
-      muteHttpExceptions: true,
-      followRedirects: true,
-      validateHttpsCertificates: true,
+  getInfo() {
+    const info = {
+      apiVersion: this.apiVersion,
+      description: "A GAS wrapper for the Telegram API",
+      baseUrl: this.baseUrl,
+      methods: helper.getMethodsOfClass(TGbot),
     };
-
-    if (payload) {
-      payload = helper.removeEmpty(payload);
-      const len = Object.entries(payload).length;
-      if (contentType === "multipart/form-data") {
-        delete options.contentType;
-        options["Content-Type"] = contentType;
-        options.payload = payload;
-      } else {
-        options["contentType"] = contentType;
-        len ? (options.payload = JSON.stringify(payload)) : null;
-      }
-      options.method = len ? "post" : "get";
-    }
-
-    if (this._logRequest)
-      console.log(
-        `URL >>> ${fullUrl},\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
-      );
-
-    let response = UrlFetchApp.fetch(fullUrl, options);
-
-    const code = response.getResponseCode();
-    if (code in ResponseCodesHTTP.OTHERCODES) {
-      if (this._logRequest)
-        console.log(
-          "RESPONSE >>>",
-          ResponseCodesHTTP.OTHERCODES[code],
-          "\n",
-          response.getContentText()
-        );
-      return JSON.parse(response.getContentText());
-    } else {
-      if (this._logRequest)
-        console.log("RESPONSE >>>", ResponseCodesHTTP.SUCCESS[code]);
-      return JSON.parse(response.getContentText());
-    }
+    return helper.log(info);
   }
 
   /**
    * @private
-   * @method _miss_parameter
-   * @description Проверка наличия обязательных параметров для отправки запроса.
-   * @param {string} param пропущенный параметр.
-   * @returns {Error} возвращает Error(`Пропущен ${param}`) в случае пропуска.
-   */
-  _miss_parameter(param) {
-    throw new Error(`Пропущен ${param}`);
-  }
-
-  /**
-   * @private
-   * @method _lengthError
-   * @description Проверка длины сообщения.
+   * Проверка длины сообщения.
    * @param {string} msg_text текст отправляемого сообщения.
    * @param {string} caption_text подпись к документу отправляемого сообщения.
    * @param {string} callback_query_text текст уведомления сообщения.
@@ -189,8 +96,7 @@ class TGbot {
   // Getting updates
 
   /**
-   * @metod getUpdates
-   * @description Метод для получения входящих обновлений с помощью длительного опроса.
+   * Метод для получения входящих обновлений с помощью длительного опроса.
    * @see {@link https://core.telegram.org/bots/api#getupdates Telegram API}
    * @type {object} options параметры запроса.
    * @property {number} [options.offset] идентификатор первого возвращаемого обновления.
@@ -213,12 +119,11 @@ class TGbot {
       allowed_updates: allowed_updates ? JSON.stringify(allowed_updates) : null,
     };
 
-    return this._request(Methods.GET_UPDATES, query);
+    return this.request(Methods.GET_UPDATES, query);
   }
 
   /**
-   * @metod setWebhook
-   * @description Метод, для указания URL-адреса и получения входящих обновлений через исходящий веб-перехватчик.
+   * Метод, для указания URL-адреса и получения входящих обновлений через исходящий веб-перехватчик.
    * Всякий раз, когда для бота появляется обновление, мы отправляем HTTPS-запрос POST на указанный URL-адрес, содержащий сериализованное обновление JSON.
    * @see {@link https://core.telegram.org/bots/api#setwebhook Telegram API}
    * @type {object} options параметры запроса.
@@ -232,7 +137,7 @@ class TGbot {
    * @returns {boolean} возвращает True в случае успеха.
    */
   setWebhook({
-    url = this._webAppUrl,
+    url = this.__webAppUrl,
     certificate = "",
     ip_address = "",
     max_connections = 40,
@@ -251,12 +156,11 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return helper.log(this._request(Methods.SET_WEBHOOK, query));
+    return helper.log(this.request(Methods.SET_WEBHOOK, query));
   }
 
   /**
-   * @metod deleteWebhook
-   * @description Метод, для удаления интеграции с веб-перехватчиком, если вы решите вернуться к getUpdates.
+   * Метод, для удаления интеграции с веб-перехватчиком, если вы решите вернуться к getUpdates.
    * @see {@link https://core.telegram.org/bots/api#deletewebhook Telegram API}
    * @param {boolean} [drop_pending_updates] True, чтобы удалить все ожидающие обновления, по умолчанию false.
    * @returns {boolean} возвращает True в случае успеха.
@@ -266,48 +170,44 @@ class TGbot {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return helper.log(this._request(Methods.DELETE_WEBHOOK, query));
+    return helper.log(this.request(Methods.DELETE_WEBHOOK, query));
   }
 
   /**
-   * @metod getWebhookInfo
-   * @description Метод, для получения текущего статуса веб-перехватчика. Не требует параметров.
+   * Метод, для получения текущего статуса веб-перехватчика. Не требует параметров.
    * @see {@link https://core.telegram.org/bots/api#getwebhookinfo Telegram API}
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
   getWebhookInfo() {
     const query = {
-      url: String(this._webAppUrl),
+      url: String(this.__webAppUrl),
     };
 
-    return helper.log(this._request(Methods.GET_WEBHOOK_INFO, query));
+    return helper.log(this.request(Methods.GET_WEBHOOK_INFO, query));
   }
 
   // Available methods
 
   /**
-   * @metod getMe
-   * @description Метод проверки токена аутентификации вашего бота. Не требует параметров.
+   * Метод проверки токена аутентификации вашего бота. Не требует параметров.
    * @see {@link https://core.telegram.org/bots/api#getme Telegram API}
    * @returns {User} возвращает основную информацию о боте в виде объекта User.
    */
   getMe() {
-    return this._request(Methods.GET_ME);
+    return this.request(Methods.GET_ME);
   }
 
   /**
-   * @metod logOut
-   * @description Метод выхода из сервера API облачного бота перед локальным запуском бота. Не требует параметров.
+   * Метод выхода из сервера API облачного бота перед локальным запуском бота. Не требует параметров.
    * @see {@link https://core.telegram.org/bots/api#logout Telegram API}
    * @returns {boolean} возвращает True в случае успеха.
    */
   logOut() {
-    return this._request(Methods.LOG_OUT);
+    return this.request(Methods.LOG_OUT);
   }
 
   /**
-   * @metod close
-   * @description Метод чтобы закрыть экземпляр бота перед его перемещением с одного локального сервера на другой.
+   * Метод чтобы закрыть экземпляр бота перед его перемещением с одного локального сервера на другой.
    * Вам необходимо удалить веб-хук перед вызовом этого метода, чтобы гарантировать, что бот не запустится снова после перезапуска сервера.
    * Метод вернет ошибку 429 в первые 10 минут после запуска бота.
    * Не требует параметров.
@@ -315,12 +215,11 @@ class TGbot {
    * @returns {boolean} возвращает True в случае успеха.
    */
   close() {
-    return this._request(Methods.CLOSE);
+    return this.request(Methods.CLOSE);
   }
 
   /**
-   * @metod setMyDefaultAdministratorRights
-   * @description Метод, для измения прав администратора по умолчанию, запрашиваемые ботом, когда он добавляется в качестве администратора в группы или каналы.
+   * Метод, для измения прав администратора по умолчанию, запрашиваемые ботом, когда он добавляется в качестве администратора в группы или каналы.
    * Эти права будут предложены пользователям, но они могут изменить список перед добавлением бота.
    * @see {@link https://core.telegram.org/bots/api#setmydefaultadministratorrights Telegram API}
    * @param {ChatAdministratorRights} rights объект JSON, описывающий новые права администратора по умолчанию.
@@ -331,7 +230,7 @@ class TGbot {
    */
   setMyDefaultAdministratorRights(rights, for_channels = false) {
     if (!rights)
-      this._miss_parameter(
+      helper.miss_parameter(
         "rights объект JSON, описывающий новые права администратора по умолчанию."
       );
 
@@ -340,12 +239,11 @@ class TGbot {
       for_channels: Boolean(for_channels),
     };
 
-    return this._request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
+    return this.request(Methods.SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
   }
 
   /**
-   * @metod getMyDefaultAdministratorRights
-   * @description Метод, для получения текущих прав администратора бота по умолчанию.
+   * Метод, для получения текущих прав администратора бота по умолчанию.
    * @see {@link https://core.telegram.org/bots/api#getmydefaultadministratorrights Telegram API}
    * @param {boolean} for_channels True, чтобы получить права администратора бота по умолчанию в каналах.
    * В противном случае будут возвращены права администратора бота по умолчанию для групп и супергрупп.
@@ -356,12 +254,11 @@ class TGbot {
       for_channels: Boolean(for_channels),
     };
 
-    return this._request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
+    return this.request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
   }
 
   /**
-   * @metod setMyCommands
-   * @description Метод, для установки списока команд бота.
+   * Метод, для установки списока команд бота.
    * @see {@link https://core.telegram.org/bots/api#setmycommands Telegram API}
    * @param {BotCommand[]} commands список комманд.
    * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
@@ -370,7 +267,7 @@ class TGbot {
    */
   setMyCommands(commands, scope = "", language_code = "") {
     if (!commands || commands === [])
-      this._miss_parameter(
+      helper.miss_parameter(
         "commands объект JSON, описывающий новые права администратора по умолчанию."
       );
 
@@ -380,12 +277,11 @@ class TGbot {
       language_code: language_code ? language_code : null,
     };
 
-    return this._request(Methods.SET_MY_COMMANDS, query);
+    return this.request(Methods.SET_MY_COMMANDS, query);
   }
 
   /**
-   * @metod getMyCommands
-   * @description Метод, для получения списка команд бота.
+   * Метод, для получения списка команд бота.
    * @see {@link https://core.telegram.org/bots/api#getmycommands Telegram API}
    * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
@@ -396,12 +292,11 @@ class TGbot {
       scope: scope ? JSON.stringify(scope) : null,
       language_code: language_code ? language_code : null,
     };
-    return this._request(Methods.GET_MY_COMMANDS, query);
+    return this.request(Methods.GET_MY_COMMANDS, query);
   }
 
   /**
-   * @metod deleteMyCommands
-   * @description Метод, для удаления списока команд бота.
+   * Метод, для удаления списока команд бота.
    * @see {@link https://core.telegram.org/bots/api#deletemycommands Telegram API}
    * @param {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
    * @param {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
@@ -413,21 +308,20 @@ class TGbot {
       language_code: language_code ? language_code : null,
     };
 
-    return this._request(Methods.DELETE_MY_COMMANDS, query);
+    return this.request(Methods.DELETE_MY_COMMANDS, query);
   }
 
   // Chat
 
   /**
-   * @metod getChat
-   * @description Используйте этот метод для получения актуальной информации о чате (текущее имя пользователя для разговоров один на один, текущее имя пользователя, группы или канала и т. д.).
+   * Используйте этот метод для получения актуальной информации о чате (текущее имя пользователя для разговоров один на один, текущее имя пользователя, группы или канала и т. д.).
    * @see {@link https://core.telegram.org/bots/api#getchat Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @returns {Chat} возвращает объект чата Chat в случае успеха.
    */
   getChat(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -435,19 +329,18 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT, query);
+    return this.request(Methods.GET_CHAT, query);
   }
 
   /**
-   * @metod getChatAdministrators
-   * @description Метод, для получения списка администраторов в чате.
+   * Метод, для получения списка администраторов в чате.
    * @see {@link https://core.telegram.org/bots/api#getchatadministrators Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @returns {(ChatMemberOwner|ChatMemberAdministrator|ChatMemberMember|ChatMemberRestricted|ChatMemberLeft|ChatMemberBanned)} В случае успеха возвращает массив объектов ChatMember, содержащий информацию обо всех администраторах чата, кроме других ботов. Если чат является группой или супергруппой и не были назначены администраторы, будет возвращен только создатель.
    */
   getChatAdministrators(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -455,12 +348,11 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT_ADMINISTRATORS, query);
+    return this.request(Methods.GET_CHAT_ADMINISTRATORS, query);
   }
 
   /**
-   * @metod setChatAdministratorCustomTitle
-   * @description Метод, чтобы установить пользовательский титул для администратора в супергруппе, продвигаемой ботом.
+   * Метод, чтобы установить пользовательский титул для администратора в супергруппе, продвигаемой ботом.
    * @see {@link https://core.telegram.org/bots/api#setchatadministratorcustomtitle Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
@@ -469,15 +361,15 @@ class TGbot {
    */
   setChatAdministratorCustomTitle(chat_id, user_id, custom_title) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!user_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
     if (!custom_title)
-      this._miss_parameter(
+      helper.miss_parameter(
         "custom_title новый пользовательский титул для администратора 0-16 символов."
       );
 
@@ -487,19 +379,18 @@ class TGbot {
       custom_title: String(custom_title),
     };
 
-    return this._request(Methods.SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE, query);
+    return this.request(Methods.SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE, query);
   }
 
   /**
-   * @metod getChatMemberCount
-   * @description Метод, для получения количества участников в чате.
+   * Метод, для получения количества участников в чате.
    * @see {@link https://core.telegram.org/bots/api#getchatmembercount Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @returns {number} возвращает Int в случае успеха.
    */
   getChatMemberCount(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -507,12 +398,11 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.GET_CHAT_MEMBER_COUNT, query);
+    return this.request(Methods.GET_CHAT_MEMBER_COUNT, query);
   }
 
   /**
-   * @metod getChatMember
-   * @description Метод, получения информации об участнике чата.
+   * Метод, получения информации об участнике чата.
    * @see {@link https://core.telegram.org/bots/api#getchatmember Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {number} user_id уникальный идентификатор идентификатор целевого пользователя.
@@ -520,11 +410,11 @@ class TGbot {
    */
   getChatMember(chat_id, user_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!user_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
@@ -533,12 +423,11 @@ class TGbot {
       user_id: String(user_id),
     };
 
-    return this._request(Methods.GET_CHAT_MEMBER, query);
+    return this.request(Methods.GET_CHAT_MEMBER, query);
   }
 
   /**
-   * @metod banChatMember
-   * @description Метод, для блокировки пользователя в группе, супергруппе или канале.
+   * Метод, для блокировки пользователя в группе, супергруппе или канале.
    * В случае с супергруппами и каналами пользователь не сможет вернуться в чат самостоятельно по инвайт-ссылкам и т.п., если только его предварительно не разбанят.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#banchatmember Telegram API}
@@ -550,11 +439,11 @@ class TGbot {
    */
   banChatMember(chat_id, user_id, until_date, revoke_messages = true) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!user_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
@@ -565,12 +454,11 @@ class TGbot {
       revoke_messages: Boolean(revoke_messages),
     };
 
-    return this._request(Methods.BAN_CHAT_MEMBER, query);
+    return this.request(Methods.BAN_CHAT_MEMBER, query);
   }
 
   /**
-   * @metod unbanChatMember
-   * @description Метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
+   * Метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
    * Пользователь не вернется в группу или канал автоматически, но сможет присоединиться по ссылке и т. д.
    * По умолчанию этот метод гарантирует, что после звонка пользователь не будет участником чата, но сможет присоединиться к нему.
    * Поэтому, если пользователь является участником чата, он также будет удален из чата. Если вы этого не хотите, используйте параметр only_if_banned.
@@ -583,11 +471,11 @@ class TGbot {
    */
   unbanChatMember(chat_id, user_id, only_if_banned = true) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!user_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "user_id уникальный идентификатор идентификатор целевого пользователя."
       );
 
@@ -597,12 +485,11 @@ class TGbot {
       only_if_banned: Boolean(only_if_banned),
     };
 
-    return this._request(Methods.UNBAN_CHAT_MEMBER, query);
+    return this.request(Methods.UNBAN_CHAT_MEMBER, query);
   }
 
   /**
-   * @metod restrictChatMember
-   * @description Метод, чтобы ограничить пользователя в супергруппе.
+   * Метод, чтобы ограничить пользователя в супергруппе.
    * Бот должен быть администратором в супергруппе и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#restrictchatmember Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername).
@@ -613,15 +500,15 @@ class TGbot {
    */
   restrictChatMember(chat_id, user_id, permissions, until_date) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
     if (!user_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "user_id уникальный идентификатор целевого пользователя."
       );
     if (!permissions || permissions === {})
-      this._miss_parameter(
+      helper.miss_parameter(
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
 
@@ -632,12 +519,11 @@ class TGbot {
       until_date: until_date ? Number(until_date) : null,
     };
 
-    return this._request(Methods.RESTRICT_CHAT_MEMBER, query);
+    return this.request(Methods.RESTRICT_CHAT_MEMBER, query);
   }
 
   /**
-   * @metod setChatPermissions
-   * @description Метод, для установки разрешений чата по умолчанию для всех участников.
+   * Метод, для установки разрешений чата по умолчанию для всех участников.
    * Чтобы это работало, бот должен быть администратором в группе или супергруппе и иметь права администратора can_restrict_members.
    * @see {@link https://core.telegram.org/bots/api#setchatpermissions Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
@@ -646,11 +532,11 @@ class TGbot {
    */
   setChatPermissions(chat_id, permissions) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
     if (!permissions || permissions === {})
-      this._miss_parameter(
+      helper.miss_parameter(
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
 
@@ -659,12 +545,11 @@ class TGbot {
       permissions: JSON.stringify(permissions),
     };
 
-    return this._request(Methods.SET_CHAT_PERMISSIONS, query);
+    return this.request(Methods.SET_CHAT_PERMISSIONS, query);
   }
 
   /**
-   * @metod exportChatInviteLink
-   * @description Метод, для создания новой основной ссылки-приглашения для чата (любая ранее созданная первичная ссылка аннулируется).
+   * Метод, для создания новой основной ссылки-приглашения для чата (любая ранее созданная первичная ссылка аннулируется).
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#exportchatinvitelink Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
@@ -672,7 +557,7 @@ class TGbot {
    */
   exportChatInviteLink(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
 
@@ -680,12 +565,11 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.EXPORT_CHAT_INVITE_LINK, query);
+    return this.request(Methods.EXPORT_CHAT_INVITE_LINK, query);
   }
 
   /**
-   * @metod createChatInviteLink
-   * @description Метод, чтобы создать дополнительную ссылку для приглашения в чат.
+   * Метод, чтобы создать дополнительную ссылку для приглашения в чат.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * Ссылку можно отозвать с помощью метода revokeChatInviteLink.
    * @see {@link https://core.telegram.org/bots/api#createchatinvitelink Telegram API}
@@ -705,7 +589,7 @@ class TGbot {
     creates_join_request = false,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
     this._lengthError({ link_name: link_name });
@@ -719,12 +603,11 @@ class TGbot {
       creates_join_request: Boolean(creates_join_request),
     };
 
-    return this._request(Methods.CREATE_CHAT_INVITE_LINK, query);
+    return this.request(Methods.CREATE_CHAT_INVITE_LINK, query);
   }
 
   /**
-   * @metod editChatInviteLink
-   * @description Метод, для редактирования неосновной ссылки-приглашения, созданной ботом.
+   * Метод, для редактирования неосновной ссылки-приглашения, созданной ботом.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#editchatinvitelink Telegram API}
    * @type {object} options параметры запроса.
@@ -745,11 +628,11 @@ class TGbot {
     creates_join_request = false,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
     if (!invite_link)
-      this._miss_parameter(
+      helper.miss_parameter(
         "invite_link уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
     this._lengthError({ link_name: link_name });
@@ -764,12 +647,11 @@ class TGbot {
       creates_join_request: Boolean(creates_join_request),
     };
 
-    return this._request(Methods.EDIT_CHAT_INVITE_LINK, query);
+    return this.request(Methods.EDIT_CHAT_INVITE_LINK, query);
   }
 
   /**
-   * @metod setChatPhoto
-   * @description Метод, чтобы установить новую фотографию профиля для чата.
+   * Метод, чтобы установить новую фотографию профиля для чата.
    * Фотографии нельзя изменить для приватных чатов. Ч
    * тобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#setchatphoto Telegram API}
@@ -779,11 +661,11 @@ class TGbot {
    */
   setChatPhoto(chat_id, photo) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!photo)
-      this._miss_parameter(
+      helper.miss_parameter(
         "photo новое фото чата, загруженное с помощью multipart/form-data."
       );
 
@@ -792,12 +674,11 @@ class TGbot {
       photo: photo,
     };
 
-    return this._request(Methods.SET_CHAT_PHOTO, query, "multipart/form-data");
+    return this.request(Methods.SET_CHAT_PHOTO, query, "multipart/form-data");
   }
 
   /**
-   * @metod deleteChatPhoto
-   * @description Метод, чтобы удалить фотографию чата.
+   * Метод, чтобы удалить фотографию чата.
    * Фотографии нельзя изменить для приватных чатов.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#deletechatphoto Telegram API}
@@ -806,7 +687,7 @@ class TGbot {
    */
   deleteChatPhoto(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -814,12 +695,11 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.DELETE_CHAT_PHOTO, query);
+    return this.request(Methods.DELETE_CHAT_PHOTO, query);
   }
 
   /**
-   * @metod setChatTitle
-   * @description Метод, чтобы изменить название чата.
+   * Метод, чтобы изменить название чата.
    * Названия не могут быть изменены для приватных чатов.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#setchattitle Telegram API}
@@ -829,11 +709,11 @@ class TGbot {
    */
   setChatTitle(chat_id, title) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!title)
-      this._miss_parameter("title новое название чата, 1-255 символов.");
+      helper.miss_parameter("title новое название чата, 1-255 символов.");
     this._lengthError({
       chat_title: title,
     });
@@ -843,12 +723,11 @@ class TGbot {
       title: title,
     };
 
-    return this._request(Methods.SET_CHAT_TITLE, query);
+    return this.request(Methods.SET_CHAT_TITLE, query);
   }
 
   /**
-   * @metod setChatDescription
-   * @description Метод для изменения описания группы, супергруппы или канала.
+   * Метод для изменения описания группы, супергруппы или канала.
    * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
    * @see {@link https://core.telegram.org/bots/api#setchatdescription Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -857,7 +736,7 @@ class TGbot {
    */
   setChatDescription(chat_id, description = "") {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (description)
@@ -870,12 +749,11 @@ class TGbot {
       description: description ? String(description) : null,
     };
 
-    return this._request(Methods.SET_CHAT_DESCRIPTION, query);
+    return this.request(Methods.SET_CHAT_DESCRIPTION, query);
   }
 
   /**
-   * @metod setChatMenuButton
-   * @description Метод изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+   * Метод изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
    * @see {@link https://core.telegram.org/bots/api#setchatmenubutton Telegram API}
    * @param {(string|number)} [chat_id] уникальный идентификатор целевого приватного чата.
    * Если не указано, кнопка меню бота по умолчанию будет изменена.
@@ -888,12 +766,11 @@ class TGbot {
       menu_button: menu_button ? menu_button : null,
     };
 
-    return this._request(Methods.SET_CHAT_MENU_BUTTON, query);
+    return this.request(Methods.SET_CHAT_MENU_BUTTON, query);
   }
 
   /**
-   * @metod getChatMenuButton
-   * @description Метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
+   * Метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
    * @see {@link https://core.telegram.org/bots/api#getchatmenubutton Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого приватного чата.
    * Если не указано, будет возвращена кнопка меню бота по умолчанию.
@@ -904,12 +781,11 @@ class TGbot {
       chat_id: chat_id ? String(chat_id) : null,
     };
 
-    return this._request(Methods.GET_CHAT_MENU_BUTTON, query);
+    return this.request(Methods.GET_CHAT_MENU_BUTTON, query);
   }
 
   /**
-   * @metod pinChatMessage
-   * @description Метод, добавления сообщения в список закрепленных сообщений в чате.
+   * Метод, добавления сообщения в список закрепленных сообщений в чате.
    * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
    * @see {@link https://core.telegram.org/bots/api#pinchatmessage Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -920,11 +796,11 @@ class TGbot {
    */
   pinChatMessage(chat_id, message_id, disable_notification = false) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "message_id идентификатор сообщения для закрепления."
       );
 
@@ -934,12 +810,11 @@ class TGbot {
       disable_notification: Boolean(disable_notification),
     };
 
-    return this._request(Methods.PIN_CHAT_MESSAGE, query);
+    return this.request(Methods.PIN_CHAT_MESSAGE, query);
   }
 
   /**
-   * @metod unpinChatMessage
-   * @description Метод удаления закрепленного сообщения в чате.
+   * Метод удаления закрепленного сообщения в чате.
    * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
    * @see {@link https://core.telegram.org/bots/api#unpinchatmessage Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -949,7 +824,7 @@ class TGbot {
    */
   unpinChatMessage(chat_id, message_id = "") {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -958,12 +833,11 @@ class TGbot {
       message_id: message_id ? Number(message_id) : null,
     };
 
-    return this._request(Methods.UNPIN_CHAT_MESSAGE, query);
+    return this.request(Methods.UNPIN_CHAT_MESSAGE, query);
   }
 
   /**
-   * @metod unpinAllChatMessages
-   * @description Метод очистки списка закрепленных сообщений в чате.
+   * Метод очистки списка закрепленных сообщений в чате.
    * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
    * @see {@link https://core.telegram.org/bots/api#unpinallchatmessages Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -971,7 +845,7 @@ class TGbot {
    */
   unpinAllChatMessages(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -979,19 +853,18 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.UNPIN_ALL_CHAT_MESSAGES, query);
+    return this.request(Methods.UNPIN_ALL_CHAT_MESSAGES, query);
   }
 
   /**
-   * @metod leaveChat
-   * @description Используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
+   * Используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
    * @see {@link https://core.telegram.org/bots/api#leavechat Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @returns {boolean} возвращает True в случае успеха.
    */
   leaveChat(chat_id) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -999,12 +872,11 @@ class TGbot {
       chat_id: String(chat_id),
     };
 
-    return this._request(Methods.LEAVE_CHAT, query);
+    return this.request(Methods.LEAVE_CHAT, query);
   }
 
   /**
-   * @metod sendChatAction
-   * @description Используйте этот метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота. Статус устанавливается на 5 секунд или меньше (когда приходит сообщение от вашего бота, клиенты Telegram сбрасывают его статус набора).
+   * Используйте этот метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота. Статус устанавливается на 5 секунд или меньше (когда приходит сообщение от вашего бота, клиенты Telegram сбрасывают его статус набора).
    * @see {@link https://core.telegram.org/bots/api#sendchataction Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {string} action тип действия для трансляции.
@@ -1021,22 +893,21 @@ class TGbot {
    */
   sendChatAction(chat_id, action) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!action) this._miss_parameter("action тип действия для трансляции.");
+    if (!action) helper.miss_parameter("action тип действия для трансляции.");
 
     const query = {
       chat_id: String(chat_id),
       action: String(action),
     };
 
-    return this._request(Methods.SEND_CHAT_ACTION, query);
+    return this.request(Methods.SEND_CHAT_ACTION, query);
   }
 
   /**
-   * @metod getUserProfilePhotos
-   * @description Метод, для получения списока изображений профиля для пользователя.
+   * Метод, для получения списока изображений профиля для пользователя.
    * @see {@link https://core.telegram.org/bots/api#getuserprofilephotos Telegram API}
    * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
    * @param {number} [offset] порядковый номер первой возвращаемой фотографии. По умолчанию возвращаются все фотографии.
@@ -1045,7 +916,7 @@ class TGbot {
    */
   getUserProfilePhotos(chat_id, offset = "", limit = "") {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -1055,14 +926,13 @@ class TGbot {
       limit: limit ? Number(limit) : null,
     };
 
-    return this._request(Methods.GET_USER_PROFILE_PHOTOS, query);
+    return this.request(Methods.GET_USER_PROFILE_PHOTOS, query);
   }
 
   // Message
 
   /**
-   * @metod sendMessage
-   * @description Метод, для отправки текстовых сообщений.
+   * Метод, для отправки текстовых сообщений.
    * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
    * @see {@link https://core.telegram.org/bots/api#formatting-options Форматы}
    * @see {@link https://core.telegram.org/bots/api#sendmessage Telegram API}
@@ -1094,11 +964,11 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!text)
-      this._miss_parameter(
+      helper.miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
@@ -1121,12 +991,11 @@ class TGbot {
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
     };
 
-    return this._request(Methods.SEND_MESSAGE, query);
+    return this.request(Methods.SEND_MESSAGE, query);
   }
 
   /**
-   * @metod forwardMessage
-   * @description Метод, для пересылки сообщений любого типа.
+   * Метод, для пересылки сообщений любого типа.
    * Служебные сообщения не могут быть переадресованы.
    * @see {@link https://core.telegram.org/bots/api#forwardmessage Telegram API}
    * @type {object} options параметры запроса.
@@ -1147,15 +1016,15 @@ class TGbot {
     protect_content = false,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!from_chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername)."
       );
     if (!message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
 
@@ -1168,12 +1037,11 @@ class TGbot {
       protect_content: Boolean(protect_content),
     };
 
-    return this._request(Methods.FORWARD_MESSAGE, query);
+    return this.request(Methods.FORWARD_MESSAGE, query);
   }
 
   /**
-   * @metod copyMessage
-   * @description Метод, для копирования сообщения.
+   * Метод, для копирования сообщения.
    * @see {@link https://core.telegram.org/bots/api#copymessage Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
@@ -1205,15 +1073,15 @@ class TGbot {
     allow_sending_without_reply = false,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!from_chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername)."
       );
     if (!message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "message_id идентификатор сообщения в чате указанный в from_chat_id."
       );
     this._lengthError({
@@ -1239,14 +1107,13 @@ class TGbot {
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
     };
 
-    return this._request(Methods.COPY_MESSAGE, query);
+    return this.request(Methods.COPY_MESSAGE, query);
   }
 
   // Updating messages
 
   /**
-  * @metod deleteMessage
-  * @description Метод, для удаления сообщения, в том числе служебного, со следующими ограничениями:
+  * Метод, для удаления сообщения, в том числе служебного, со следующими ограничениями:
    - Сообщение может быть удалено только в том случае, если оно было отправлено < 48 часов назад.
    - Сообщение с кубиками в приватном чате можно удалить только в том случае, если оно было отправлено > 24 часов назад.
    - Боты могут удалять исходящие сообщения в приватных чатах, группах и супергруппах.
@@ -1262,23 +1129,22 @@ class TGbot {
  */
   deleteMessage({ chat_id, message_id }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
     if (!message_id)
-      this._miss_parameter("message_id идентификатор сообщения для удаления.");
+      helper.miss_parameter("message_id идентификатор сообщения для удаления.");
 
     const query = {
       chat_id: String(chat_id),
       message_id: Number(message_id),
     };
 
-    return this._request(Methods.DELETE_MESSAGE, query);
+    return this.request(Methods.DELETE_MESSAGE, query);
   }
 
   /**
-   * @metod editMessageText
-   * @description Метод, для редактирования текстовых и игровых сообщений.
+   * Метод, для редактирования текстовых и игровых сообщений.
    * @see {@link https://core.telegram.org/bots/api#editmessagetext Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
@@ -1302,7 +1168,7 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!text)
-      this._miss_parameter("text новый текст сообщения, 1-4096 символов.");
+      helper.miss_parameter("text новый текст сообщения, 1-4096 символов.");
     this._lengthError({
       msg_text: text,
     });
@@ -1319,12 +1185,11 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_TEXT, query);
+    return this.request(Methods.EDIT_MESSAGE_TEXT, query);
   }
 
   /**
-   * @metod editMessageCaption
-   * @description Метод, для редактирования подписей к сообщениям.
+   * Метод, для редактирования подписей к сообщениям.
    * @see {@link https://core.telegram.org/bots/api#editmessagecaption Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
@@ -1346,7 +1211,7 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!caption)
-      this._miss_parameter(
+      helper.miss_parameter(
         "caption новый заголовок сообщения, 0-1024 символов."
       );
     this._lengthError({
@@ -1366,12 +1231,11 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_CAPTION, query);
+    return this.request(Methods.EDIT_MESSAGE_CAPTION, query);
   }
 
   /**
-   * @metod editMessageMedia
-   * @description Метод, для редактирования анимации, аудио, документа, фото или видео сообщения.
+   * Метод, для редактирования анимации, аудио, документа, фото или видео сообщения.
    * @see {@link https://core.telegram.org/bots/api#editmessagemedia Telegram API}
    * Если сообщение является частью альбома сообщений, его можно отредактировать только в аудио для аудиоальбомов, в документ для альбомов документов и в фото или видео в остальных случаях.
    * При редактировании встроенного сообщения новый файл не может быть загружен;
@@ -1392,7 +1256,7 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!media)
-      this._miss_parameter(
+      helper.miss_parameter(
         "media объект JSON для нового мультимедийного содержимого сообщения."
       );
 
@@ -1405,12 +1269,11 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_MEDIA, query);
+    return this.request(Methods.EDIT_MESSAGE_MEDIA, query);
   }
 
   /**
-   * @metod editMessageReplyMarkup
-   * @description Метод, для редактирования разметки ответов сообщений.
+   * Метод, для редактирования разметки ответов сообщений.
    * @see {@link https://core.telegram.org/bots/api#editmessagereplymarkup Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
@@ -1426,7 +1289,7 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!reply_markup)
-      this._miss_parameter(
+      helper.miss_parameter(
         "reply_markup объект JSON для новой встроенной клавиатуры."
       );
 
@@ -1441,14 +1304,13 @@ class TGbot {
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
       };
 
-    return this._request(Methods.EDIT_MESSAGE_REPLY_MARKUP, query);
+    return this.request(Methods.EDIT_MESSAGE_REPLY_MARKUP, query);
   }
 
   // Other
 
   /**
-   * @metod sendPhoto
-   * @description Метод, для отправки фотографий.
+   * Метод, для отправки фотографий.
    * @see {@link https://core.telegram.org/bots/api#sendphoto Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -1487,10 +1349,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!photo) this._miss_parameter("photo фото для отправки.");
+    if (!photo) helper.miss_parameter("photo фото для отправки.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1516,13 +1378,13 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_PHOTO, query, contentType);
-    else return this._request(Methods.SEND_PHOTO, query);
+      return this.request(Methods.SEND_PHOTO, query, contentType);
+    else return this.request(Methods.SEND_PHOTO, query);
   }
 
   /**
-   * @metod sendAudio
-   * @description Метод, для отправки отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали их в музыкальном проигрывателе. Ваш звук должен быть в формате .MP3 или .M4A. В случае успеха возвращается отправленное сообщение.
+   * Метод, для отправки отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали их в музыкальном проигрывателе.
+   * Ваш звук должен быть в формате .MP3 или .M4A. В случае успеха возвращается отправленное сообщение.
    * @see {@link https://core.telegram.org/bots/api#sendaudio Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -1562,10 +1424,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!audio) this._miss_parameter("audio аудио для отправки.");
+    if (!audio) helper.miss_parameter("audio аудио для отправки.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1594,13 +1456,12 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_AUDIO, query, contentType);
-    else return this._request(Methods.SEND_AUDIO, query);
+      return this.request(Methods.SEND_AUDIO, query, contentType);
+    else return this.request(Methods.SEND_AUDIO, query);
   }
 
   /**
-   * @metod sendDocument
-   * @description Метод, для отправки общих файлов.
+   * Метод, для отправки общих файлов.
    * @see {@link https://core.telegram.org/bots/api#senddocument Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -1642,10 +1503,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
       );
-    if (!document) this._miss_parameter("document файл для отправки");
+    if (!document) helper.miss_parameter("document файл для отправки");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1672,13 +1533,12 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_DOCUMENT, query, contentType);
-    else return this._request(Methods.SEND_DOCUMENT, query);
+      return this.request(Methods.SEND_DOCUMENT, query, contentType);
+    else return this.request(Methods.SEND_DOCUMENT, query);
   }
 
   /**
-   * @metod sendVideo
-   * @description Метод, для отправки видео.
+   * Метод, для отправки видео.
    * @see {@link https://core.telegram.org/bots/api#sendvideo Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -1722,10 +1582,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!video) this._miss_parameter("video видео для отправки.");
+    if (!video) helper.miss_parameter("video видео для отправки.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1756,13 +1616,12 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_VIDEO, query, contentType);
-    else return this._request(Methods.SEND_VIDEO, query);
+      return this.request(Methods.SEND_VIDEO, query, contentType);
+    else return this.request(Methods.SEND_VIDEO, query);
   }
 
   /**
-   * @metod sendAnimation
-   * @description Метод, для отправки файлов анимации (видео GIF или H.264/MPEG-4 AVC без звука). В случае успеха возвращается отправленное сообщение.
+   * Метод, для отправки файлов анимации (видео GIF или H.264/MPEG-4 AVC без звука). В случае успеха возвращается отправленное сообщение.
    * В настоящее время боты могут отправлять анимационные файлы размером до 50 МБ, это ограничение может быть изменено в будущем.
    * @see {@link https://core.telegram.org/bots/api#sendanimation Telegram API}
    * @type {object} options параметры запроса.
@@ -1805,10 +1664,10 @@ class TGbot {
     contentType
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!animation) this._miss_parameter("animation анимация для отправки.");
+    if (!animation) helper.miss_parameter("animation анимация для отправки.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1838,13 +1697,12 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_ANIMATION, query, contentType);
-    else return this._request(Methods.SEND_ANIMATION, query);
+      return this.request(Methods.SEND_ANIMATION, query, contentType);
+    else return this.request(Methods.SEND_ANIMATION, query);
   }
 
   /**
-   * @metod sendVoice
-   * @description Метод, для отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали файл как воспроизводимое голосовое сообщение.
+   * Метод, для отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали файл как воспроизводимое голосовое сообщение.
    * Чтобы это работало, ваше аудио должно быть в файле .OGG, закодированном с помощью OPUS (другие форматы могут быть отправлены как аудио или документ). В случае успеха возвращается отправленное сообщение.
    * @see {@link https://core.telegram.org/bots/api#sendvoice Telegram API}
    * @type {object} options параметры запроса.
@@ -1879,10 +1737,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!voice) this._miss_parameter("voice аудио для отправки.");
+    if (!voice) helper.miss_parameter("voice аудио для отправки.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1908,13 +1766,13 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_VOICE, query, contentType);
-    else return this._request(Methods.SEND_VOICE, query);
+      return this.request(Methods.SEND_VOICE, query, contentType);
+    else return this.request(Methods.SEND_VOICE, query);
   }
 
   /**
-   * @metod sendVideoNote
-   * @description Начиная с версии 4.0, клиенты Telegram поддерживают закругленные квадратные видео MPEG4 продолжительностью до 1 минуты. Используйте этот метод для отправки видеосообщений. В случае успеха возвращается отправленное сообщение.
+   * Начиная с версии 4.0, клиенты Telegram поддерживают закругленные квадратные видео MPEG4 продолжительностью до 1 минуты.
+   * Используйте этот метод для отправки видеосообщений. В случае успеха возвращается отправленное сообщение.
    * @see {@link https://core.telegram.org/bots/api#sendvideonote Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -1946,11 +1804,11 @@ class TGbot {
     contentType
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!video_note)
-      this._miss_parameter("video_note видеозаметка для отправки.");
+      helper.miss_parameter("video_note видеозаметка для отправки.");
 
     const query = {
       chat_id: String(chat_id),
@@ -1969,13 +1827,12 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_VIDEO_NOTE, query, contentType);
-    else return this._request(Methods.SEND_VIDEO_NOTE, query);
+      return this.request(Methods.SEND_VIDEO_NOTE, query, contentType);
+    else return this.request(Methods.SEND_VIDEO_NOTE, query);
   }
 
   /**
-   * @metod sendMediaGroup
-   * @description Метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
+   * Метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
    * Документы и аудиофайлы могут быть сгруппированы в альбом только с сообщениями одного типа.
    * @see {@link https://core.telegram.org/bots/api#sendmediagroup Telegram API}
    * @type {object} options параметры запроса.
@@ -1998,11 +1855,11 @@ class TGbot {
     allow_sending_without_reply = false,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
     if (!media)
-      this._miss_parameter(
+      helper.miss_parameter(
         "media объект JSON для нового мультимедийного содержимого сообщения."
       );
 
@@ -2018,12 +1875,11 @@ class TGbot {
       allow_sending_without_reply: Boolean(allow_sending_without_reply),
     };
 
-    return this._request(Methods.SEND_MEDIA_GROUP, query);
+    return this.request(Methods.SEND_MEDIA_GROUP, query);
   }
 
   /**
-   * @metod sendLocation
-   * @description Метод, для отправки точки на карте.
+   * Метод, для отправки точки на карте.
    * @see {@link https://core.telegram.org/bots/api#sendlocation Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2059,11 +1915,11 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!latitude) this._miss_parameter("latitude широта местоположения.");
-    if (!longitude) this._miss_parameter("longitude долгота местоположения.");
+    if (!latitude) helper.miss_parameter("latitude широта местоположения.");
+    if (!longitude) helper.miss_parameter("longitude долгота местоположения.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2087,12 +1943,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_LOCATION, query);
+    return this.request(Methods.SEND_LOCATION, query);
   }
 
   /**
-   * @metod editMessageLiveLocation
-   * @description Метод, для редактирования сообщений о местоположении в реальном времени.
+   * Метод, для редактирования сообщений о местоположении в реальном времени.
    * @see {@link https://core.telegram.org/bots/api#editmessagelivelocation Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} [options.chat_id] Требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
@@ -2122,15 +1977,15 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id && !inline_message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "передайте chat_id и message_id или inline_message_id"
       );
     if (chat_id && !message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "message_id идентификатор сообщения для редактирования."
       );
     if (!chat_id && !inline_message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "inline_message_id идентификатор встроенного сообщения."
       );
 
@@ -2157,12 +2012,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.EDIT_MESSAGE_LIVE_LOCATION, query);
+    return this.request(Methods.EDIT_MESSAGE_LIVE_LOCATION, query);
   }
 
   /**
-   * @metod stopMessageLiveLocation
-   * @description Метод, для остановки обновления сообщения о текущем местоположении до истечения срока действия live_period.
+   * Метод, для остановки обновления сообщения о текущем местоположении до истечения срока действия live_period.
    * @see {@link https://core.telegram.org/bots/api#stopmessagelivelocation Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
@@ -2178,15 +2032,15 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id && !inline_message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "передайте chat_id и message_id или inline_message_id"
       );
     if (chat_id && !message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "message_id идентификатор сообщения для редактирования."
       );
     if (!chat_id && !inline_message_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "inline_message_id идентификатор встроенного сообщения."
       );
 
@@ -2197,12 +2051,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.STOP_MESSAGE_LIVE_LOCATION, query);
+    return this.request(Methods.STOP_MESSAGE_LIVE_LOCATION, query);
   }
 
   /**
-   * @metod sendVenue
-   * @description Метод, для отправки информации о месте проведения.
+   * Метод, для отправки информации о месте проведения.
    * @see {@link https://core.telegram.org/bots/api#sendvenue Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2242,13 +2095,14 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!latitude) this._miss_parameter("latitude широта места проведения.");
-    if (!longitude) this._miss_parameter("longitude долгота места проведения.");
-    if (!title) this._miss_parameter("title название места.");
-    if (!address) this._miss_parameter("address адрес места проведения.");
+    if (!latitude) helper.miss_parameter("latitude широта места проведения.");
+    if (!longitude)
+      helper.miss_parameter("longitude долгота места проведения.");
+    if (!title) helper.miss_parameter("title название места.");
+    if (!address) helper.miss_parameter("address адрес места проведения.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2270,12 +2124,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_VENUE, query);
+    return this.request(Methods.SEND_VENUE, query);
   }
 
   /**
-   * @metod sendContact
-   * @description Метод, для отправки телефонных контактов.
+   * Метод, для отправки телефонных контактов.
    * @see {@link https://core.telegram.org/bots/api#sendcontact Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2305,11 +2158,11 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!phone_number) this._miss_parameter("phone_number телефон контакта.");
-    if (!first_name) this._miss_parameter("first_name фамилия контакта.");
+    if (!phone_number) helper.miss_parameter("phone_number телефон контакта.");
+    if (!first_name) helper.miss_parameter("first_name фамилия контакта.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2327,12 +2180,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_DICE, query);
+    return this.request(Methods.SEND_DICE, query);
   }
 
   /**
-   * @metod sendDice
-   * @description Метод, для отправики анимированный эмодзи, который будет отображать случайное значение.
+   * Метод, для отправики анимированный эмодзи, который будет отображать случайное значение.
    * @see {@link https://core.telegram.org/bots/api#senddice Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2357,7 +2209,7 @@ class TGbot {
     reply_markup = ""
   ) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
@@ -2374,12 +2226,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_DICE, query);
+    return this.request(Methods.SEND_DICE, query);
   }
 
   /**
-   * @metod sendPoll
-   * @description Метод, для отправки отправки собственного опроса.
+   * Метод, для отправки отправки собственного опроса.
    * @see {@link https://core.telegram.org/bots/api#sendpoll Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2425,15 +2276,15 @@ class TGbot {
     reply_markup = "",
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!question) this._miss_parameter("question вопрос для отправки.");
+    if (!question) helper.miss_parameter("question вопрос для отправки.");
     this._lengthError({
       question_text: question,
     });
     if (!options)
-      this._miss_parameter(
+      helper.miss_parameter(
         "options JSON-сериализованный список вариантов ответа для отправки."
       );
     if (explanation)
@@ -2467,12 +2318,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_POLL, query);
+    return this.request(Methods.SEND_POLL, query);
   }
 
   /**
-   * @metod stopPoll
-   * @description Метод, для остановки опроса, отправленный ботом.
+   * Метод, для остановки опроса, отправленный ботом.
    * @see {@link https://core.telegram.org/bots/api#stoppoll Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2482,10 +2332,10 @@ class TGbot {
    */
   stopPoll({ chat_id, message_id, reply_markup = "" }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!message_id) this._miss_parameter("message_id для отправки.");
+    if (!message_id) helper.miss_parameter("message_id для отправки.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2493,12 +2343,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.STOP_POLL, query);
+    return this.request(Methods.STOP_POLL, query);
   }
 
   /**
-   * @metod answerCallbackQuery
-   * @description Метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
+   * Метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
    * Ответ будет отображаться пользователю в виде уведомления в верхней части экрана чата или в виде предупреждения.
    * @see {@link https://core.telegram.org/bots/api#answercallbackquery Telegram API}
    * @param {string} callback_query_id уникальный идентификатор запроса, на который нужно ответить.
@@ -2516,7 +2365,7 @@ class TGbot {
     cache_time = ""
   ) {
     if (!callback_query_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
     if (text)
@@ -2532,14 +2381,13 @@ class TGbot {
       cache_time: cache_time ? Number(cache_time) : null,
     };
 
-    return this._request(Methods.ANSWER_CALLBACK_QUERY, query);
+    return this.request(Methods.ANSWER_CALLBACK_QUERY, query);
   }
 
   // Inline mode
 
   /**
-   * @metod answerInlineQuery
-   * @description Метод, для отправки ответов на встроенный запрос.
+   * Метод, для отправки ответов на встроенный запрос.
    * Допускается не более 50 результатов на запрос.
    * @see {@link https://core.telegram.org/bots/api#answerinlinequery Telegram API}
    * @type {object} options параметры запроса.
@@ -2565,11 +2413,11 @@ class TGbot {
     switch_pm_parameter = "",
   }) {
     if (!inline_query_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "inline_query_id уникальный идентификатор ответа на запрос."
       );
     if (!results)
-      this._miss_parameter(
+      helper.miss_parameter(
         "results InlineQueryResult[] сериализованный в формате JSON массив результатов для встроенного запроса."
       );
 
@@ -2585,12 +2433,11 @@ class TGbot {
         : null,
     };
 
-    return this._request(Methods.ANSWER_INLINE_QUERY, query);
+    return this.request(Methods.ANSWER_INLINE_QUERY, query);
   }
 
   /**
-   * @metod answerWebAppQuery
-   * @description Метод, чтобы установить результат взаимодействия с веб-приложением и отправить
+   * Метод, чтобы установить результат взаимодействия с веб-приложением и отправить
    * соответствующее сообщение от имени пользователя в чат, из которого исходит запрос.
    * @see {@link https://core.telegram.org/bots/api#answerwebappquery Telegram API}
    * @type {object} options параметры запроса.
@@ -2600,11 +2447,11 @@ class TGbot {
    */
   answerWebAppQuery({ web_app_query_id, results }) {
     if (!web_app_query_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "web_app_query_id идентификатор запроса, на который нужно ответить."
       );
     if (!results)
-      this._miss_parameter(
+      helper.miss_parameter(
         "results InlineQueryResult[] cериализованный объект JSON, описывающий отправляемое сообщение."
       );
 
@@ -2613,14 +2460,13 @@ class TGbot {
       results: JSON.stringify(results),
     };
 
-    return this._request(Methods.ANSWER_WEB_APP_QUERY, query);
+    return this.request(Methods.ANSWER_WEB_APP_QUERY, query);
   }
 
   // Stickers
 
   /**
-   * @metod sendSticker
-   * @description Метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
+   * Метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
    * @see {@link https://core.telegram.org/bots/api#sendsticker Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2648,10 +2494,10 @@ class TGbot {
     contentType,
   }) {
     if (!chat_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
-    if (!sticker) this._miss_parameter("sticker наклейка для отправки.");
+    if (!sticker) helper.miss_parameter("sticker наклейка для отправки.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2667,32 +2513,30 @@ class TGbot {
     };
 
     if (contentType)
-      return this._request(Methods.SEND_STICKER, query, contentType);
-    else return this._request(Methods.SEND_STICKER, query);
+      return this.request(Methods.SEND_STICKER, query, contentType);
+    else return this.request(Methods.SEND_STICKER, query);
   }
 
   /**
-   * @metod getStickerSet
-   * @description Метод, для получения набора наклеек по названию набора.
+   * Метод, для получения набора наклеек по названию набора.
    * @see {@link https://core.telegram.org/bots/api#getstickerset Telegram API}
    * @param {string} name название набора наклеек.
    * @returns {StickerSet} В случае успеха возвращается объект StickerSet.
    */
   getStickerSet(name) {
-    if (!name) this._miss_parameter("name название набора наклеек.");
+    if (!name) helper.miss_parameter("name название набора наклеек.");
 
     const query = {
       name: String(name),
     };
 
-    return this._request(Methods.GET_STICKER_SET, query);
+    return this.request(Methods.GET_STICKER_SET, query);
   }
 
   // Payments
 
   /**
-   * @metod sendInvoice
-   * @description Метод для отправки счетов.
+   * Метод для отправки счетов.
    * @see {@link https://core.telegram.org/bots/api#sendinvoice Telegram API}
    * @type {object} options параметры запроса.
    * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
@@ -2789,12 +2633,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_INVOICE, query);
+    return this.request(Methods.SEND_INVOICE, query);
   }
 
   /**
-   * @metod answerShippingQuery
-   * @description Метод, для ответа на запросы о доставке.
+   * Метод, для ответа на запросы о доставке.
    * Если вы отправили счет-фактуру с запросом адреса доставки и был указан параметр is_flexible,
    * Bot API отправит боту обновление с полем shipping_query.
    * @see {@link https://core.telegram.org/bots/api#answershippingquery Telegram API}
@@ -2815,17 +2658,17 @@ class TGbot {
     error_message = "",
   }) {
     if (!shipping_query_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "shipping_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
 
     if (!ok && !shipping_options)
-      this._miss_parameter(
+      helper.miss_parameter(
         "shipping_options: Сериализованный в формате JSON массив доступных вариантов доставки."
       );
 
     if (!ok && !error_message)
-      this._miss_parameter(
+      helper.miss_parameter(
         "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
       );
 
@@ -2836,12 +2679,11 @@ class TGbot {
       error_message: error_message ? String(error_message) : null,
     };
 
-    return this._request(Methods.ANSWER_SHIPPING_QUERY, query);
+    return this.request(Methods.ANSWER_SHIPPING_QUERY, query);
   }
 
   /**
-   * @metod answerPreCheckoutQuery
-   * @description Метод, для ответа запросы перед оформлением заказа.
+   * Метод, для ответа запросы перед оформлением заказа.
    * Как только пользователь подтвердит свои данные об оплате и доставке,
    * Bot API отправляет окончательное подтверждение в виде обновления с полем pre_checkout_query.
    * Примечание. Bot API должен получить ответ в течение 10 секунд после отправки запроса на предварительную проверку.
@@ -2860,12 +2702,12 @@ class TGbot {
     error_message = "",
   }) {
     if (!pre_checkout_query_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить."
       );
 
     if (!ok && !error_message)
-      this._miss_parameter(
+      helper.miss_parameter(
         "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
       );
 
@@ -2875,12 +2717,11 @@ class TGbot {
       error_message: error_message ? String(error_message) : null,
     };
 
-    return this._request(Methods.ANSWER_PRE_CHECKOUT_QUERY, query);
+    return this.request(Methods.ANSWER_PRE_CHECKOUT_QUERY, query);
   }
 
   /**
-   * @metod getFile
-   * @description Метод, для получения основной информации о файле и подготовки его к загрузке.
+   * Метод, для получения основной информации о файле и подготовки его к загрузке.
    * На данный момент боты могут загружать файлы размером до 20 МБ.
    * Файл можно скачать https://api.telegram.org/file/bot<token>/<file_path>, где <file_path> берется из ответа.
    * Гарантируется, что ссылка будет действительна не менее 1 часа.
@@ -2891,7 +2732,7 @@ class TGbot {
    */
   getFile(file_id) {
     if (!file_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
     return `${this._apiBase}file/bot${this._botToken}/${
@@ -2906,14 +2747,13 @@ class TGbot {
   // Не официальные методы API
 
   /**
-   * @metod getPath
-   * @description Метод, для получения пути к файлу.
+   * Метод, для получения пути к файлу.
    * @param {string} file_id идентификатор файла для получения информации.
    * @returns {string} В случае успеха возвращается file_path.
    */
   getPath(file_id) {
     if (!file_id)
-      this._miss_parameter(
+      helper.miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
 
@@ -2925,19 +2765,17 @@ class TGbot {
   }
 
   /**
-   * @metod getFileDownloadUrl
-   * @description Метод, для получения ссылки на скачивание файла.
+   * Метод, для получения ссылки на скачивание файла.
    * @param {string} path путь до папки.
    * @returns {string} В случае успеха возвращается url.
    */
   getFileDownloadUrl(path) {
-    if (!path) this._miss_parameter("path путь до папки.");
+    if (!path) helper.miss_parameter("path путь до папки.");
     return `${this._apiBase}file/bot${this._botToken}/${path}`;
   }
 
   /**
-   * @metod answerMessage
-   * @description ответ по from.id на получнное сообщение.
+   * Ответ по from.id на получнное сообщение.
    * @type {object} options параметры запроса.
    * @property {Message} options.message полученное сообщение.
    * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
@@ -2965,9 +2803,9 @@ class TGbot {
     allow_sending_without_reply = false,
     reply_markup = "",
   }) {
-    if (!message) this._miss_parameter("Message");
+    if (!message) helper.miss_parameter("Message");
     if (!text)
-      this._miss_parameter(
+      helper.miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
@@ -2987,12 +2825,11 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_MESSAGE, query);
+    return this.request(Methods.SEND_MESSAGE, query);
   }
 
   /**
-   * @metod replyMessage
-   * @description ответ по message_id на получнное сообщение.
+   * Ответ по message_id на получнное сообщение.
    * @type {object} options параметры запроса.
    * @property {Message} options.message полученное сообщение.
    * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
@@ -3018,9 +2855,9 @@ class TGbot {
     allow_sending_without_reply = false,
     reply_markup = "",
   }) {
-    if (!message) this._miss_parameter("Message");
+    if (!message) helper.miss_parameter("Message");
     if (!text)
-      this._miss_parameter(
+      helper.miss_parameter(
         "text текст отправляемого сообщения, 1-4096 символов."
       );
     this._lengthError({
@@ -3041,21 +2878,30 @@ class TGbot {
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
     };
 
-    return this._request(Methods.SEND_MESSAGE, query);
+    return this.request(Methods.SEND_MESSAGE, query);
   }
 }
 
 /**
- * Вызывает конструктор class TGbot.
+ * Вызывает методы для работы с
+ * {@link https://openapi.wb.ru/content.html Telegram API}
+ * @param {object} options
  * @param {string} botToken токен Telegram бота от \@BotFather.
- * @param {string} webAppUrl ссылка на WebApp Google, для работы с ответами doGet(e).
- * @param {boolean} logRequest показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
+ * @param {string} [webAppUrl] ссылка на WebApp Google, для работы с ответами doGet(e).
+ * @param {boolean} [logRequest] показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
  * @returns {TGbot} экземпляр class TGbot.
+ * @throws {Error} - если пропущен botToken
  */
 function bot(botToken, webAppUrl, logRequest) {
-  return new TGbot({
-    botToken,
-    webAppUrl,
-    logRequest,
-  });
+  if (botToken) {
+    return new TGbot({
+      botToken: botToken,
+      webAppUrl: webAppUrl,
+      logRequest: logRequest,
+    });
+  } else {
+    helper.miss_parameter(
+      `Token to access the HTTP Telegram API { botToken: "xxxxxxxxxxxxxxxxxxxxxx" }`
+    );
+  }
 }

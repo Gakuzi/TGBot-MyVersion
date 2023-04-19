@@ -1,6 +1,22 @@
 class Helper {
   constructor() {}
 
+  getMethodsOfClass(classObj) {
+    // список методов класса
+    return Object.getOwnPropertyNames(classObj.prototype).filter(
+      (property) => typeof classObj.prototype[property] === "function"
+    );
+  }
+
+  /**
+   * Проверка наличия обязательных параметров для отправки запроса
+   * @param {string} param пропущенный параметр
+   * @return {Error} возвращает Error(`Пропущен ${param}`) в случае пропуска
+   */
+  miss_parameter(param) {
+    throw new Error(`Пропущен ${param}`);
+  }
+
   toUpperCaseSnakeCase(str) {
     return /(?=[A-ZА-ЯЁ])/g
       [Symbol.split](str)
@@ -66,8 +82,7 @@ class Helper {
   }
 
   /**
-   * @method log
-   * @description Печть сообщения
+   * Печть сообщения
    * @param {string} message
    */
   log(message) {
@@ -104,6 +119,10 @@ class Helper {
         }
       }
     }
+  }
+
+  getType(obj) {
+    return Object.prototype.toString.call(obj).split(" ")[1].replace("]", "");
   }
 
   isInArray(array, index) {
