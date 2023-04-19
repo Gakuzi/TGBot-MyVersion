@@ -178,6 +178,7 @@ class TGbot extends _Client {
    * @see {@link https://core.telegram.org/bots/api#getwebhookinfo Telegram API}
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
+
   getWebhookInfo() {
     const query = {
       url: String(this.__webAppUrl),
