@@ -3,7 +3,7 @@
  * @see https://core.telegram.org/bots/api#available-methods
  * @enum {string}
  */
-const Methods = {
+const Methods = Object.freeze({
   // Getting Updates
   GET_UPDATES: "getUpdates", // не подходит
   SET_WEBHOOK: "setWebhook", // +
@@ -109,15 +109,7 @@ const Methods = {
   SEND_GAME: "sendGame", // !!!!!!!!!!!!!!
   SET_GAME_SCORE: "setGameScore", // !!!!!!!!!!!!!!
   GET_GAME_HIGH_SCORES: "getGameHighScores", // !!!!!!!!!!!!!!
-};
-
-/**
- * @typedef {{
- *   botToken: string;
- *   webAppUrl?: string;
- *   logRequest?: boolean;
- * }} Client
- */
+});
 
 const BLOB_FIELDS = [
   "thumb",
@@ -133,7 +125,7 @@ const BLOB_FIELDS = [
   "certificate",
 ];
 
-const DEFAULT_EXTENSIONS = {
+const DEFAULT_EXTENSIONS = Object.freeze({
   audio: "mp3",
   photo: "jpg",
   sticker: "webp",
@@ -141,15 +133,15 @@ const DEFAULT_EXTENSIONS = {
   animation: "mp4",
   video_note: "mp4",
   voice: "ogg",
-};
+});
 
 /**
  * Расшифровка кодов ответа (состояния) HTTP.
  * @see https://developer.mozilla.org/ru/docs/Web/HTTP/Status
  * @enum {string}
  */
-const ResponseCodesHTTP = {
-  SUCCESS: {
+const ResponseCodesHTTP = Object.freeze({
+  SUCCESS: Object.freeze({
     200: "200 OK («хорошо»)",
     201: "201 Created («создано»)",
     202: "202 Accepted («принято»)",
@@ -160,8 +152,8 @@ const ResponseCodesHTTP = {
     207: "207 Multi-Status («многостатусный»)",
     208: "208 Already Reported («уже сообщалось»)",
     226: "226 IM Used («использовано IM»)",
-  },
-  OTHERCODES: {
+  }),
+  OTHERCODES: Object.freeze({
     100: "100 Continue («продолжай»)",
     101: "101 Switching Protocols («переключение протоколов»)",
     102: "102 Processing («идёт обработка»);",
@@ -226,5 +218,5 @@ const ResponseCodesHTTP = {
     524: "524 A Timeout Occurred («время ожидания истекло»)",
     525: "525 SSL Handshake Failed («квитирование SSL не удалось»)",
     526: "526 Invalid SSL Certificate («недействительный сертификат SSL»)",
-  },
-};
+  }),
+});

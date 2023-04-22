@@ -37,9 +37,9 @@ user_id: ${message.contact?.user_id}
 
   const Bot = new TGbot({ botToken: botToken });
 
-  adminIds.map((id) =>
-   Bot.sendMessage({
-      chat_id: id,
+  adminIds.map((chat_id) =>
+    Bot.sendMessage({
+      chat_id: chat_id,
       text: msg,
       reply_markup: KEYBOARD_AUTHORIZATION,
     })
@@ -52,23 +52,37 @@ function writeNewUser(contact) {
   const sheet =
     ss.getSheetByName("USERS") || ss.insertSheet("USERS").setTabColor("RED");
 
-  if (sheet.getLastRow() > 0)
-    sheet.appendRow([
-      new Date(),
-      contact?.user_id,
-      contact?.first_name,
-      contact?.phone_number,
-    ]);
-  else {
+  const lastRow = sheet.getLastRow();
+  const user_info = [
+    new Date(),
+    contact?.user_id,
+    contact?.first_name,
+    contact?.phone_number?.replace(/\+/, ""),
+    false,
+  ];
+  console.log(lastRow, user_info);
+
+  if (lastRow === 0) {
     sheet.appendRow(["Дата", "user id", "Имя", "Телефон", "Авторизация"]);
-    sheet.appendRow([
-      new Date(),
-      contact?.user_id,
-      contact?.first_name,
-      contact?.phone_number,
-    ]);
+    sheet.appendRow(user_info);
+  } else {
+    const finder = sheet
+      .getRange(2, 2, lastRow, 1)
+      .createTextFinder(contact?.user_id)
+      .matchEntireCell(true)
+      .findNext();
+
+    if (finder) {
+      const row = finder.getRow();
+      if (row > 0) {
+        sheet.getRange(row, 1, 1, user_info.length).setValues([user_info]);
+      }
+    } else {
+      sheet.appendRow(user_info);
+    }
+
+    SpreadsheetApp.flush();
   }
-  SpreadsheetApp.flush();
 }
 
 // сообщение ожидание ответа
@@ -99,30 +113,26 @@ ${message?.text.split("\n")[1].split(" ")[1]}, авторизация прошл
 }
 
 // проверка авторизован user или нет
-function authorizeNewUser(message, value) {
+function authorizeNewUser(message, status) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("USERS");
-  const userIdsValues = sheet.getRange(2, 2, sheet.getLastRow(), 1).getValues();
-  let userRows = [];
-  for (let i = userIdsValues.length - 1; i >= 0; i--) {
-    if (
-      userIdsValues[i][0] &&
-      userIdsValues[i][0] === +message?.text.match(/\d+/gm)[1]
-    ) {
-      userRows.push(i + 2);
-      // break;
-    }
-  }
+  const sheet =
+    ss.getSheetByName("USERS") || ss.insertSheet("USERS").setTabColor("RED");
+  const lastRow = sheet.getLastRow();
 
-  if (userRows && userRows.length === 1) {
-    sheet.getRange(userRows[0], 5).setValue(value);
+  if (lastRow > 0) {
+    const user_id = +message?.text.match(/\d+/gm)[1];
+    const row = sheet
+      .getRange(2, 2, lastRow, 1)
+      .createTextFinder(user_id)
+      .matchEntireCell(true)
+      .findNext()
+      .getRow();
+
+    sheet.getRange(row, 5).setValue(status);
     SpreadsheetApp.flush();
     return true;
-  } else if (userRows.length > 1) {
-    userRows.map((item) => sheet.getRange(item, 5).setValue(value));
-    SpreadsheetApp.flush();
-    return true;
-  } else return false;
+  }
+  throw new Error("USERS empty");
 }
 
 // список user_id
@@ -130,12 +140,14 @@ function usersList() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet =
     ss.getSheetByName("USERS") || ss.insertSheet("USERS").setTabColor("RED");
+
   const lastRow = sheet.getLastRow();
-  if (lastRow == 0) return {}; // undefined;
+  if (lastRow <= 1) return {}; // undefined;
   let data = sheet
     .getRange("A1:E" + lastRow)
     .getValues()
     .filter((i) => i[4] === true);
+
   const dict = {};
   data.map((item, i) => (dict[item[1]] = i));
   return dict;

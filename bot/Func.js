@@ -574,6 +574,39 @@ function lastRow(sh, col) {
 }
 
 /**
+ * Найти номер строки с датой.
+ * @param {SpreadsheetApp.ActiveSpreadsheet.Sheet} sh лист книги.
+ * @param {number} lastDateColumn номер столбца "lastChangeDate".
+ * @param {number} lastRow последняя строка на листе.
+ * @param {Date} checkDate дата для сверки.
+ * @returns {number} номер строки с датой
+ */
+const serchDateRowLastIndex = (sh, lastDateColumn, lastRow, checkDate) => {
+  const values = sh.getRange(2, lastDateColumn, lastRow - 1, 1).getValues();
+  const targetTimestamp = new Date(checkDate).getTime();
+  const index = values.findLastIndex(
+    (array) => new Date(array[0]).getTime() <= targetTimestamp
+  );
+  if (index !== -1) return index + 2;
+  else return 0;
+};
+
+/**
+ * Найти номер строки с датой.
+ * @param {SpreadsheetApp.ActiveSpreadsheet.Sheet} sh лист книги.
+ * @param {number} lastDateColumn номер столбца "lastChangeDate".
+ * @param {number} lastRow последняя строка на листе.
+ * @param {number} checkValue дата для сверки.
+ * @returns {number} номер строки с датой
+ */
+const serchRowLastIndex = (sh, lastDateColumn, lastRow, checkValue) => {
+  const values = sh.getRange(2, lastDateColumn, lastRow - 1, 1).getValues();
+  const index = values.findLastIndex((array) => array[0] === checkValue);
+  if (index !== -1) return index + 2;
+  else return 0;
+};
+
+/**
  * Удаляет пустые столбцы на листе
  * @param {SpreadsheetApp.Sheet} sh ссылка на лист
  */

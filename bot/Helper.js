@@ -94,6 +94,26 @@ class Helper {
     );
   }
 
+  /**
+   * Clean tag HTML
+   * @param {string} text which will be cleaned
+   */
+  clearHTML(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /**
+   * Clean tag Markdown
+  @param {string} text which will be cleaned
+  */
+  clearMarkdown(s) {
+    return s
+      .replace(/_/g, "\\_")
+      .replace(/\*/g, "\\*")
+      .replace(/\[/g, "\\[")
+      .replace(/`/g, "\\`");
+  }
+
   forEach(obj, fn) {
     // Don't bother if no value provided
     if (obj === null || typeof obj === "undefined") {

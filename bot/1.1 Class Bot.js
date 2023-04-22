@@ -2736,10 +2736,10 @@ class TGbot extends _Client {
       helper.miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
-    return `${this._apiBase}file/bot${this._botToken}/${
+    return `${this.__fileUrl}${
       JSON.parse(
         UrlFetchApp.fetch(
-          `${this._apiTelegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
+          `${this.__telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
         ).getContentText()
       ).result.file_path
     }`;
@@ -2760,7 +2760,7 @@ class TGbot extends _Client {
 
     return JSON.parse(
       UrlFetchApp.fetch(
-        `${this._apiTelegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
+        `${this.__telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
       ).getContentText()
     ).result.file_path;
   }
@@ -2772,7 +2772,7 @@ class TGbot extends _Client {
    */
   getFileDownloadUrl(path) {
     if (!path) helper.miss_parameter("path путь до папки.");
-    return `${this._apiBase}file/bot${this._botToken}/${path}`;
+    return `${this.__fileUrl}${path}`;
   }
 
   /**
@@ -2886,23 +2886,16 @@ class TGbot extends _Client {
 /**
  * Вызывает методы для работы с
  * {@link https://openapi.wb.ru/content.html Telegram API}
- * @param {object} options
  * @param {string} botToken токен Telegram бота от \@BotFather.
  * @param {string} [webAppUrl] ссылка на WebApp Google, для работы с ответами doGet(e).
  * @param {boolean} [logRequest] показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
- * @returns {TGbot} экземпляр class TGbot.
- * @throws {Error} - если пропущен botToken
+ * @returns {TGbot|ValidationError} экземпляр class TGbot, если пропущен botToken или не валиден
  */
 function bot(botToken, webAppUrl, logRequest) {
-  if (botToken) {
+  if (checkToken(botToken))
     return new TGbot({
       botToken: botToken,
       webAppUrl: webAppUrl,
       logRequest: logRequest,
     });
-  } else {
-    helper.miss_parameter(
-      `Token to access the HTTP Telegram API { botToken: "xxxxxxxxxxxxxxxxxxxxxx" }`
-    );
-  }
 }
