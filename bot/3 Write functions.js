@@ -1,3 +1,95 @@
+class UsersCache {
+  constructor(cacheName) {
+    this.cacheName = cacheName || "users";
+    this.cacheService = CacheService.getScriptCache();
+  }
+
+  get() {
+    const data = this.cacheService.get(this.cacheName);
+    return data ? JSON.parse(data) : null;
+  }
+
+  put(object, expiration) {
+    this.cacheService.put(
+      this.cacheName,
+      JSON.stringify(object),
+      expiration || 21600
+    );
+  }
+
+  delete() {
+    this.cacheService.remove(this.cacheName);
+  }
+}
+
+function getUsers() {
+  return new UsersCache().get();
+}
+
+function setUserStatus(userId, status, debug = false) {
+  const cache = new UsersCache(userId);
+  cache.put({ status: status });
+
+  if (debug) return cache.get();
+}
+
+function deleteUser(userId) {
+  new UsersCache(userId).delete();
+}
+
+class UsersProperties {
+  constructor(property) {
+    this.property = property || "users";
+    this.propertiesService = PropertiesService.getScriptProperties();
+  }
+
+  get() {
+    return JSON.parse(this.propertiesService.getProperty(this.property));
+  }
+
+  put(object) {
+    this.propertiesService.setProperty(this.property, JSON.stringify(object));
+  }
+
+  delete(key) {
+    const object = this.get();
+    if (key in object) {
+      delete object[key];
+      this.put(object);
+    }
+  }
+
+  clear() {
+    this.propertiesService.deleteProperty(this.property);
+  }
+}
+
+function getUsers() {
+  return new UsersProperties().get();
+}
+
+function setUserStatus(userId, status, debug = false) {
+  const cache = new UsersProperties();
+  let users = cache.get();
+
+  if (!users) {
+    users = {};
+  }
+
+  if (!users[userId] || users[userId].status !== false) {
+    users[userId] = {
+      status: status,
+    };
+    cache.put(users);
+  }
+
+  if (debug) return cache.get();
+}
+
+function deleteUser(userId) {
+  new UsersProperties().delete(userId);
+}
+
 function startAuthorizationMenu(message, botToken) {
   const msg = `
 Привет, ${message?.from?.first_name} 👋

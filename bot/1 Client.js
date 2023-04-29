@@ -59,27 +59,23 @@ class _Client {
     }
 
     if (this.logRequest)
-      console.log(
-        `URL >>> ${fullUrl},\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
+      helper.log(
+        `URL >>> ${fullUrl}\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
       );
 
     let response = UrlFetchApp.fetch(fullUrl, options);
 
     const code = response.getResponseCode();
     const responseJson = response.getContentText();
-
     if (code in ResponseCodesHTTP.OTHERCODES) {
       if (this.logRequest)
-        console.log(
-          "RESPONSE >>>",
-          ResponseCodesHTTP.OTHERCODES[code],
-          "\n",
-          responseJson
+        helper.log(
+          `RESPONSE >>> ${ResponseCodesHTTP.OTHERCODES[code]}\n${responseJson}`
         );
       return new TelegramRequestError(JSON.parse(responseJson));
     } else {
       if (this.logRequest)
-        console.log("RESPONSE >>>", ResponseCodesHTTP.SUCCESS[code]);
+        helper.log(`RESPONSE >>> ${ResponseCodesHTTP.SUCCESS[code]}`);
       return JSON.parse(responseJson);
     }
   }
