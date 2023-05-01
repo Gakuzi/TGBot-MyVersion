@@ -178,7 +178,6 @@ class TGbot extends _Client {
    * @see {@link https://core.telegram.org/bots/api#getwebhookinfo Telegram API}
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
-
   getWebhookInfo() {
     const query = {
       url: String(this.__webAppUrl),
@@ -754,6 +753,105 @@ class TGbot extends _Client {
   }
 
   /**
+   * Метод изменения имени бота.
+   * @see {@link https://core.telegram.org/bots/api#setmyname Telegram API}
+   * @param {string} [name] новое имя бота; 0-64 символа. Передайте пустую строку, чтобы удалить выделенное имя для данного языка.
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {boolean} возвращает True в случае успеха.
+   */
+  setMyName(name = "", language_code = "") {
+    const query = {
+      name: name ? String(name) : null,
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.SET_MY_NAME, query);
+  }
+
+  /**
+   * Метод получения текущего имени бота для данного пользовательского языка.
+   * @see {@link https://core.telegram.org/bots/api#getmyname Telegram API}
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {BotName} возвращает BotName в случае успеха.
+   */
+  getMyName(language_code = "") {
+    const query = {
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.GET_MY_NAME, query);
+  }
+
+  /**
+   * Метод изменения описания бота, которое отображается в чате с ботом, если чат пуст.
+   * @see {@link https://core.telegram.org/bots/api#setmydescription Telegram API}
+   * @param {string} [description] новое описание бота; 0-512 символов.
+   * Передайте пустую строку, чтобы удалить специальное описание для данного языка.
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {boolean} возвращает True в случае успеха.
+   */
+  setMyDescription(description = "", language_code = "") {
+    const query = {
+      description: description ? String(description) : null,
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.SET_MY_DESCRIPTION, query);
+  }
+
+  /**
+   * Метод получения текущего описания бота для данного пользовательского языка.
+   * @see {@link https://core.telegram.org/bots/api#getmydescription Telegram API}
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {BotDescription} возвращает BotDescription в случае успеха.
+   */
+  getMyDescription(language_code = "") {
+    const query = {
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.GET_MY_DESCRIPTION, query);
+  }
+
+  /**
+   * Метод изменения краткого описания бота, которое отображается на странице профиля бота и отправляется вместе со ссылкой,
+   * когда пользователи делятся ботом.
+   * @see {@link https://core.telegram.org/bots/api#setmyshortdescription Telegram API}
+   * @param {string} [short_description] новое краткое описание бота; 0-120 символов.
+   * Передайте пустую строку, чтобы удалить специальное краткое описание для данного языка.
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {boolean} возвращает True в случае успеха.
+   */
+  setMyShortDescription(short_description = "", language_code = "") {
+    const query = {
+      short_description: short_description ? String(short_description) : null,
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.SET_MY_SHORT_DESCRIPTION, query);
+  }
+
+  /**
+   * Метод получения текущего описания бота для данного пользовательского языка.
+   * @see {@link https://core.telegram.org/bots/api#getmyshortdescription Telegram API}
+   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
+   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
+   * @returns {BotShortDescription} возвращает BotShortDescription в случае успеха.
+   */
+  getMyShortDescription(language_code = "") {
+    const query = {
+      language_code: language_code ? language_code : null,
+    };
+
+    return this.request(Methods.GET_MY_SHORT_DESCRIPTION, query);
+  }
+
+  /**
    * Метод изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
    * @see {@link https://core.telegram.org/bots/api#setchatmenubutton Telegram API}
    * @param {(string|number)} [chat_id] уникальный идентификатор целевого приватного чата.
@@ -1156,7 +1254,7 @@ class TGbot extends _Client {
    * @property {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в тексте сообщения, который можно указать вместо parse_mode.
    * @property {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
    * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageText({
     chat_id = "",
@@ -1200,7 +1298,7 @@ class TGbot extends _Client {
    * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
    * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
    * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageCaption({
     chat_id = "",
@@ -1247,7 +1345,7 @@ class TGbot extends _Client {
    * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
    * @property {InputMedia} options.media объект JSON для нового мультимедийного содержимого сообщения.
    * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageMedia({
     chat_id = "",
@@ -1281,7 +1379,7 @@ class TGbot extends _Client {
    * @property {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
    * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
    * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | Boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается отредактированное сообщение, в противном случае возвращается True.
+   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается отредактированное сообщение, в противном случае возвращается True.
    */
   editMessageReplyMarkup({
     chat_id = "",

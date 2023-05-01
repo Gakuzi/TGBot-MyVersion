@@ -12,7 +12,7 @@ class _Client {
    * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
    */
   constructor({ botToken, webAppUrl, logRequest }) {
-    this.apiVersion = "6.6";
+    this.apiVersion = "6.7";
     this.__botToken = botToken;
     this.__webAppUrl = webAppUrl;
     this.logRequest = logRequest || false;

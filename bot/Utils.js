@@ -3,9 +3,10 @@
  * @see https://core.telegram.org/bots/api#available-methods
  * @enum {string}
  */
+
 const Methods = Object.freeze({
   // Getting Updates
-  GET_UPDATES: "getUpdates", // не подходит
+  GET_UPDATES: "getUpdates", // +
   SET_WEBHOOK: "setWebhook", // +
   DELETE_WEBHOOK: "deleteWebhook", // +
   GET_WEBHOOK_INFO: "getWebhookInfo", // +
@@ -26,8 +27,6 @@ const Methods = Object.freeze({
   SEND_VIDEO_NOTE: "sendVideoNote", // +
   SEND_MEDIA_GROUP: "sendMediaGroup", // +
   SEND_LOCATION: "sendLocation", // +
-  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation", // +
-  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation", // +
   SEND_VENUE: "sendVenue", // +
   SEND_CONTACT: "sendContact", // +
   SEND_POLL: "sendPoll", // +
@@ -35,7 +34,6 @@ const Methods = Object.freeze({
   SEND_CHAT_ACTION: "sendChatAction", // +
   GET_USER_PROFILE_PHOTOS: "getUserProfilePhotos", // +
   GET_FILE: "getFile", // +
-  KICK_CHAT_MEMBER: "kickChatMember", // !!!!!!!!!!!!!!
   BAN_CHAT_MEMBER: "banChatMember", // +
   UNBAN_CHAT_MEMBER: "unbanChatMember", // +
   RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
@@ -50,6 +48,7 @@ const Methods = Object.freeze({
   REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink", // !!!!!!!!!!!!!!
   APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest", // !!!!!!!!!!!!!!
   DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest", // !!!!!!!!!!!!!!
+
   SET_CHAT_PHOTO: "setChatPhoto", // +
   DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
   SET_CHAT_TITLE: "setChatTitle", // +
@@ -64,10 +63,30 @@ const Methods = Object.freeze({
   GET_CHAT_MEMBER: "getChatMember", // +
   SET_CHAT_STICKER_SET: "setChatStickerSet", // !!!!!!!!!!!!!!
   DELETE_CHAT_STICKER_SET: "deleteChatStickerSet", // !!!!!!!!!!!!!!
+
+  GET_FORUM_TOPIC_ICON_STICKERS: "getForumTopicIconStickers", // !!!!!!!!!!!!!
+  CREATE_FORUM_TOPIC: "createForumTopic", // !!!!!!!!!!!!!
+  EDIT_FORUM_TOPIC: "editForumTopic", // !!!!!!!!!!!!!
+  CLOSE_FORUM_TOPIC: "closeForumTopic", // !!!!!!!!!!!!!
+  REOPEN_FORUM_TOPIC: "reopenForumTopic", // !!!!!!!!!!!!!
+  DELETE_FORUM_TOPIC: "deleteForumTopic", // !!!!!!!!!!!!!
+  UNPIN_ALL_FORUM_TOPIC_MESSAGES: "unpinAllForumTopicMessages", // !!!!!!!!!!!!!
+  EDIT_GENERAL_FORUM_TOPIC: "editGeneralForumTopic", // !!!!!!!!!!!!!
+  CLOSE_GENERAL_FORUM_TOPIC: "closeGeneralForumTopic", // !!!!!!!!!!!!!
+  REOPEN_GENERAL_FORUM_TOPIC: "reopenGeneralForumTopic", // !!!!!!!!!!!!!
+  HIDE_GENERAL_FORUM_TOPIC: "hideGeneralForumTopic", // !!!!!!!!!!!!!
+  UNHIDE_GENERAL_FORUM_TOPIC: "unhideGeneralForumTopic", // !!!!!!!!!!!!!
+
   ANSWER_CALLBACK_QUERY: "answerCallbackQuery", // +
   SET_MY_COMMANDS: "setMyCommands", // +
   DELETE_MY_COMMANDS: "deleteMyCommands", // +
   GET_MY_COMMANDS: "getMyCommands", // +
+  SET_MY_NAME: "setMyName", // +
+  GET_MY_NAME: "getMyName", // +
+  SET_MY_DESCRIPTION: "setMyDescription", // +
+  GET_MY_DESCRIPTION: "getMyDescription", // +
+  SET_MY_SHORT_DESCRIPTION: "setMyShortDescription", // +
+  GET_MY_SHORT_DESCRIPTION: "getMyShortDescription", // +
   SET_CHAT_MENU_BUTTON: "setChatMenuButton", // +
   GET_CHAT_MENU_BUTTON: "getChatMenuButton", // +
   SET_MY_DEFAULT_ADMINISTRATOR_RIGHTS: "setMyDefaultAdministratorRights", // +
@@ -77,6 +96,8 @@ const Methods = Object.freeze({
   EDIT_MESSAGE_TEXT: "editMessageText", // +
   EDIT_MESSAGE_CAPTION: "editMessageCaption", // +
   EDIT_MESSAGE_MEDIA: "editMessageMedia", // +
+  EDIT_MESSAGE_LIVE_LOCATION: "editMessageLiveLocation", // +
+  STOP_MESSAGE_LIVE_LOCATION: "stopMessageLiveLocation", // +
   EDIT_MESSAGE_REPLY_MARKUP: "editMessageReplyMarkup", // +
   STOP_POLL: "stopPoll", // +
   DELETE_MESSAGE: "deleteMessage", // +
@@ -84,13 +105,20 @@ const Methods = Object.freeze({
   // Stickers
   SEND_STICKER: "sendSticker", // +
   GET_STICKER_SET: "getStickerSet", // +
-  UPLOAD_STICKER_FILE: "uploadStickerFile",
+
   GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers", // !!!!!!!!!!!!!!
+  UPLOAD_STICKER_FILE: "uploadStickerFile",
   CREATE_NEW_STICKER_SET: "createNewStickerSet", // !!!!!!!!!!!!!!
   ADD_STICKER_TO_SET: "addStickerToSet", // !!!!!!!!!!!!!!
   SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet", // !!!!!!!!!!!!!!
   DELETE_STICKER_FROM_SET: "deleteStickerFromSet", // !!!!!!!!!!!!!!
-  SET_STICKER_SET_THUMB: "setStickerSetThumb", // !!!!!!!!!!!!!!
+  SET_STICKER_EMOJI_LIST: "setStickerEmojiList", // !!!!!!!!!!!!!!
+  SET_STICKER_KEYWORDS: "setStickerKeywords", // !!!!!!!!!!!!!!
+  SET_STICKER_MASK_POSITION: "setStickerMaskPosition", // !!!!!!!!!!!!!!
+  SET_STICKER_SET_TITLE: "setStickerSetTitle", // !!!!!!!!!!!!!!
+  SET_STICKER_SET_THUMBNAIL: "setStickerSetThumbnail", // !!!!!!!!!!!!!!
+  SET_CUSTOM_EMOJI_STICKER_SET_THUMBNAIL: "setCustomEmojiStickerSetThumbnail", // !!!!!!!!!!!!!!
+  DELETE_STICKER_SET: "deleteStickerSet", // !!!!!!!!!!!!!!
 
   // Inline mode
   ANSWER_INLINE_QUERY: "answerInlineQuery", // +
