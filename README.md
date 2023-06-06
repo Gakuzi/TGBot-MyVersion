@@ -21,7 +21,7 @@ ID библиотеки:
 1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg
 ```
 
-**Актуальная версия**: 81 от 22 апр., 17:24
+**Актуальная версия**: 82 от 6 июн., 23:02
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
@@ -57,7 +57,8 @@ const webAppUrl = "Optional[<webAppUrl>]"
 const logRequest = "Optional[<logRequest>]"
 
 const Bot = TGbot.bot(botToken, webAppUrl, logRequest);
-
+// Bot.setLogRequest(); // если не пердавать logRequest, как аргумент
+// Bot.getInfo(); // информация о боте и по доступным методам
 ```
 
 ## Использование методов

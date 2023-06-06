@@ -13,21 +13,63 @@ class _Client {
    */
   constructor({ botToken, webAppUrl, logRequest }) {
     this.apiVersion = "6.7";
-    this.__botToken = botToken;
-    this.__webAppUrl = webAppUrl;
+    this.__botToken = botToken; // ? botToken: PropertiesService.getScriptProperties().getProperties().BOT_TOKEN;
+    this.__webAppUrl = webAppUrl; // ? webAppUrl : ScriptApp.getService().getUrl();
     this.logRequest = logRequest || false;
     this.baseUrl = "https://api.telegram.org/";
-    this.__telegramUrl = `${this.baseUrl}bot${this.__botToken}/`;
-    this.__fileUrl = `${this.baseUrl}/file/bot${this.__botToken}/`;
+    // this.__telegramUrl = `${this.baseUrl}bot${this.__botToken}/`;
+    // this.__fileUrl = `${this.baseUrl}/file/bot${this.__botToken}/`;
   }
 
+  /**
+   * @type {{string}}
+   */
   getToken() {
     return this.__botToken;
   }
 
+  setLogRequest() {
+    this.logRequest = true;
+  }
+
+  setToken(botToken) {
+    this.__botToken = botToken;
+  }
+
+  /**
+   * @type {{string}}
+   */
+  get telegramUrl() {
+    return `${this.baseUrl}bot${this.__botToken}/`;
+  }
+
+  /**
+   * @type {{string}}
+   */
+  get fileUrl() {
+    return `${this.baseUrl}/file/bot${this.__botToken}/`;
+  }
+
   /**
    * Метод, для отправки запроса к API Telegram.
-   * @param {string} method метод по которому делается запрос.
+   * @param {string} method метод по которому делается запрос https://core.telegram.org/bots/api#available-methods.
+   * @param {any} data
+   * @returns {globalThis.URL_Fetch.HTTPResponse}
+   */
+  getResponse(method, data) {
+    const httpResponse = UrlFetchApp.fetch(`${this.telegramUrl}${method}`, {
+      method: "POST",
+      payload: JSON.stringify(data),
+      muteHttpExceptions: true,
+      followRedirects: true,
+      validateHttpsCertificates: true,
+    });
+    return httpResponse;
+  }
+
+  /**
+   * Метод, для отправки запроса к API Telegram.
+   * @param {string} method метод по которому делается запрос https://core.telegram.org/bots/api#available-methods.
    * @param {string} payload дополнительные параметры запроса.
    * @param {string} [contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data".
    * @returns {JSON|TelegramRequestError} в случае успеха возвращается объект JSON.
@@ -35,7 +77,7 @@ class _Client {
   request(method, payload, contentType = "application/json") {
     if (!method) helper.miss_parameter("method метода для запроса.");
 
-    const fullUrl = `${this.__telegramUrl}${method}`;
+    const fullUrl = `${this.telegramUrl}${method}`;
 
     const options = {
       method: payload ? "POST" : "GET",

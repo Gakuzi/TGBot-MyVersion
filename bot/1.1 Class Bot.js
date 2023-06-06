@@ -29,6 +29,8 @@ class TGbot extends _Client {
       apiVersion: this.apiVersion,
       description: "A GAS wrapper for the Telegram API",
       baseUrl: this.baseUrl,
+      botToken: this.__botToken,
+      webAppUrl: this.__webAppUrl,
       methods: helper.getMethodsOfClass(TGbot),
     };
     return helper.log(info);
@@ -2834,10 +2836,10 @@ class TGbot extends _Client {
       helper.miss_parameter(
         "file_id идентификатор файла для получения информации."
       );
-    return `${this.__fileUrl}${
+    return `${this.fileUrl}${
       JSON.parse(
         UrlFetchApp.fetch(
-          `${this.__telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
+          `${this.telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
         ).getContentText()
       ).result.file_path
     }`;
@@ -2858,7 +2860,7 @@ class TGbot extends _Client {
 
     return JSON.parse(
       UrlFetchApp.fetch(
-        `${this.__telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
+        `${this.telegramUrl}${Methods.GET_FILE}?file_id=${file_id}`
       ).getContentText()
     ).result.file_path;
   }
@@ -2870,7 +2872,7 @@ class TGbot extends _Client {
    */
   getFileDownloadUrl(path) {
     if (!path) helper.miss_parameter("path путь до папки.");
-    return `${this.__fileUrl}${path}`;
+    return `${this.fileUrl}${path}`;
   }
 
   /**
