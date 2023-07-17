@@ -268,7 +268,7 @@ class TGbot extends _Client {
    * @returns {boolean} возвращает True в случае успеха.
    */
   setMyCommands(commands, scope = "", language_code = "") {
-    if (!commands || commands === [])
+    if (!commands || commands == [])
       helper.miss_parameter(
         "commands объект JSON, описывающий новые права администратора по умолчанию."
       );
@@ -509,7 +509,7 @@ class TGbot extends _Client {
       helper.miss_parameter(
         "user_id уникальный идентификатор целевого пользователя."
       );
-    if (!permissions || permissions === {})
+    if (!permissions || permissions == {})
       helper.miss_parameter(
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );
@@ -537,7 +537,7 @@ class TGbot extends _Client {
       helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
       );
-    if (!permissions || permissions === {})
+    if (!permissions || permissions == {})
       helper.miss_parameter(
         "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
       );

@@ -21,7 +21,7 @@ ID библиотеки:
 1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg
 ```
 
-**Актуальная версия**: 83 от 6 июн., 23:03
+**Актуальная версия**: 84 от 17 июл., 17:32
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
@@ -225,6 +225,42 @@ Bot.sendMessage({
   reply_markup: Keyboard.remove(),
 });
 
+// Inline календарь
+Bot.sendMessage({
+  chat_id: admins[0],
+  text: `Выберите дату:`,
+  reply_markup: TGbot.calendar(), // без параметров, текущий месяц
+  });
+
+// Обратотка callback Inline календаря
+/** @type {CallbackQuery}*/
+const callback = contents?.callback_query;
+
+if (callback) {
+  const cb_user_id = callback?.from?.id;
+  const cb_data = callback?.data;
+  const cb_msg = callback?.message;
+
+  if (new Date(cb_data.split(":")[1]) instanceof Date) {
+    date = cb_data.split(":")[1];
+
+    if (/DAY/.test(cb_data))
+      return Bot.editMessageText({
+        message_id: cb_msg.message_id,
+        chat_id: cb_user_id,
+        text: `Выбрана дата: ${date}`,
+       });
+    else {
+      [year, month, day] = date.split("-");
+      return Bot.editMessageReplyMarkup({
+        message_id: cb_msg.message_id,
+        chat_id: cb_user_id,
+        reply_markup: TGbot.calendar(month, year), // пагинация <<< >>>
+      });
+    }
+  }
+}
+
 ```
 
 ## Webhook - doPost(e)
@@ -297,6 +333,7 @@ function doPost(e) {
 
 ## Обновление:
 
+**17.07.2023** Добавлена функция для создания Inline календаря (см. пример Кнопки клавиатуры)
 **28.01.2023** Добавлен файл Types.js, автор [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br/>
 Копируйте содержимое из файла Types.js в свой проект.<br/>
 После добавления, вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
