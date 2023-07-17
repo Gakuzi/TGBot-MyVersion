@@ -280,52 +280,48 @@ function doPost(e) {
       ss.getSheetByName("Debug") || ss.insertSheet("Debug").setTabColor("RED");
     debug.getRange(1, 1).setValue(JSON.stringify(contents, null, 7));
 
-    try {
-      if (contents.message) {
-        /**
-         * Копируйте содержимое из файла Types.js в свой проект.
-         * Позволяет использовать JSDoc для уточнения типов переменных, что
-         * открывает возможности для подсказок в онлайн-редакторе.
-        */
+    if (contents.message) {
+      /**
+       * Копируйте содержимое из файла Types.js в свой проект.
+       * Позволяет использовать JSDoc для уточнения типов переменных, что
+       * открывает возможности для подсказок в онлайн-редакторе.
+      */
 
-        /** @type {Message}*/
-        const msg = contents.message;
-        const text = msg.text;
-        const chat_id = msg.from.id;
+      /** @type {Message}*/
+      const msg = contents.message;
+      const text = msg.text;
+      const chat_id = msg.from.id;
 
-        if (TGbot.isBotCommandMessage(msg)) {
-          if (["/start"].includes(text))
-            Bot.sendMessage({ chat_id: chat_id, text: `Привет!` });
-          else if (["/myid"].includes(text))
-            Bot.replyMessage({
-              message: msg,
-              text: `Твой Telegram ID: ${chat_id}`,
-            });
-          else if (!["/start", "/myid"].includes(text))
-            Bot.answerMessage({
-              message: msg,
-              text: `Я не знаю такой команды ${text} 😕, попробуй еще раз.`,
-            });
-        } else if (["фото"].includes(text.toLowerCase())) {
-          const data = [
-            ["url фото", "Подпись 1"],
-            ["url фото", "Подпись 2"],
-            ["url фото", "Подпись 3"],
-          ].map((item) =>
-            TGbot.inputMediaPhoto({ media: item[0], caption: item[1] })
-          );
-
-          return Bot.sendMediaGroup({ chat_id: chat_id, media: data });
-        } else if (["видео"].includes(text.toLowerCase()))
-          return Bot.sendVideo({ chat_id: chat_id, video: "url видео" });
-        else
-          return Bot.sendMessage({
-            chat_id: chat_id,
-            text: `Не понимаю ¯\_(ツ)_/¯`,
+      if (TGbot.isBotCommandMessage(msg)) {
+        if (["/start"].includes(text))
+          Bot.sendMessage({ chat_id: chat_id, text: `Привет!` });
+        else if (["/myid"].includes(text))
+          Bot.replyMessage({
+            message: msg,
+            text: `Твой Telegram ID: ${chat_id}`,
           });
-      }
-    } catch (err) {
-      console.log(err.stack);
+        else if (!["/start", "/myid"].includes(text))
+          Bot.answerMessage({
+            message: msg,
+            text: `Я не знаю такой команды ${text} 😕, попробуй еще раз.`,
+          });
+      } else if (["фото"].includes(text.toLowerCase())) {
+        const data = [
+          ["url фото", "Подпись 1"],
+          ["url фото", "Подпись 2"],
+          ["url фото", "Подпись 3"],
+        ].map((item) =>
+          TGbot.inputMediaPhoto({ media: item[0], caption: item[1] })
+        );
+
+        return Bot.sendMediaGroup({ chat_id: chat_id, media: data });
+      } else if (["видео"].includes(text.toLowerCase()))
+        return Bot.sendVideo({ chat_id: chat_id, video: "url видео" });
+      else
+        return Bot.sendMessage({
+          chat_id: chat_id,
+          text: `Не понимаю ¯\_(ツ)_/¯`,
+        });
     }
   }
 }
