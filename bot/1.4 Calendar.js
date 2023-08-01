@@ -90,6 +90,7 @@ class Calendar {
     this.language = language || "ru";
     this.weekDays = configCalendar.language[this.language].weeksDays;
     this.namesOfMonths = configCalendar.language[this.language].months;
+    this.headerMonthYear = "";
     this.header = "";
     this.keyboard = new Keyboard();
     this.key = new Key();
@@ -103,13 +104,14 @@ class Calendar {
     const monthString = this.padNumber(this.month);
     const calendar = [];
 
+    this.headerMonthYear = [`${this.namesOfMonths[monthString]} ${this.year}`];
     this.header = [
       ["<<<", `PREV-MONTH:${this.previous()}`],
-      [`${this.namesOfMonths[monthString]} ${this.year}`, " "],
+      // [`${this.namesOfMonths[monthString]} ${this.year}`, " "],
       [">>>", `NEXT-MONTH:${this.next()}`],
     ];
 
-    calendar.push(this.header, this.weekDays);
+    calendar.push(this.headerMonthYear, this.header, this.weekDays);
 
     // let week =  Array.from({ length: this.dayNumber(date) }, () => [""]);
     let week = this.padding(this.dayNumber(date));
@@ -154,7 +156,7 @@ class Calendar {
           el.map((e) =>
             Number(e[0])
               ? this.key.callback(e[0], `DAY:${e[2]}-${e[1]}-${e[0]}`)
-              : this.weekDays.includes(e)
+              : this.weekDays.includes(e) || this.headerMonthYear.includes(e)
               ? this.key.callback(e, " ")
               : this.header.includes(e)
               ? this.key.callback(e[0], e[1])
