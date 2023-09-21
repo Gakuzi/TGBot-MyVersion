@@ -3,7 +3,6 @@
  * @see https://core.telegram.org/bots/api#available-methods
  * @enum {string}
  */
-
 const Methods = Object.freeze({
   // Getting Updates
   GET_UPDATES: "getUpdates", // +
@@ -37,7 +36,7 @@ const Methods = Object.freeze({
   BAN_CHAT_MEMBER: "banChatMember", // +
   UNBAN_CHAT_MEMBER: "unbanChatMember", // +
   RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
-  PROMOTE_CHAT_MEMBER: "promoteChatMember", // !!!!!!!!!!!!!!
+  PROMOTE_CHAT_MEMBER: "promoteChatMember", // +
   SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle", // +
   BAN_CHAT_SENDER_CHAT: "banChatSenderChat", // !!!!!!!!!!!!!!
   UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat", // !!!!!!!!!!!!!!
@@ -76,6 +75,7 @@ const Methods = Object.freeze({
   REOPEN_GENERAL_FORUM_TOPIC: "reopenGeneralForumTopic", // !!!!!!!!!!!!!
   HIDE_GENERAL_FORUM_TOPIC: "hideGeneralForumTopic", // !!!!!!!!!!!!!
   UNHIDE_GENERAL_FORUM_TOPIC: "unhideGeneralForumTopic", // !!!!!!!!!!!!!
+  UNPIN_ALL_GENERAL_FORUM_TOPIC_MESSAGES : "unpinAllGeneralForumTopicMessages", // !!!!!!!!!!!!!
 
   ANSWER_CALLBACK_QUERY: "answerCallbackQuery", // +
   SET_MY_COMMANDS: "setMyCommands", // +
@@ -107,7 +107,7 @@ const Methods = Object.freeze({
   GET_STICKER_SET: "getStickerSet", // +
 
   GET_CUSTOM_EMOJI_STICKERS: "getCustomEmojiStickers", // !!!!!!!!!!!!!!
-  UPLOAD_STICKER_FILE: "uploadStickerFile",
+  UPLOAD_STICKER_FILE: "uploadStickerFile", // !!!!!!!!!!!!!!
   CREATE_NEW_STICKER_SET: "createNewStickerSet", // !!!!!!!!!!!!!!
   ADD_STICKER_TO_SET: "addStickerToSet", // !!!!!!!!!!!!!!
   SET_STICKER_POSITION_IN_SET: "setStickerPositionInSet", // !!!!!!!!!!!!!!

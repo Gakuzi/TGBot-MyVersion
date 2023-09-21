@@ -12,7 +12,7 @@ class _Client {
    * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
    */
   constructor({ botToken, webAppUrl, logRequest }) {
-    this.apiVersion = "6.7";
+    this.apiVersion = "6.8";
     this.__botToken = botToken; // ? botToken: PropertiesService.getScriptProperties().getProperties().BOT_TOKEN;
     this.__webAppUrl = webAppUrl; // ? webAppUrl : ScriptApp.getService().getUrl();
     this.logRequest = logRequest || false;
@@ -81,6 +81,7 @@ class _Client {
 
     const options = {
       method: payload ? "POST" : "GET",
+      async: true,
       muteHttpExceptions: true,
       followRedirects: true,
       validateHttpsCertificates: true,
@@ -94,7 +95,7 @@ class _Client {
         options["Content-Type"] = contentType;
         options.payload = payload;
       } else {
-        options["contentType"] = contentType;
+        options.contentType = contentType;
         len ? (options.payload = JSON.stringify(payload)) : null;
       }
       options.method = len ? "POST" : "GET";

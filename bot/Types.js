@@ -1,7 +1,7 @@
 /**
- * Bot API 6.7
- * April 21, 2023
- * https://core.telegram.org/bots/api#april-21-2023
+ * Bot API 6.8
+ * August 18, 2023
+ * https://core.telegram.org/bots/api#august-18-2023
  */
 
 /**
@@ -385,7 +385,7 @@
  * @typedef {object} banChatMember
  * @property {string|number} chat_id - Unique identifier for the target group or username of the target supergroup or channel (in the format @channelusername).
  * @property {number} user_id - Unique identifier of the target user.
- * @property {number} [until_date] - Date when the user will be unbanned, unix time. If user is banned for more than 366 days or less than 30 seconds from the current time they are considered to be banned forever. Applied for supergroups and channels only.
+ * @property {number} [until_date] - Date when the user will be unbanned; Unix time. If user is banned for more than 366 days or less than 30 seconds from the current time they are considered to be banned forever. Applied for supergroups and channels only.
  * @property {boolean} [revoke_messages] - Pass True to delete all messages from the chat for the user that is being removed. If False, the user will be able to see messages in the group that were sent before the user was removed. Always True for supergroups and channels.
  * @returns {boolean}
  */
@@ -408,7 +408,7 @@
  * @property {number} user_id - Unique identifier of the target user.
  * @property {ChatPermissions} permissions - A JSON-serialized object for new user permissions.
  * @property {boolean} [use_independent_chat_permissions] - Pass True if chat permissions are set independently. Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios, can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply the can_send_messages permission.
- * @property {number} [until_date] - Date when restrictions will be lifted for the user, unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever.
+ * @property {number} [until_date] - Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever.
  * @returns {boolean}
  */
 
@@ -746,6 +746,14 @@
  * Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
  * @see {@link https://core.telegram.org/bots/api#unhidegeneralforumtopic unhideGeneralForumTopic}
  * @typedef {object} unhideGeneralForumTopic
+ * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+ * @returns {boolean}
+ */
+
+/**
+ * Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+ * @see {@link https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages unpinAllGeneralForumTopicMessages}
+ * @typedef {object} unpinAllGeneralForumTopicMessages
  * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
  * @returns {boolean}
  */
@@ -1352,6 +1360,7 @@
  * @property {ChatPhoto} [photo] - Optional. Chat photo. Returned only in getChat.
  * @property {string[]} [active_usernames] - Optional. If non-empty, the list of all active chat usernames; for private chats, supergroups and channels. Returned only in getChat.
  * @property {string} [emoji_status_custom_emoji_id] - Optional. Custom emoji identifier of emoji status of the other party in a private chat. Returned only in getChat.
+ * @property {number} [emoji_status_expiration_date] - Optional. Expiration date of the emoji status of the other party in a private chat in Unix time, if any. Returned only in getChat.
  * @property {string} [bio] - Optional. Bio of the other party in a private chat. Returned only in getChat.
  * @property {boolean} [has_private_forwards] - Optional. True, if privacy settings of the other party in the private chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
  * @property {boolean} [has_restricted_voice_and_video_messages] - Optional. True, if the privacy settings of the other party restrict sending voice and video note messages in the private chat. Returned only in getChat.
@@ -1403,6 +1412,7 @@
  * @property {Document} [document] - Optional. Message is a general file, information about the file.
  * @property {PhotoSize[]} [photo] - Optional. Message is a photo, available sizes of the photo.
  * @property {Sticker} [sticker] - Optional. Message is a sticker, information about the sticker.
+ * @property {Story} [story] - Optional. Message is a forwarded story.
  * @property {Video} [video] - Optional. Message is a video, information about the video.
  * @property {VideoNote} [video_note] - Optional. Message is a video note, information about the video message.
  * @property {Voice} [voice] - Optional. Message is a voice message, information about the file.
@@ -1592,8 +1602,9 @@
  * @see {@link https://core.telegram.org/bots/api#pollanswer PollAnswer}
  * @typedef {object} PollAnswer
  * @property {string} poll_id - Unique poll identifier.
- * @property {User} user - The user, who changed the answer to the poll.
- * @property {number[]} option_ids - 0-based identifiers of answer options, chosen by the user. May be empty if the user retracted their vote.
+ * @property {Chat} [voter_chat] - Optional. The chat that changed the answer to the poll, if the voter is anonymous.
+ * @property {User} [user] - Optional. The user that changed the answer to the poll, if the voter isn't anonymous.
+ * @property {number[]} option_ids - 0-based identifiers of chosen answer options. May be empty if the vote was retracted.
  */
 
 /**
@@ -1834,7 +1845,7 @@
  * @property {string} [callback_data] - Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes.
  * @property {WebAppInfo} [web_app] - Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot.
  * @property {LoginUrl} [login_url] - Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget.
- * @property {string} [switch_inline_query] - Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Note: This offers an easy way for users to start using your bot in inline mode when they are currently in a private chat with it. Especially useful when combined with switch_pm.. actions - in this case the user will be automatically returned to the chat they switched from, skipping the chat selection screen.
+ * @property {string} [switch_inline_query] - Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted.
  * @property {string} [switch_inline_query_current_chat] - Optional. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. This offers a quick way for the user to open your bot in inline mode in the same chat - good for selecting something from multiple options.
  * @property {SwitchInlineQueryChosenChat} [switch_inline_query_chosen_chat] - Optional. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field.
  * @property {CallbackGame} [callback_game] - Optional. Description of the game that will be launched when the user presses the button. NOTE: This type of button must always be the first button in the first row.
@@ -1989,7 +2000,7 @@
  * @property {boolean} can_invite_users - True, if the user is allowed to invite new users to the chat.
  * @property {boolean} can_pin_messages - True, if the user is allowed to pin messages.
  * @property {boolean} can_manage_topics - True, if the user is allowed to create forum topics.
- * @property {number} until_date - Date when restrictions will be lifted for this user; unix time. If 0, then the user is restricted forever.
+ * @property {number} until_date - Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever.
  */
 
 /**
@@ -2006,7 +2017,7 @@
  * @typedef {object} ChatMemberBanned
  * @property {string} status - The member's status in the chat, always "kicked".
  * @property {User} user - Information about the user.
- * @property {number} until_date - Date when restrictions will be lifted for this user; unix time. If 0, then the user is banned forever.
+ * @property {number} until_date - Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever.
  */
 
 /**

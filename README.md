@@ -21,7 +21,7 @@ ID библиотеки:
 1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg
 ```
 
-**Актуальная версия**: 85 от 1 авг., 20:03
+**Актуальная версия**: 86 от 22 сент., 01:09
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
@@ -330,35 +330,12 @@ function doPost(e) {
 
 ## Обновление:
 
+**22.09.2023** Добавлены, несколько новых методов class TGbot, bug fix. Все методы, в которые перадается большше одного параметра являются именованными { key: value... }
 **17.07.2023** Добавлена функция для создания Inline календаря (см. пример Кнопки клавиатуры), несколько новых методов class TGbot.
 **28.01.2023** Добавлен файл Types.js, автор [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br/>
 Копируйте содержимое из файла Types.js в свой проект.<br/>
 После добавления, вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
 ![](src/types.png)<br/>
-
-### Добавлены новые методы:
-
-- exportChatInviteLink
-- createChatInviteLink
-- editChatInviteLink
-- sendAnimation
-- sendVoice
-- sendVideoNote
-- sendLocation
-- editMessageLiveLocation
-- stopMessageLiveLocation
-- sendVenue
-- sendContact
-- sendDice
-<!--
-
-#### Payments
-
-- sendInvoice https://core.telegram.org/bots/api#sendinvoice
-- createInvoiceLink
-- answerShippingQuery
-- answerPreCheckoutQuery
-  -->
 
 ## Методы библиотеки (официальные):
 
@@ -377,6 +354,7 @@ function doPost(e) {
 - [getChatAdministrators](https://core.telegram.org/bots/api#getchatadministrators) метод, для получения списка администраторов в чате.
 - [setChatAdministratorCustomTitle](https://core.telegram.org/bots/api#setchatadministratorcustomtitle) метод, для установики пользовательского титула для администратора в супергруппе, продвигаемой ботом.
 - [getChatMemberCount](https://core.telegram.org/bots/api#getchatmembercount) метод, для получения количества участников в чате.
+- [promoteChatMember](https://core.telegram.org/bots/api#promotechatmember) повысить или понизить пользователя в супергруппе или канале.
 - [getChatMember](https://core.telegram.org/bots/api#getchatmember) метод, получения информации об участнике чата.
 - [banChatMember](https://core.telegram.org/bots/api#banchatmember) метод, для блокировки пользователя в группе, супергруппе или канале.
 - [unbanChatMember](https://core.telegram.org/bots/api#unbanchatmember) метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
