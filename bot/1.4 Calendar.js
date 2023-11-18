@@ -80,11 +80,11 @@ const configCalendar = {
 };
 
 class Calendar {
-  constructor([
+  constructor({
     month = new Date().getMonth() + 1,
     year = new Date().getFullYear(),
     language,
-  ] = []) {
+  } = {}) {
     this.month = Number(month);
     this.year = Number(year);
     this.language = language || "ru";
@@ -220,6 +220,6 @@ class Calendar {
  * @param {string} [language] язык кнопок клавиатуры 'ru' или 'en', по умолчанию 'ru'.
  * @returns {InlineKeyboardMarkup}
  */
-function calendar(month, year, language) {
-  return new Calendar([month, year, language]).create();
+function calendar({ month, year, language }) {
+  return new Calendar({ month, year, language }).create();
 }
