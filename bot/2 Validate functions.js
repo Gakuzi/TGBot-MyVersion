@@ -153,6 +153,12 @@ function extractTextFromMessage(message) {
   return message?.text;
 }
 
+/**
+ * Checks if the given message is not valid.
+ *
+ * @param {string} message - The message to be checked.
+ * @return {boolean} Returns true if the message is not valid, false otherwise.
+ */
 function isNoValide(message) {
   if (
     /([A-Za-zА-Яа-я]+[0-9]+|[0-9]+[A-Za-zА-Яа-я]+|^\d{3,}|[A-Za-zА-Яа-я])/gm.test(
@@ -163,6 +169,12 @@ function isNoValide(message) {
   else return false;
 }
 
+/**
+ * Checks if the given message is a valid date.
+ *
+ * @param {string} message - The message to be checked.
+ * @return {boolean} - Returns true if the message is a valid date, otherwise returns false.
+ */
 function isValideDate(message) {
   if (
     !!/^\d{2}\.\d{2}\.\d{4}$/g.exec(
@@ -173,28 +185,62 @@ function isValideDate(message) {
   else return false;
 }
 
+// function isBadWord(message) {
+//   const text = message?.text
+//     ? message.text
+//     : message?.caption
+//     ? message.caption
+//     : null;
+//   if (text) {
+//     const words = text
+//       .toLowerCase()
+//       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+//       .split(" ")
+//       .filter((e) => e);
+//     for (const word of words)
+//       if (badWordsArray.includes(word)) return true;
+//       else return false;
+//   } else return false;
+// }
+
+/**
+ * Checks if a given message contains any bad words.
+ *
+ * @param {object} message - The message object that contains the text or caption.
+ * @returns {boolean} True if the message contains any bad words, false otherwise.
+ */
 function isBadWord(message) {
-  const text = message?.text
-    ? message.text
-    : message?.caption
-    ? message.caption
-    : null;
+  const text = message?.text || message?.caption || null;
   if (text) {
     const words = text
       .toLowerCase()
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
       .split(" ")
-      .filter((e) => e);
-    for (const word of words)
-      if (badWordsArray.includes(word)) return true;
-      else return false;
-  } else return false;
+      .filter(Boolean);
+    return words.some((word) => badWordsArray.includes(word));
+  }
+  return false;
 }
 
+/**
+ * Replaces bad words in a message with asterisks.
+ *
+ * @param {string} message - The message to be processed.
+ * @return {string|boolean} The processed message with bad words replaced by asterisks, or `false` if no message was provided.
+ */
 function replaceBadWords(message) {
+  // const replacer = (word) => {
+  //   for (let i = 0; i < badWordsArray.length; i++) {
+  //     const badWord = badWordsArray[i];
+  //     if (word.includes(badWord)) {
+  //       return replacer(word.replace(badWord, "*".repeat(badWord.length)));
+  //     }
+  //   }
+  //   return word;
+  // };
+
   const replacer = (word) => {
-    for (let i = 0; i < badWordsArray.length; i++) {
-      const badWord = badWordsArray[i];
+    for (const badWord of badWordsArray) {
       if (word.includes(badWord)) {
         return replacer(word.replace(badWord, "*".repeat(badWord.length)));
       }
@@ -202,17 +248,13 @@ function replaceBadWords(message) {
     return word;
   };
 
-  const text = message?.text
-    ? message.text
-    : message?.caption
-    ? message.caption
-    : null;
+  const text = message?.text || message?.caption || null;
   if (text) {
     return text
       .toLowerCase()
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
       .split(" ")
-      .filter((e) => e)
+      .filter(Boolean)
       .map(replacer)
       .join(" ");
   } else return false;
