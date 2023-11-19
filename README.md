@@ -254,7 +254,7 @@ if (callback) {
       return Bot.editMessageReplyMarkup({
         message_id: cb_msg.message_id,
         chat_id: cb_user_id,
-        reply_markup: TGbot.calendar({ month: month, year: year, language: "en" }), // pagination <<< >>>
+        reply_markup: TGbot.calendar({ month, year, language: "en" }), // pagination <<< >>>
       });
     }
   }
@@ -266,7 +266,7 @@ if (callback) {
 ```JavaScript
 const botToken = "<botToken>"
 const webAppUrl = "<webAppUrl>"
-const Bot = TGbot.bot(botToken, webAppUrl);
+const Bot = TGbot.bot({ botToken, webAppUrl });
 
 function doPost(e) {
   if (e?.postData?.contents) {
