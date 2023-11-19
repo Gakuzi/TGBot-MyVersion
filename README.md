@@ -53,7 +53,7 @@ const logRequest = "Optional[<logRequest>]";
 // PropertiesService.getScriptProperties();
 const service = "Optional[<service>]";
 
-// set the parse mode, default "HTML"
+// set the parse mode, default "HTML".
 const parseMode = "Optional[<parseMode>]";
 
 const Bot = TGbot.bot({ botToken, webAppUrl, logRequest, service, parseMode });
