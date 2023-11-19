@@ -16,7 +16,9 @@ class _Client {
   constructor({ botToken, webAppUrl, service, parseMode, logRequest }) {
     this.apiVersion = "6.8";
     this.__botToken = botToken ? botToken : service.getProperties()?.BOT_TOKEN;
-    this.__webAppUrl = webAppUrl ? webAppUrl : service.getProperties()?.WEB_APP_URL;
+    this.__webAppUrl = webAppUrl
+      ? webAppUrl
+      : service.getProperties()?.WEB_APP_URL;
     this.logRequest = logRequest || false;
     this.baseUrl = "https://api.telegram.org/";
     this.__parseMode = parseMode || "HTML";
@@ -67,8 +69,8 @@ class _Client {
   }
 
   /**
-   * Метод, для отправки запроса к API Telegram.
-   * @param {string} method метод по которому делается запрос https://core.telegram.org/bots/api#available-methods.
+   * Method for sending a request to the Telegram API.
+   * @param {string} method the method by which the request is made https://core.telegram.org/bots/api#available-methods.
    * @param {any} data
    * @returns {globalThis.URL_Fetch.HTTPResponse}
    */
@@ -84,11 +86,11 @@ class _Client {
   }
 
   /**
-   * Метод, для отправки запроса к API Telegram.
-   * @param {string} method метод по которому делается запрос https://core.telegram.org/bots/api#available-methods.
-   * @param {string} payload дополнительные параметры запроса.
-   * @param {string} [contentType] "application/x-www-form-urlencoded", "application/json" (по умолчанию), "multipart/form-data".
-   * @returns {JSON|TelegramRequestError} в случае успеха возвращается объект JSON.
+   * Method for sending a request to the Telegram API.
+   * @param {string} method the method by which the request is made https://core.telegram.org/bots/api#available-methods.
+   * @param {string} payload additional request parameters.
+   * @param {string} [contentType] "application/x-www-form-urlencoded", "application/json" (default), "multipart/form-data".
+   * @returns {JSON|TelegramRequestError} if successful, returns a JSON object.
    */
   request(method, payload, contentType = "application/json") {
     if (!method) helper.miss_parameter("method метода для запроса.");

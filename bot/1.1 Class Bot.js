@@ -72,41 +72,41 @@ class TGbot extends _Client {
   }) {
     if (msg_text && msg_text.length > 4096)
       throw new Error(
-        `Длина текста отправляемого сообщения ${msg_text.length} > 1-4096 символов.`
+        `Length of text of the sent message ${msg_text.length} > 1-4096 characters.`
       );
     if (caption_text && caption_text.length > 1024)
       throw new Error(
-        `Длина подписи ${caption_text.length} > 0-1024 символов.`
+        `Caption length ${caption_text.length} > 0-1024 characters.`
       );
     if (chat_title && chat_title.length > 255)
       throw new Error(
-        `Длина нового названия чата ${chat_title.length} > 1-255 символов.`
+        `Length of new chat title ${chat_title.length} > 1-255 characters.`
       );
     if (chat_description && chat_description.length > 255)
       throw new Error(
-        `Длина нового описания чата ${chat_description.length} > 0-255 символов.`
+        `Length of new chat description ${chat_description.length} > 0-255 characters.`
       );
     if (question_text && question_text.length > 300)
       throw new Error(
-        `Длина вопроса ${question_text.length} > 1-300 символов.`
+        `Question length ${question_text.length} > 1-300 characters.`
       );
     if (explanation_text && explanation_text.length > 200)
       throw new Error(
-        `Длина текста, который отображается, когда пользователь выбирает ${explanation_text.length} > 1-200 символов.`
+        `The length of the text that is displayed when the user selects ${explanation_text.length} > 1-200 characters.`
       );
     if (callback_query_text && callback_query_text.length > 200)
       throw new Error(
-        `Длина текста уведомления ${callback_query_text.length} > 200 символов.`
+        `Notification text length ${callback_query_text.length} > 200 characters.`
       );
 
     if (link_name && link_name.length > 32)
       throw new Error(
-        `Имя пригласительной ссылки ${member_limit.length} > 0 - 32 символа.`
+        `Invite link name ${member_limit.length} > 0 - 32 characters.`
       );
 
     if (member_limit && member_limit > 99999)
       throw new Error(
-        `Передано ${member_limit}, максимальное кол-во пользователей не может быть > 99999.`
+        `${member_limit} was passed, the maximum number of users cannot be > 99999.`
       );
   }
 
@@ -199,11 +199,11 @@ class TGbot extends _Client {
    * @returns {boolean}
    */
   deleteWebhook(drop_pending_updates) {
-    const query = {
-      drop_pending_updates: Boolean(drop_pending_updates),
-    };
-
-    return this.log(this.request(Methods.DELETE_WEBHOOK, query));
+    return this.log(
+      this.request(Methods.DELETE_WEBHOOK, {
+        drop_pending_updates: Boolean(drop_pending_updates),
+      })
+    );
   }
 
   /**
@@ -267,7 +267,7 @@ class TGbot extends _Client {
   setMyDefaultAdministratorRights({ rights, for_channels }) {
     if (!rights)
       helper.miss_parameter(
-        "rights объект JSON, описывающий новые права администратора по умолчанию."
+        "rights A JSON-serialized object describing new default administrator rights."
       );
 
     const query = {
@@ -287,11 +287,9 @@ class TGbot extends _Client {
    * @returns {ChatAdministratorRights}
    */
   getMyDefaultAdministratorRights(for_channels) {
-    const query = {
+    return this.request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, {
       for_channels: Boolean(for_channels),
-    };
-
-    return this.request(Methods.GET_MY_DEFAULT_ADMINISTRATOR_RIGHTS, query);
+    });
   }
 
   /**
@@ -371,11 +369,9 @@ class TGbot extends _Client {
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.GET_CHAT, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.GET_CHAT, query);
+    });
   }
 
   /**
@@ -391,11 +387,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.GET_CHAT_ADMINISTRATORS, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.GET_CHAT_ADMINISTRATORS, query);
+    });
   }
 
   /**
@@ -413,12 +407,10 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
-      helper.miss_parameter(
-        "user_id уникальный идентификатор идентификатор целевого пользователя."
-      );
+      helper.miss_parameter("user_id Unique identifier of the target user.");
     if (!custom_title)
       helper.miss_parameter(
-        "custom_title новый пользовательский титул для администратора 0-16 символов."
+        "custom_title New custom title for the administrator; 0-16 characters, emoji are not allowed."
       );
 
     const query = {
@@ -443,11 +435,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.GET_CHAT_MEMBER_COUNT, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.GET_CHAT_MEMBER_COUNT, query);
+    });
   }
 
   /**
@@ -465,9 +455,7 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
-      helper.miss_parameter(
-        "user_id уникальный идентификатор идентификатор целевого пользователя."
-      );
+      helper.miss_parameter("user_id Unique identifier of the target userя.");
 
     const query = {
       chat_id: String(chat_id),
@@ -483,7 +471,7 @@ class TGbot extends _Client {
    * Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#promotechatmember promoteChatMember}
    * @typedef {object} promoteChatMember
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} user_id - Unique identifier of the target user.
    * @property {boolean} [is_anonymous] - Pass True if the administrator's presence in the chat is hidden.
    * @property {boolean} [can_manage_chat] - Pass True if the administrator can access the chat event log, chat statistics, message statistics in channels,
@@ -519,12 +507,10 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)me)."
       );
     if (!user_id)
-      helper.miss_parameter(
-        "user_id уникальный идентификатор идентификатор целевого пользователя."
-      );
+      helper.miss_parameter("user_id Unique identifier of the target user.");
 
     const query = {
       chat_id: String(chat_id),
@@ -563,12 +549,10 @@ class TGbot extends _Client {
   banChatMember({ chat_id, user_id, until_date, revoke_messages }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format @channelusername)."
       );
     if (!user_id)
-      helper.miss_parameter(
-        "user_id уникальный идентификатор идентификатор целевого пользователя."
-      );
+      helper.miss_parameter("user_id Unique identifier of the target user.");
 
     const query = {
       chat_id: String(chat_id),
@@ -642,12 +626,10 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
-      helper.miss_parameter(
-        "user_id уникальный идентификатор целевого пользователя."
-      );
+      helper.miss_parameter("user_id Unique identifier of the target user.");
     if (!permissions || permissions == {})
       helper.miss_parameter(
-        "permissions JSON-сериализованный объект для новых разрешений чата по умолчанию."
+        "permissions A JSON-serialized object for new user permissions."
       );
 
     const query = {
@@ -670,7 +652,7 @@ class TGbot extends _Client {
    * Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#banchatsenderchat banChatSenderChat}
    * @typedef {object} banChatSenderChat
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} sender_chat_id - Unique identifier of the target sender chat.
    * @returns {boolean}
    */
@@ -688,7 +670,7 @@ class TGbot extends _Client {
    * The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#unbanchatsenderchat unbanChatSenderChat}
    * @typedef {object} unbanChatSenderChat
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} sender_chat_id - Unique identifier of the target sender chat.
    * @returns {boolean}
    */
@@ -744,7 +726,7 @@ class TGbot extends _Client {
    * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success.
    * @see {@link https://core.telegram.org/bots/api#exportchatinvitelink exportChatInviteLink}
    * @typedef {object} exportChatInviteLink
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @returns {string}
    */
   exportChatInviteLink(chat_id) {
@@ -753,11 +735,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.EXPORT_CHAT_INVITE_LINK, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.EXPORT_CHAT_INVITE_LINK, query);
+    });
   }
 
   /**
@@ -766,7 +746,7 @@ class TGbot extends _Client {
    * Returns the new invite link as ChatInviteLink object.
    * @see {@link https://core.telegram.org/bots/api#createchatinvitelink createChatInviteLink}
    * @typedef {object} createChatInviteLink
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {string} [name] - Invite link name; 0-32 characters.
    * @property {number} [expire_date] - Point in time (Unix timestamp) when the link will expire.
    * @property {number} [member_limit] - The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999.
@@ -804,7 +784,7 @@ class TGbot extends _Client {
    * for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object.
    * @see {@link https://core.telegram.org/bots/api#editchatinvitelink editChatInviteLink}
    * @typedef {object} editChatInviteLink
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {string} invite_link - The invite link to edit.
    * @property {string} [name] - Invite link name; 0-32 characters.
    * @property {number} [expire_date] - Point in time (Unix timestamp) when the link will expire.
@@ -877,7 +857,7 @@ class TGbot extends _Client {
    * this to work and must have the can_invite_users administrator right. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#approvechatjoinrequest approveChatJoinRequest}
    * @typedef {object} approveChatJoinRequest
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} user_id - Unique identifier of the target user.
    * @returns {boolean}
    */
@@ -902,7 +882,7 @@ class TGbot extends _Client {
    * and must have the can_invite_users administrator right. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#declinechatjoinrequest declineChatJoinRequest}
    * @typedef {object} declineChatJoinRequest
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} user_id - Unique identifier of the target user.
    * @returns {boolean}
    */
@@ -927,7 +907,7 @@ class TGbot extends _Client {
    * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#setchatphoto setChatPhoto}
    * @typedef {object} setChatPhoto
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {InputFile} photo - New chat photo, uploaded using multipart/form-data.
    * @returns {boolean}
    */
@@ -954,7 +934,7 @@ class TGbot extends _Client {
    * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#deletechatphoto deleteChatPhoto}
    * @typedef {object} deleteChatPhoto
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @returns {boolean}
    */
   deleteChatPhoto(chat_id) {
@@ -963,11 +943,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.DELETE_CHAT_PHOTO, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.DELETE_CHAT_PHOTO, query);
+    });
   }
 
   /**
@@ -975,7 +953,7 @@ class TGbot extends _Client {
    * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#setchattitle setChatTitle}
    * @typedef {object} setChatTitle
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {string} title - New chat title, 1-128 characters.
    * @returns {boolean}
    */
@@ -986,6 +964,7 @@ class TGbot extends _Client {
       );
     if (!title)
       helper.miss_parameter("title New chat title, 1-128 characters.");
+
     this._lengthError({
       chat_title: title,
     });
@@ -1003,7 +982,7 @@ class TGbot extends _Client {
    * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#setchatdescription setChatDescription}
    * @typedef {object} setChatDescription
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {string} [description] - New chat description, 0-255 characters.
    * @returns {boolean}
    */
@@ -1067,11 +1046,292 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
       );
 
+    return this.request(Methods.DELETE_CHAT_STICKER_SET, {
+      chat_id: String(chat_id),
+    });
+  }
+
+  /**
+   * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
+   * Requires no parameters.
+   * Returns an Array of Sticker objects.
+   * @see {@link https://core.telegram.org/bots/api#getforumtopiciconstickers getForumTopicIconStickers}
+   * @returns {Sticker}
+   */
+  getForumTopicIconStickers() {
+    return this.request(Methods.GET_FORUM_TOPIC_ICON_STICKERS);
+  }
+
+  /**
+   * Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns information about the created topic as a ForumTopic object.
+   * @see {@link https://core.telegram.org/bots/api#createforumtopic createForumTopic}
+   * @typedef {object} createForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {string} name - Topic name, 1-128 characters.
+   * @property {number} [icon_color] - Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F).
+   * @property {string} [icon_custom_emoji_id] - Unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers.
+   * @returns {ForumTopic}
+   */
+  createForumTopic({ chat_id, name, icon_color, icon_custom_emoji_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
     const query = {
       chat_id: String(chat_id),
+      name: name ? String(name) : null,
+      icon_color: icon_color ? Number(icon_color) : null,
+      icon_custom_emoji_id: icon_custom_emoji_id
+        ? String(icon_custom_emoji_id)
+        : null,
     };
 
-    return this.request(Methods.DELETE_CHAT_STICKER_SET, query);
+    return this.request(Methods.CREATE_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#editforumtopic editForumTopic}
+   * @typedef {object} editForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} message_thread_id - Unique identifier for the target message thread of the forum topic.
+   * @property {string} [name] - New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept.
+   * @property {string} [icon_custom_emoji_id] - New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept.
+   * @returns {boolean}
+   */
+  editForumTopic({ chat_id, message_thread_id, name, icon_custom_emoji_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+    if (!message_thread_id)
+      helper.miss_parameter(
+        "message_thread_id Unique identifier for the target message thread of the forum topic."
+      );
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: Number(message_thread_id),
+      name: name ? String(name) : null,
+      icon_custom_emoji_id: icon_custom_emoji_id
+        ? String(icon_custom_emoji_id)
+        : null,
+    };
+
+    return this.request(Methods.EDIT_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#closeforumtopic closeForumTopic}
+   * @typedef {object} closeForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} message_thread_id - Unique identifier for the target message thread of the forum topic.
+   * @returns {boolean}
+   */
+  closeForumTopic({ chat_id, message_thread_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+    if (!message_thread_id)
+      helper.miss_parameter(
+        "message_thread_id Unique identifier for the target message thread of the forum topic."
+      );
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: Number(message_thread_id),
+    };
+
+    return this.request(Methods.CLOSE_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#reopenforumtopic reopenForumTopic}
+   * @typedef {object} reopenForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} message_thread_id - Unique identifier for the target message thread of the forum topic.
+   * @returns {boolean}
+   */
+  reopenForumTopic({ chat_id, message_thread_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+    if (!message_thread_id)
+      helper.miss_parameter(
+        "message_thread_id Unique identifier for the target message thread of the forum topic."
+      );
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: Number(message_thread_id),
+    };
+
+    return this.request(Methods.REOPEN_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deleteforumtopic deleteForumTopic}
+   * @typedef {object} deleteForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} message_thread_id - Unique identifier for the target message thread of the forum topic.
+   * @returns {boolean}
+   */
+  deleteForumTopic({ chat_id, message_thread_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+    if (!message_thread_id)
+      helper.miss_parameter(
+        "message_thread_id Unique identifier for the target message thread of the forum topic."
+      );
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: Number(message_thread_id),
+    };
+
+    return this.request(Methods.DELETE_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unpinallforumtopicmessages unpinAllForumTopicMessages}
+   * @typedef {object} unpinAllForumTopicMessages
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} message_thread_id - Unique identifier for the target message thread of the forum topic.
+   * @returns {boolean}
+   */
+  unpinAllForumTopicMessages({ chat_id, message_thread_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+    if (!message_thread_id)
+      helper.miss_parameter(
+        "message_thread_id Unique identifier for the target message thread of the forum topic."
+      );
+    const query = {
+      chat_id: String(chat_id),
+      message_thread_id: Number(message_thread_id),
+    };
+
+    return this.request(Methods.UNPIN_ALL_FORUM_TOPIC_MESSAGES, query);
+  }
+
+  /**
+   * Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#editgeneralforumtopic editGeneralForumTopic}
+   * @typedef {object} editGeneralForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {string} name - New topic name, 1-128 characters.
+   * @returns {boolean}
+   */
+  editGeneralForumTopic({ chat_id, name }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    if (!name)
+      helper.miss_parameter("chat_id New topic name, 1-128 characters.");
+    const query = {
+      chat_id: String(chat_id),
+      name: String(name),
+    };
+
+    return this.request(Methods.EDIT_GENERAL_FORUM_TOPIC, query);
+  }
+
+  /**
+   * Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#closegeneralforumtopic closeGeneralForumTopic}
+   * @typedef {object} closeGeneralForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  closeGeneralForumTopic(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    return this.request(Methods.CLOSE_GENERAL_FORUM_TOPIC, {
+      chat_id: String(chat_id),
+    });
+  }
+
+  /**
+   * Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#reopengeneralforumtopic reopenGeneralForumTopic}
+   * @typedef {object} reopenGeneralForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  reopenGeneralForumTopic(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    return this.request(Methods.REOPEN_GENERAL_FORUM_TOPIC, {
+      chat_id: String(chat_id),
+    });
+  }
+
+  /**
+   * Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#hidegeneralforumtopic hideGeneralForumTopic}
+   * @typedef {object} hideGeneralForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  hideGeneralForumTopic(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    return this.request(Methods.HIDE_GENERAL_FORUM_TOPIC, {
+      chat_id: String(chat_id),
+    });
+  }
+
+  /**
+   * Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unhidegeneralforumtopic unhideGeneralForumTopic}
+   * @typedef {object} unhideGeneralForumTopic
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  unhideGeneralForumTopic(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    return this.request(Methods.UNHIDE_GENERAL_FORUM_TOPIC, {
+      chat_id: String(chat_id),
+    });
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages unpinAllGeneralForumTopicMessages}
+   * @typedef {object} unpinAllGeneralForumTopicMessages
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  unpinAllGeneralForumTopicMessages(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    return this.request(Methods.UNPIN_ALL_GENERAL_FORUM_TOPIC_MESSAGES, {
+      chat_id: String(chat_id),
+    });
   }
 
   /**
@@ -1100,11 +1360,9 @@ class TGbot extends _Client {
    * @returns {BotName}
    */
   getMyName(language_code) {
-    const query = {
+    return this.request(Methods.GET_MY_NAME, {
       language_code: language_code || null,
-    };
-
-    return this.request(Methods.GET_MY_NAME, query);
+    });
   }
 
   /**
@@ -1133,11 +1391,9 @@ class TGbot extends _Client {
    * @returns {BotDescription}
    */
   getMyDescription(language_code) {
-    const query = {
+    return this.request(Methods.GET_MY_DESCRIPTION, {
       language_code: language_code || null,
-    };
-
-    return this.request(Methods.GET_MY_DESCRIPTION, query);
+    });
   }
 
   /**
@@ -1168,11 +1424,9 @@ class TGbot extends _Client {
    * @returns {BotShortDescription}
    */
   getMyShortDescription(language_code) {
-    const query = {
+    return this.request(Methods.GET_MY_SHORT_DESCRIPTION, {
       language_code: language_code || null,
-    };
-
-    return this.request(Methods.GET_MY_SHORT_DESCRIPTION, query);
+    });
   }
 
   /**
@@ -1200,11 +1454,9 @@ class TGbot extends _Client {
    * @returns {MenuButton}
    */
   getChatMenuButton(chat_id) {
-    const query = {
+    return this.request(Methods.GET_CHAT_MENU_BUTTON, {
       chat_id: chat_id ? String(chat_id) : null,
-    };
-
-    return this.request(Methods.GET_CHAT_MENU_BUTTON, query);
+    });
   }
 
   /**
@@ -1213,7 +1465,7 @@ class TGbot extends _Client {
    * or 'can_edit_messages' administrator right in a channel. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#pinchatmessage pinChatMessage}
    * @typedef {object} pinChatMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} message_id - Identifier of a message to pin.
    * @property {boolean} [disable_notification] - Pass True if it is not necessary to send a notification to all chat members about the new pinned message.
    * Notifications are always disabled in channels and private chats.
@@ -1225,9 +1477,7 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!message_id)
-      helper.miss_parameter(
-        "message_id идентификатор сообщения для закрепления."
-      );
+      helper.miss_parameter("message_id Identifier of a message to pin.");
 
     const query = {
       chat_id: String(chat_id),
@@ -1244,7 +1494,7 @@ class TGbot extends _Client {
    * or 'can_edit_messages' administrator right in a channel. Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#unpinchatmessage unpinChatMessage}
    * @typedef {object} unpinChatMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_id] - Identifier of a message to unpin. If not specified, the most recent pinned message (by sending date) will be unpinned.
    * @returns {boolean}
    */
@@ -1268,7 +1518,7 @@ class TGbot extends _Client {
    * Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#unpinallchatmessages unpinAllChatMessages}
    * @typedef {object} unpinAllChatMessages
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @returns {boolean}
    */
   unpinAllChatMessages(chat_id) {
@@ -1277,11 +1527,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.UNPIN_ALL_CHAT_MESSAGES, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.UNPIN_ALL_CHAT_MESSAGES, query);
+    });
   }
 
   /**
@@ -1297,11 +1545,9 @@ class TGbot extends _Client {
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
-    const query = {
+    return this.request(Methods.LEAVE_CHAT, {
       chat_id: String(chat_id),
-    };
-
-    return this.request(Methods.LEAVE_CHAT, query);
+    });
   }
 
   /**
@@ -1310,7 +1556,7 @@ class TGbot extends _Client {
    * We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
    * @see {@link https://core.telegram.org/bots/api#sendchataction sendChatAction}
    * @typedef {object} sendChatAction
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread; supergroups only.
    * @property {string} action - Type of action to broadcast. Choose one, depending on what the user is about to receive:
    * typing for text messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice for voice notes,
@@ -1322,7 +1568,7 @@ class TGbot extends _Client {
       helper.miss_parameter(
         "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!action) helper.miss_parameter("action тип действия для трансляции.");
+    if (!action) helper.miss_parameter("action Type of action to broadcast.");
 
     const query = {
       chat_id: String(chat_id),
@@ -1363,7 +1609,7 @@ class TGbot extends _Client {
    * @see {@link https://core.telegram.org/bots/api#sendmessage sendMessage}
    * @see {@link https://core.telegram.org/bots/api#formatting-options Formats}
    * @typedef {object} sendMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string} text - Text of the message to be sent, 1-4096 characters after entities parsing.
    * @property {string} [parse_mode] - Mode for parsing entities in the message text. See formatting options for more details.
@@ -1392,11 +1638,11 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!text)
       helper.miss_parameter(
-        "text текст отправляемого сообщения, 1-4096 символов."
+        "text Text of the message to be sent, 1-4096 characters after entities parsing."
       );
     this._lengthError({
       msg_text: text,
@@ -1425,7 +1671,7 @@ class TGbot extends _Client {
    * Use this method to forward messages of any kind. Service messages can't be forwarded. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#forwardmessage forwardMessage}
    * @typedef {object} forwardMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string|number} from_chat_id - Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername).
    * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
@@ -1443,15 +1689,15 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!from_chat_id)
       helper.miss_parameter(
-        "from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername)."
+        "from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername)."
       );
     if (!message_id)
       helper.miss_parameter(
-        "message_id идентификатор сообщения в чате указанный в from_chat_id."
+        "message_id Message identifier in the chat specified in from_chat_id."
       );
 
     const query = {
@@ -1472,7 +1718,7 @@ class TGbot extends _Client {
    * link to the original message. Returns the MessageId of the sent message on success.
    * @see {@link https://core.telegram.org/bots/api#copymessage copyMessage}
    * @typedef {object} copyMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string|number} from_chat_id - Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername).
    * @property {number} message_id - Message identifier in the chat specified in from_chat_id.
@@ -1503,15 +1749,15 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!from_chat_id)
       helper.miss_parameter(
-        "from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername)."
+        "from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername)."
       );
     if (!message_id)
       helper.miss_parameter(
-        "message_id идентификатор сообщения в чате указанный в from_chat_id."
+        "message_id Message identifier in the chat specified in from_chat_id."
       );
     this._lengthError({
       caption_text: caption,
@@ -1554,17 +1800,17 @@ class TGbot extends _Client {
    * Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#deletemessage deleteMessage}
    * @typedef {object} deleteMessage
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} message_id - Identifier of the message to delete.
    * @returns {boolean}
    */
   deleteMessage({ chat_id, message_id }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!message_id)
-      helper.miss_parameter("message_id идентификатор сообщения для удаления.");
+      helper.miss_parameter("message_id Identifier of the message to delete.");
 
     const query = {
       chat_id: String(chat_id),
@@ -1600,7 +1846,9 @@ class TGbot extends _Client {
     reply_markup,
   }) {
     if (!text)
-      helper.miss_parameter("text новый текст сообщения, 1-4096 символов.");
+      helper.miss_parameter(
+        "text New text of the message, 1-4096 characters after entities parsing."
+      );
     this._lengthError({
       msg_text: text,
     });
@@ -1645,7 +1893,7 @@ class TGbot extends _Client {
   }) {
     if (!caption)
       helper.miss_parameter(
-        "caption новый заголовок сообщения, 0-1024 символов."
+        "caption New caption of the message, 0-1024 characters after entities parsing."
       );
     this._lengthError({
       caption_text: caption,
@@ -1691,7 +1939,7 @@ class TGbot extends _Client {
   }) {
     if (!media)
       helper.miss_parameter(
-        "media объект JSON для нового мультимедийного содержимого сообщения."
+        "media A JSON-serialized object for a new media content of the message."
       );
 
     if ((chat_id && message_id && media) || (inline_message_id && media))
@@ -1726,7 +1974,7 @@ class TGbot extends _Client {
   }) {
     if (!reply_markup)
       helper.miss_parameter(
-        "reply_markup объект JSON для новой встроенной клавиатуры."
+        "reply_markup A JSON-serialized object for an inline keyboard."
       );
 
     if (
@@ -1749,7 +1997,7 @@ class TGbot extends _Client {
    * Use this method to send photos. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendphoto sendPhoto}
    * @typedef {object} sendPhoto
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} photo - Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data.
@@ -1785,9 +2033,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!photo) helper.miss_parameter("photo фото для отправки.");
+    if (!photo) helper.miss_parameter("photo Photo to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1818,11 +2066,13 @@ class TGbot extends _Client {
   }
 
   /**
-   * Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
+   * Use this method to send audio files, if you want Telegram clients to display them in the music player.
+   * Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of
+   * up to 50 MB in size, this limit may be changed in the future.
    * For sending voice messages, use the sendVoice method instead.
    * @see {@link https://core.telegram.org/bots/api#sendaudio sendAudio}
    * @typedef {object} sendAudio
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} audio - Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
    * @property {string} [caption] - Audio caption, 0-1024 characters after entities parsing.
@@ -1860,9 +2110,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!audio) helper.miss_parameter("audio аудио для отправки.");
+    if (!audio) helper.miss_parameter("audio Audio file to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1900,7 +2150,7 @@ class TGbot extends _Client {
    * this limit may be changed in the future.
    * @see {@link https://core.telegram.org/bots/api#senddocument sendDocument}
    * @typedef {object} sendDocument
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} document - File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data.
@@ -1944,9 +2194,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!document) helper.miss_parameter("document файл для отправки");
+    if (!document) helper.miss_parameter("document File to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -1982,7 +2232,7 @@ class TGbot extends _Client {
    * On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
    * @see {@link https://core.telegram.org/bots/api#sendvideo sendVideo}
    * @typedef {object} sendVideo
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} video - Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data.
@@ -2032,9 +2282,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!video) helper.miss_parameter("video видео для отправки.");
+    if (!video) helper.miss_parameter("video Video to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -2074,7 +2324,7 @@ class TGbot extends _Client {
    * Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
    * @see {@link https://core.telegram.org/bots/api#sendanimation sendAnimation}
    * @typedef {object} sendAnimation
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} animation - Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data.
@@ -2121,9 +2371,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!animation) helper.miss_parameter("animation анимация для отправки.");
+    if (!animation) helper.miss_parameter("animation Animation to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -2163,7 +2413,7 @@ class TGbot extends _Client {
    * Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
    * @see {@link https://core.telegram.org/bots/api#sendvoice sendVoice}
    * @typedef {object} sendVoice
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} voice - Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data.
@@ -2198,9 +2448,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!voice) helper.miss_parameter("voice аудио для отправки.");
+    if (!voice) helper.miss_parameter("voice Audio file to send.");
     if (caption)
       this._lengthError({
         caption_text: caption,
@@ -2235,7 +2485,7 @@ class TGbot extends _Client {
    * On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendvideonote sendVideoNote}
    * @typedef {object} sendVideoNote
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} video_note - Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload
    *  a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
@@ -2272,10 +2522,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!video_note)
-      helper.miss_parameter("video_note видеозаметка для отправки.");
+    if (!video_note) helper.miss_parameter("video_note Video note to send.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2303,7 +2552,7 @@ class TGbot extends _Client {
    *  in an album with messages of the same type. On success, an array of Messages that were sent is returned.
    * @see {@link https://core.telegram.org/bots/api#sendmediagroup sendMediaGroup}
    * @typedef {object} sendMediaGroup
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {Array.<InputMediaAudio|InputMediaDocument|InputMediaPhoto|InputMediaVideo>} media - A JSON-serialized array describing messages
    * to be sent, must include 2-10 items.
@@ -2328,7 +2577,7 @@ class TGbot extends _Client {
       );
     if (!media)
       helper.miss_parameter(
-        "media объект JSON для нового мультимедийного содержимого сообщения."
+        "media объект A JSON-serialized array describing messages to be sent, must include 2-10 items."
       );
 
     const query = {
@@ -2350,7 +2599,7 @@ class TGbot extends _Client {
    * Use this method to send point on the map. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendlocation sendLocation}
    * @typedef {object} sendLocation
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {number} latitude - Latitude of the location.
    * @property {number} longitude - Longitude of the location.
@@ -2384,10 +2633,11 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!latitude) helper.miss_parameter("latitude широта местоположения.");
-    if (!longitude) helper.miss_parameter("longitude долгота местоположения.");
+    if (!latitude) helper.miss_parameter("latitude Latitude of the location.");
+    if (!longitude)
+      helper.miss_parameter("longitude Longitude of the location.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2446,15 +2696,13 @@ class TGbot extends _Client {
   }) {
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
-        "передайте chat_id и message_id или inline_message_id"
+        "pass it on chat_id and message_id or inline_message_id"
       );
     if (chat_id && !message_id)
-      helper.miss_parameter(
-        "message_id идентификатор сообщения для редактирования."
-      );
+      helper.miss_parameter("message_id Identifier of the message to edit.");
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
-        "inline_message_id идентификатор встроенного сообщения."
+        "inline_message_id Identifier of the inline message."
       );
 
     const query = {
@@ -2502,15 +2750,15 @@ class TGbot extends _Client {
   }) {
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
-        "передайте chat_id и message_id или inline_message_id"
+        "pass it on chat_id and message_id or inline_message_id"
       );
     if (chat_id && !message_id)
       helper.miss_parameter(
-        "message_id идентификатор сообщения для редактирования."
+        "message_id Identifier of the message with live location to stop."
       );
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
-        "inline_message_id идентификатор встроенного сообщения."
+        "inline_message_id Identifier of the inline message."
       );
 
     const query = {
@@ -2527,7 +2775,7 @@ class TGbot extends _Client {
    * Use this method to send information about a venue. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendvenue sendVenue}
    * @typedef {object} sendVenue
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {number} latitude - Latitude of the venue.
    * @property {number} longitude - Longitude of the venue.
@@ -2565,13 +2813,12 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!latitude) helper.miss_parameter("latitude широта места проведения.");
-    if (!longitude)
-      helper.miss_parameter("longitude долгота места проведения.");
-    if (!title) helper.miss_parameter("title название места.");
-    if (!address) helper.miss_parameter("address адрес места проведения.");
+    if (!latitude) helper.miss_parameter("latitude Latitude of the venue.");
+    if (!longitude) helper.miss_parameter("longitude Longitude of the venue.");
+    if (!title) helper.miss_parameter("title Name of the venue.");
+    if (!address) helper.miss_parameter("address Address of the venue.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2600,7 +2847,7 @@ class TGbot extends _Client {
    * Use this method to send phone contacts. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendcontact sendContact}
    * @typedef {object} sendContact
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string} phone_number - Contact's phone number.
    * @property {string} first_name - Contact's first name.
@@ -2629,10 +2876,11 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!phone_number) helper.miss_parameter("phone_number телефон контакта.");
-    if (!first_name) helper.miss_parameter("first_name фамилия контакта.");
+    if (!phone_number)
+      helper.miss_parameter("phone_number Contact's phone number.");
+    if (!first_name) helper.miss_parameter("first_name Contact's first nameа.");
 
     const query = {
       chat_id: String(chat_id),
@@ -2657,7 +2905,7 @@ class TGbot extends _Client {
    * Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#senddice sendDice}
    * @typedef {object} sendDice
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string} [emoji] - Emoji on which the dice throw animation is based. Currently, must be one of "🎲", "🎯", "🏀", "⚽", "🎳", or "🎰".
    * Dice can have values 1-6 for "🎲", "🎯" and "🎳", values 1-5 for "🏀" and "⚽", and values 1-64 for "🎰". Defaults to "🎲".
@@ -2681,7 +2929,7 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -2704,7 +2952,7 @@ class TGbot extends _Client {
    * Use this method to send a native poll. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendpoll sendPoll}
    * @typedef {object} sendPoll
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string} question - Poll question, 1-300 characters.
    * @property {string[]} options - A JSON-serialized list of answer options, 2-10 strings 1-100 characters each.
@@ -2752,15 +3000,16 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!question) helper.miss_parameter("question вопрос для отправки.");
+    if (!question)
+      helper.miss_parameter("question Poll question, 1-300 characters.");
     this._lengthError({
       question_text: question,
     });
     if (!options)
       helper.miss_parameter(
-        "options JSON-сериализованный список вариантов ответа для отправки."
+        "options A JSON-serialized list of answer options, 2-10 strings 1-100 characters each."
       );
     if (explanation)
       this._lengthError({
@@ -2802,7 +3051,7 @@ class TGbot extends _Client {
    * Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
    * @see {@link https://core.telegram.org/bots/api#stoppoll stopPoll}
    * @typedef {object} stopPoll
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} message_id - Identifier of the original message with the poll.
    * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for a new message inline keyboard.
    * @returns {Poll}
@@ -2810,9 +3059,12 @@ class TGbot extends _Client {
   stopPoll({ chat_id, message_id, reply_markup }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!message_id) helper.miss_parameter("message_id для отправки.");
+    if (!message_id)
+      helper.miss_parameter(
+        "message_id Identifier of the original message with the poll."
+      );
 
     const query = {
       chat_id: String(chat_id),
@@ -2847,7 +3099,7 @@ class TGbot extends _Client {
   }) {
     if (!callback_query_id)
       helper.miss_parameter(
-        "callback_query_id уникальный идентификатор запроса, на который нужно ответить."
+        "callback_query_id Unique identifier for the query to be answered."
       );
     if (text)
       this._lengthError({
@@ -2893,11 +3145,11 @@ class TGbot extends _Client {
   }) {
     if (!inline_query_id)
       helper.miss_parameter(
-        "inline_query_id уникальный идентификатор ответа на запрос."
+        "inline_query_id Unique identifier for the answered query."
       );
     if (!results)
       helper.miss_parameter(
-        "results InlineQueryResult[] сериализованный в формате JSON массив результатов для встроенного запроса."
+        "results InlineQueryResult[] A JSON-serialized array of results for the inline query."
       );
 
     const query = {
@@ -2924,11 +3176,11 @@ class TGbot extends _Client {
   answerWebAppQuery({ web_app_query_id, result }) {
     if (!web_app_query_id)
       helper.miss_parameter(
-        "web_app_query_id идентификатор запроса, на который нужно ответить."
+        "web_app_query_id Unique identifier for the query to be answered."
       );
     if (!results)
       helper.miss_parameter(
-        "results InlineQueryResult[] cериализованный объект JSON, описывающий отправляемое сообщение."
+        "results InlineQueryResult[] A JSON-serialized array of results for the inline query."
       );
 
     const query = {
@@ -2945,7 +3197,7 @@ class TGbot extends _Client {
    * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendsticker sendSticker}
    * @typedef {object} sendSticker
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {InputFile|string} sticker - Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
    * pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP or .TGS sticker using multipart/form-data.
@@ -2974,9 +3226,9 @@ class TGbot extends _Client {
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    if (!sticker) helper.miss_parameter("sticker наклейка для отправки.");
+    if (!sticker) helper.miss_parameter("sticker Sticker to send.");
 
     const query = {
       chat_id: String(chat_id),
@@ -3004,13 +3256,258 @@ class TGbot extends _Client {
    * @returns {StickerSet}
    */
   getStickerSet(name) {
-    if (!name) helper.miss_parameter("name название набора наклеек.");
+    if (!name) helper.miss_parameter("name Name of the sticker set.");
+
+    return this.request(Methods.GET_STICKER_SET, {
+      name: String(name),
+    });
+  }
+
+  /**
+   * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
+   * @see {@link https://core.telegram.org/bots/api#getcustomemojistickers getCustomEmojiStickers}
+   * @typedef {object} getCustomEmojiStickers
+   * @property {string[]} custom_emoji_ids - List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
+   * @returns {Sticker[]}
+   */
+  getCustomEmojiStickers(custom_emoji_ids) {
+    if (!custom_emoji_ids || custom_emoji_ids.length === 0)
+      helper.miss_parameter(
+        "custom_emoji_ids List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified."
+      );
 
     const query = {
-      name: String(name),
+      custom_emoji_ids: custom_emoji_ids,
     };
 
-    return this.request(Methods.GET_STICKER_SET, query);
+    return this.request(Methods.GET_CUSTOM_EMOJI_STICKERS, query);
+  }
+
+  /**
+   * Use this method to upload a file with a sticker for later use in the createNewStickerSet and
+   * addStickerToSet methods (the file can be used multiple times). Returns the uploaded File on success.
+   * @see {@link https://core.telegram.org/bots/api#uploadstickerfile uploadStickerFile}
+   * @typedef {object} uploadStickerFile
+   * @property {number} user_id - User identifier of sticker file owner.
+   * @property {InputFile} sticker - A file with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. See https://core.telegram.org/stickers for
+   * technical requirements. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} sticker_format - Format of the sticker, must be one of "static", "animated", "video".
+   * @returns {File}
+   */
+  uploadStickerFile({ user_id, sticker, sticker_format }) {
+    const query = {
+      user_id: Number(user_id),
+      sticker: sticker,
+      sticker_format: String(sticker_format),
+    };
+
+    return this.request(Methods.UPLOAD_STICKER_FILE, query);
+  }
+
+  /**
+   * Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#createnewstickerset createNewStickerSet}
+   * @typedef {object} createNewStickerSet
+   * @property {number} user_id - User identifier of created sticker set owner.
+   * @property {string} name - Short name of sticker set, to be used in t.me/addstickers/ URLs (e.g., animals).
+   * Can contain only English letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in "_by_<bot_username>". <bot_username> is case insensitive. 1-64 characters.
+   * @property {string} title - Sticker set title, 1-64 characters.
+   * @property {InputSticker[]} stickers - A JSON-serialized list of 1-50 initial stickers to be added to the sticker set.
+   * @property {string} sticker_format - Format of stickers in the set, must be one of "static", "animated", "video".
+   * @property {string} [sticker_type] - Type of stickers in the set, pass "regular", "mask", or "custom_emoji".
+   * By default, a regular sticker set is created.
+   * @property {boolean} [needs_repainting] - Pass True if stickers in the sticker set must be repainted to the color of
+   * text when used in messages, the accent color if used as emoji status, white on chat photos, or another appropriate color based on context;
+   * for custom emoji sticker sets only.
+   * @returns {boolean}
+   */
+  createNewStickerSet({
+    user_id,
+    name,
+    title,
+    stickers,
+    sticker_format,
+    sticker_type,
+    needs_repainting,
+  }) {
+    const query = {
+      user_id: Number(user_id),
+      name: String(name),
+      title: String(title),
+      stickers: JSON.stringify(stickers),
+      sticker_format: String(sticker_format),
+      sticker_type: String(sticker_type),
+      needs_repainting: Boolean(needs_repainting),
+    };
+
+    return this.request(Methods.CREATE_NEW_STICKER_SET, query);
+  }
+
+  /**
+   * Use this method to add a new sticker to a set created by the bot. The format of the added sticker must match the format of the other stickers in the set. Emoji sticker sets can have up to 200 stickers. Animated and video sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#addstickertoset addStickerToSet}
+   * @typedef {object} addStickerToSet
+   * @property {number} user_id - User identifier of sticker set owner.
+   * @property {string} name - Sticker set name.
+   * @property {InputSticker} sticker - A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set isn't changed.
+   * @returns {boolean}
+   */
+  addStickerToSet({ user_id, name, sticker }) {
+    const query = {
+      user_id: Number(user_id),
+      name: String(name),
+      sticker: JSON.stringify(sticker),
+    };
+
+    return this.request(Methods.ADD_STICKER_TO_SET, query);
+  }
+
+  /**
+   * Use this method to move a sticker in a set created by the bot to a specific position. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickerpositioninset setStickerPositionInSet}
+   * @typedef {object} setStickerPositionInSet
+   * @property {string} sticker - File identifier of the sticker.
+   * @property {number} position - New sticker position in the set, zero-based.
+   * @returns {boolean}
+   */
+  setStickerPositionInSet({ sticker, position }) {
+    const query = {
+      sticker: String(sticker),
+      position: String(position),
+    };
+
+    return this.request(Methods.SET_STICKER_POSITION_IN_SET, query);
+  }
+
+  /**
+   * Use this method to delete a sticker from a set created by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletestickerfromset deleteStickerFromSet}
+   * @typedef {object} deleteStickerFromSet
+   * @property {string} sticker - File identifier of the sticker.
+   * @returns {boolean}
+   */
+  deleteStickerFromSet(sticker) {
+    return this.request(Methods.DELETE_STICKER_FROM_SET, {
+      sticker: String(sticker),
+    });
+  }
+
+  /**
+   * Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickeremojilist setStickerEmojiList}
+   * @typedef {object} setStickerEmojiList
+   * @property {string} sticker - File identifier of the sticker.
+   * @property {string[]} emoji_list - A JSON-serialized list of 1-20 emoji associated with the sticker.
+   * @returns {boolean}
+   */
+  setStickerEmojiList({ sticker, emoji_list }) {
+    const query = {
+      sticker: String(sticker),
+      emoji_list: JSON.stringify(emoji_list),
+    };
+
+    return this.request(Methods.SET_STICKER_EMOJI_LIST, query);
+  }
+
+  /**
+   * Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a
+   * sticker set created by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickerkeywords setStickerKeywords}
+   * @typedef {object} setStickerKeywords
+   * @property {string} sticker - File identifier of the sticker.
+   * @property {string[]} [keywords] - A JSON-serialized list of 0-20 search keywords for the sticker with total length of up to 64 characters.
+   * @returns {boolean}
+   */
+  setStickerKeywords({ sticker, keywords }) {
+    const query = {
+      sticker: String(sticker),
+      keywords: JSON.stringify(keywords),
+    };
+
+    return this.request(Methods.SET_STICKER_KEYWORDS, query);
+  }
+
+  /**
+   * Use this method to change the mask position of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickermaskposition setStickerMaskPosition}
+   * @typedef {object} setStickerMaskPosition
+   * @property {string} sticker - File identifier of the sticker.
+   * @property {MaskPosition} [mask_position] - A JSON-serialized object with the position where the mask should be placed on faces. Omit the parameter to remove the mask position.
+   * @returns {boolean}
+   */
+  setStickerMaskPosition({ sticker, mask_position }) {
+    const query = {
+      sticker: String(sticker),
+      mask_position: JSON.stringify(mask_position),
+    };
+
+    return this.request(Methods.SET_STICKER_MASK_POSITION, query);
+  }
+
+  /**
+   * Use this method to set the title of a created sticker set. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickersettitle setStickerSetTitle}
+   * @typedef {object} setStickerSetTitle
+   * @property {string} name - Sticker set name.
+   * @property {string} title - Sticker set title, 1-64 characters.
+   * @returns {boolean}
+   */
+  setStickerSetTitle({ name, title }) {
+    const query = {
+      name: String(name),
+      title: String(title),
+    };
+
+    return this.request(Methods.SET_STICKER_SET_TITLE, query);
+  }
+
+  /**
+   * Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setstickersetthumbnail setStickerSetThumbnail}
+   * @typedef {object} setStickerSetThumbnail
+   * @property {string} name - Sticker set name.
+   * @property {number} user_id - User identifier of the sticker set owner.
+   * @property {InputFile|string} [thumbnail] - A .WEBP or .PNG image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a .TGS animation with a thumbnail up to 32 kilobytes in size (see https://core.telegram.org/stickers#animated-sticker-requirements for animated sticker technical requirements), or a WEBM video with the thumbnail up to 32 kilobytes in size; see https://core.telegram.org/stickers#video-sticker-requirements for video sticker technical requirements. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
+   * @returns {boolean}
+   */
+  setStickerSetThumbnail({ name, user_id, thumbnail }) {
+    const query = {
+      name: String(name),
+      user_id: Number(user_id),
+      thumbnail: thumbnail,
+    };
+
+    return this.request(Methods.SET_STICKER_SET_THUMBNAIL, query);
+  }
+
+  /**
+   * Use this method to set the thumbnail of a custom emoji sticker set. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail setCustomEmojiStickerSetThumbnail}
+   * @typedef {object} setCustomEmojiStickerSetThumbnail
+   * @property {string} name - Sticker set name.
+   * @property {string} [custom_emoji_id] - Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail.
+   * @returns {boolean}
+   */
+  setCustomEmojiStickerSetThumbnail({ name, custom_emoji_id }) {
+    const query = {
+      name: String(name),
+      custom_emoji_id: String(custom_emoji_id),
+    };
+
+    return this.request(Methods.SET_CUSTOM_EMOJI_STICKER_SET_THUMBNAIL, query);
+  }
+
+  /**
+   * Use this method to delete a sticker set that was created by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletestickerset deleteStickerSet}
+   * @typedef {object} deleteStickerSet
+   * @property {string} name - Sticker set name.
+   * @returns {boolean}
+   */
+  deleteStickerSet(name) {
+    return this.request(Methods.DELETE_STICKER_SET, {
+      name: String(name),
+    });
   }
 
   // Payments
@@ -3019,7 +3516,7 @@ class TGbot extends _Client {
    * Use this method to send invoices. On success, the sent Message is returned.
    * @see {@link https://core.telegram.org/bots/api#sendinvoice sendInvoice}
    * @typedef {object} sendInvoice
-   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
    * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
    * @property {string} title - Product name, 1-32 characters.
    * @property {string} description - Product description, 1-255 characters.
@@ -3228,17 +3725,17 @@ class TGbot extends _Client {
   }) {
     if (!shipping_query_id)
       helper.miss_parameter(
-        "shipping_query_id уникальный идентификатор запроса, на который нужно ответить."
+        "shipping_query_id Unique identifier for the query to be answered."
       );
 
     if (!ok && !shipping_options)
       helper.miss_parameter(
-        "shipping_options: Сериализованный в формате JSON массив доступных вариантов доставки."
+        "shipping_options A JSON-serialized array of available shipping options."
       );
 
     if (!ok && !error_message)
       helper.miss_parameter(
-        "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
+        "error_messageError message in human readable form that explains why it is impossible to complete the order."
       );
 
     const query = {
@@ -3268,12 +3765,12 @@ class TGbot extends _Client {
   answerPreCheckoutQuery({ pre_checkout_query_id, ok = true, error_message }) {
     if (!pre_checkout_query_id)
       helper.miss_parameter(
-        "pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить."
+        "pre_checkout_query_id Unique identifier for the query to be answered."
       );
 
     if (!ok && !error_message)
       helper.miss_parameter(
-        "error_message: сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа "
+        "error_message Error message in human readable form that explains the reason for failure to proceed with the checkout."
       );
 
     const query = {
@@ -3284,6 +3781,28 @@ class TGbot extends _Client {
 
     return this.request(Methods.ANSWER_PRE_CHECKOUT_QUERY, query);
   }
+
+  // Telegram Passport
+
+  /**
+   * Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
+   * Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
+   * @see {@link https://core.telegram.org/bots/api#setpassportdataerrors setPassportDataErrors}
+   * @typedef {object} setPassportDataErrors
+   * @property {number} user_id - User identifier.
+   * @property {PassportElementError[]} errors - A JSON-serialized array describing the errors.
+   * @returns {boolean}
+   */
+  setPassportDataErrors({ user_id, errors }) {
+    const query = {
+      user_id: String(user_id),
+      errors: JSON.stringify(errors),
+    };
+
+    return this.request(Methods.SET_PASSPORT_DATA_ERRORS, query);
+  }
+
+  // Games
 
   /**
    * Use this method to send a game. On success, the sent Message is returned.
@@ -3396,7 +3915,7 @@ class TGbot extends _Client {
   getFile(file_id) {
     if (!file_id)
       helper.miss_parameter(
-        "file_id идентификатор файла для получения информации."
+        "file_id File identifier to get information about."
       );
     return `${this.fileUrl}${
       JSON.parse(
@@ -3411,13 +3930,13 @@ class TGbot extends _Client {
 
   /**
    * Method for getting the path to the file.
-   * @param {string} file_id identifier of the file to retrieve information from.
+   * @param {string} file_id - Identifier of the file to retrieve information from.
    * @returns {string} If successful, file_path is returned.
    */
   getPath(file_id) {
     if (!file_id)
       helper.miss_parameter(
-        "file_id идентификатор файла для получения информации."
+        "file_id Identifier of the file to retrieve information from."
       );
 
     return JSON.parse(
@@ -3429,11 +3948,11 @@ class TGbot extends _Client {
 
   /**
    * Method for obtaining a link to download a file.
-   * @param {string} path path to the folder.
+   * @param {string} path - Path to the folder.
    * @returns {string} If successful, the url is returned.
    */
   getFileDownloadUrl(path) {
-    if (!path) helper.miss_parameter("path путь до папки.");
+    if (!path) helper.miss_parameter("path Path to the folder.");
     return `${this.fileUrl}${path}`;
   }
 
