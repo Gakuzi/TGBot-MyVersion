@@ -1,24 +1,28 @@
 /**
  * @author Mikhail Nosaev <m.nosaev@gmail.com>
- * @see {@link https://t.me/nosaev_m Telegram } разработка Google таблиц и GAS скриптов
+ * @see {@link https://t.me/nosaev_m Telegram } development of Google Sheets and Apps Script
  * @license MIT
  */
 class _Client {
   /**
    * @constructor
-   * @type {object} options параметры конструктора.
-   * @property {string} options.botToken токен Telegram бота от \@BotFather.
-   * @property {string} [options.webAppUrl] ссылка на WebApp Google для работы с ответами doGet(e).
-   * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
+   * @type {object} options - The configuration options for the TGbot.
+   * @property {string} options.botToken - The token of the Telegram bot from \@BotFather.
+   * @property {string} [options.webAppUrl] - The link to the Google WebApp for working with doGet(e) responses.
+   * @property {string} [options.service] The service PropertiesService.getScriptProperties() used by the TGbot.
+   * @property {string} [options.parseMode] - Set the parse mode, default is "HTML".
+   * @property {boolean} [options.logRequest] - Show the URL and OPTIONS request string when executed, default is false.
    */
-  constructor({ botToken, webAppUrl, logRequest }) {
+  constructor({ botToken, webAppUrl, service, parseMode, logRequest }) {
     this.apiVersion = "6.8";
-    this.__botToken = botToken; // ? botToken: PropertiesService.getScriptProperties().getProperties().BOT_TOKEN;
-    this.__webAppUrl = webAppUrl; // ? webAppUrl : ScriptApp.getService().getUrl();
+    this.__botToken = botToken ? botToken : service.getProperties()?.BOT_TOKEN;
+    this.__webAppUrl = webAppUrl ? webAppUrl : service.getProperties()?.WEB_APP_URL;
     this.logRequest = logRequest || false;
     this.baseUrl = "https://api.telegram.org/";
-    // this.__telegramUrl = `${this.baseUrl}bot${this.__botToken}/`;
-    // this.__fileUrl = `${this.baseUrl}/file/bot${this.__botToken}/`;
+    this.__parseMode = parseMode || "HTML";
+    this.service = service;
+
+    if (logRequest) checkToken(this.__botToken);
   }
 
   /**
@@ -34,6 +38,18 @@ class _Client {
 
   setToken(botToken) {
     this.__botToken = botToken;
+  }
+
+  getMethods(method) {
+    return helper.getMethodsOfClass(method);
+  }
+
+  log(info) {
+    return helper.log(info);
+  }
+
+  setParseMode(parseMode) {
+    this.__parseMode = parseMode;
   }
 
   /**
@@ -106,7 +122,7 @@ class _Client {
         `URL >>> ${fullUrl}\nOPTIONS >>>\n ${JSON.stringify(options, null, 5)}`
       );
 
-    let response = UrlFetchApp.fetch(fullUrl, options);
+    const response = UrlFetchApp.fetch(fullUrl, options);
 
     const code = response.getResponseCode();
     const responseJson = response.getContentText();

@@ -1,69 +1,119 @@
+/**
+ * Checks if the given message has the property "contact".
+ *
+ * @param {Object} message - The message to check.
+ * @return {boolean} Returns true if the message has the property "contact", otherwise returns false.
+ */
 function isAuthorizationMessage(message) {
-  if (message.hasOwnProperty("contact")) return true;
-  return false;
+  return message.hasOwnProperty("contact");
 }
 
+/**
+ * Checks if the message sender is an admin.
+ *
+ * @param {any} message - The message object.
+ * @return {boolean} Returns true if the sender is an admin, otherwise false.
+ */
 function isAdminMessage(message) {
-  if (idAdmin.includes(message.from.id)) return true;
-  return false;
+  return idAdmin.includes(message.from.id);
 }
 
+/**
+ * Checks if the given message has the specified type.
+ *
+ * @param {any} message - The message to check.
+ * @param {string} type - The type to check for.
+ * @return {boolean} Returns true if the message has the specified type, otherwise false.
+ */
 function isMessageType(message, type) {
-  if (!message.hasOwnProperty(type)) return false;
-  return true;
+  return message.hasOwnProperty(type);
 }
 
+/**
+ * Checks if the given message is a text message.
+ *
+ * @param {Object} message - The message to check.
+ * @return {boolean} True if the message is a text message, false otherwise.
+ */
 function isTextMessage(message) {
-  if (message.hasOwnProperty("text")) return true;
-  return false;
+  return message.hasOwnProperty("text");
 }
 
+/**
+ * Checks if the given message is a photo message.
+ *
+ * @param {Object} message - The message to check.
+ * @return {boolean} - Returns true if the message is a photo message, otherwise returns false.
+ */
 function isPhotoMessage(message) {
-  if (
+  return (
     message.hasOwnProperty("photo") ||
-    message?.document?.mime_type.split("/")[0] === "image"
-  )
-    return true;
-  else return false;
+    (message?.document?.mime_type?.startsWith("image/") ?? false)
+  );
 }
 
+/**
+ * Checks if a message is a video message.
+ *
+ * @param {Object} message - The message to be checked.
+ * @return {boolean} True if the message has a "video" property, false otherwise.
+ */
 function isVideoMessage(message) {
-  if (message.hasOwnProperty("video")) return true;
-  return false;
+  return message.hasOwnProperty("video");
 }
 
+/**
+ * Checks if the given message is a document message.
+ *
+ * @param {Object} message - The message object to check.
+ * @return {boolean} Returns true if the message is a document message, false otherwise.
+ */
 function isDocumentMessage(message) {
-  if (
+  return (
     message.hasOwnProperty("document") &&
-    message?.document?.mime_type.split("/")[0] !== "image"
-  )
-    return true;
-  else return false;
+    message.document?.mime_type?.split("/")[0] !== "image"
+  );
 }
 
+/**
+ * Check if the given message is a bot command message.
+ *
+ * @param {Object} message - The message object to be checked.
+ * @return {boolean} Returns true if the message is a bot command message, false otherwise.
+ */
 function isBotCommandMessage(message) {
-  if (
-    !(
-      message?.hasOwnProperty("entities") &&
-      message?.entities[0].type === "bot_command" &&
-      /^\//.exec(message?.text)
-    )
-  )
-    return false;
-  return true;
+  return Boolean(
+    message?.entities?.[0]?.type === "bot_command" && /^\//.exec(message?.text)
+  );
 }
 
+/**
+ * Checks if a message is a bot message based on its contents.
+ *
+ * @param {Object} contents - The contents of the message.
+ * @return {boolean} True if the message is from a bot, false otherwise.
+ */
 function isBotMessageByContents(contents) {
   const message = contents.message || contents.callback_query.message;
-  if (message.from.is_bot === true) return true;
-  return false;
+  return message.from.is_bot === true;
 }
 
+/**
+ * Determines if a message is from a bot.
+ *
+ * @param {Object} message - The message object.
+ * @return {boolean} True if the message is from a bot, false otherwise.
+ */
 function isBotMessageByMessage(message) {
-  if (message.from.is_bot === true) return true;
-  return false;
+  return message.from.is_bot === true;
 }
 
+/**
+ * Determines whether the given contents object represents a channel message.
+ *
+ * @param {object} contents - The contents object to check.
+ * @return {boolean} Returns true if the contents object represents a channel message, false otherwise.
+ */
 function isChannelMessage(contents) {
   if (
     contents.hasOwnProperty("channel_post") ||
@@ -73,19 +123,34 @@ function isChannelMessage(contents) {
   return false;
 }
 
+/**
+ * Checks if the given message is a media group.
+ *
+ * @param {Object} message - The message to be checked.
+ * @return {boolean} Returns true if the message is a media group, false otherwise.
+ */
 function isMediaGroup(message) {
-  if (message.hasOwnProperty("media_group_id")) return true;
-  return false;
+  return message.hasOwnProperty("media_group_id");
 }
 
+/**
+ * Checks if the given object has a property called "poll".
+ *
+ * @param {Object} contents - The object to check.
+ * @return {boolean} Returns true if the object has a property called "poll", false otherwise.
+ */
 function isPoll(contents) {
-  if (contents.hasOwnProperty("poll")) return true;
-  return false;
+  return "poll" in contents;
 }
 
+/**
+ * Extracts the text from a message object.
+ *
+ * @param {object} message - The message object.
+ * @returns {string|null} The text from the message object, or null if there is no text.
+ */
 function extractTextFromMessage(message) {
-  if (!message) return undefined;
-  return message.text;
+  return message?.text;
 }
 
 function isNoValide(message) {

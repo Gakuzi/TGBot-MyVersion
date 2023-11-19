@@ -72,16 +72,15 @@ class Keyboard {
   }
 
   setOptions(options) {
-    Object.entries(options).forEach(([option, value]) => {
-      this.setOption(option, value);
-    });
+    Object.entries(options).forEach(([option, value]) =>
+      this.setOption(option, value)
+    );
 
     return this;
   }
 
   setOption(option, value) {
-    if (value) this.markupOptions[option] = value;
-    else delete this.markupOptions[option];
+    value ? (this.markupOptions[option] = value) : delete this.markupOptions[option];
     return this;
   }
 

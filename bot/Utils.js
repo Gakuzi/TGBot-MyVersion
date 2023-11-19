@@ -38,15 +38,15 @@ const Methods = Object.freeze({
   RESTRICT_CHAT_MEMBER: "restrictChatMember", // +
   PROMOTE_CHAT_MEMBER: "promoteChatMember", // +
   SET_CHAT_ADMINISTRATOR_CUSTOM_TITLE: "setChatAdministratorCustomTitle", // +
-  BAN_CHAT_SENDER_CHAT: "banChatSenderChat", // !!!!!!!!!!!!!!
-  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat", // !!!!!!!!!!!!!!
+  BAN_CHAT_SENDER_CHAT: "banChatSenderChat", // +
+  UNBAN_CHAT_SENDER_CHAT: "unbanChatSenderChat", // +
   SET_CHAT_PERMISSIONS: "setChatPermissions", // +
   EXPORT_CHAT_INVITE_LINK: "exportChatInviteLink", // +
   CREATE_CHAT_INVITE_LINK: "createChatInviteLink", // +
-  EDIT_CHAT_INVITE_LINK: "editChatInviteLink", // !!!!!!!!!!!!!!
-  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink", // !!!!!!!!!!!!!!
-  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest", // !!!!!!!!!!!!!!
-  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest", // !!!!!!!!!!!!!!
+  EDIT_CHAT_INVITE_LINK: "editChatInviteLink", // +
+  REVOKE_CHAT_INVITE_LINK: "revokeChatInviteLink", // +
+  APPROVE_CHAT_JOIN_REQUEST: "approveChatJoinRequest", // +
+  DECLINE_CHAT_JOIN_REQUEST: "declineChatJoinRequest", // +
 
   SET_CHAT_PHOTO: "setChatPhoto", // +
   DELETE_CHAT_PHOTO: "deleteChatPhoto", // +
@@ -60,8 +60,8 @@ const Methods = Object.freeze({
   GET_CHAT_ADMINISTRATORS: "getChatAdministrators", // +
   GET_CHAT_MEMBER_COUNT: "getChatMemberCount", // +
   GET_CHAT_MEMBER: "getChatMember", // +
-  SET_CHAT_STICKER_SET: "setChatStickerSet", // !!!!!!!!!!!!!!
-  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet", // !!!!!!!!!!!!!!
+  SET_CHAT_STICKER_SET: "setChatStickerSet", // +
+  DELETE_CHAT_STICKER_SET: "deleteChatStickerSet", // +
 
   GET_FORUM_TOPIC_ICON_STICKERS: "getForumTopicIconStickers", // !!!!!!!!!!!!!
   CREATE_FORUM_TOPIC: "createForumTopic", // !!!!!!!!!!!!!
@@ -126,7 +126,7 @@ const Methods = Object.freeze({
 
   // Payments
   SEND_INVOICE: "sendInvoice", // + !!
-  CREATE_INVOICE_LINK: "createInvoiceLink", // !!!!!!!!!!!!!!
+  CREATE_INVOICE_LINK: "createInvoiceLink", // + !!
   ANSWER_SHIPPING_QUERY: "answerShippingQuery", // +
   ANSWER_PRE_CHECKOUT_QUERY: "answerPreCheckoutQuery", // +
 
@@ -134,9 +134,9 @@ const Methods = Object.freeze({
   SET_PASSPORT_DATA_ERRORS: "setPassportDataErrors", // !!!!!!!!!!!!!!
 
   // Games
-  SEND_GAME: "sendGame", // !!!!!!!!!!!!!!
-  SET_GAME_SCORE: "setGameScore", // !!!!!!!!!!!!!!
-  GET_GAME_HIGH_SCORES: "getGameHighScores", // !!!!!!!!!!!!!!
+  SEND_GAME: "sendGame", // + !!
+  SET_GAME_SCORE: "setGameScore", // + !!
+  GET_GAME_HIGH_SCORES: "getGameHighScores", // + !!
 });
 
 const BLOB_FIELDS = [
@@ -164,7 +164,7 @@ const DEFAULT_EXTENSIONS = Object.freeze({
 });
 
 /**
- * Расшифровка кодов ответа (состояния) HTTP.
+ * Decoding HTTP response (status) codes.
  * @see https://developer.mozilla.org/ru/docs/Web/HTTP/Status
  * @enum {string}
  */

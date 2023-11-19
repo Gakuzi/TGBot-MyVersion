@@ -18,7 +18,7 @@ class InputMediaPhoto {
     caption,
     parse_mode = "HTML",
     caption_entities,
-    has_spoiler = false,
+    has_spoiler,
   }) {
     this.type = "photo";
     this.media = String(media);
@@ -58,8 +58,8 @@ class InputMediaVideo {
     width,
     height,
     duration,
-    supports_streaming = false,
-    has_spoiler = false,
+    supports_streaming ,
+    has_spoiler,
   }) {
     this.type = "video";
     this.media = String(media);
@@ -103,7 +103,7 @@ class InputMediaAnimation {
     width,
     height,
     duration,
-    has_spoiler = false,
+    has_spoiler,
   }) {
     this.type = "animation";
     this.media = String(media);

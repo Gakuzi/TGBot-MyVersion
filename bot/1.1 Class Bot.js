@@ -4,19 +4,21 @@
  * A GAS wrapper for the
  * {@link https://core.telegram.org/bots/api Telegram API}
  * @author Mikhail Nosaev <m.nosaev@gmail.com>
- * @see {@link https://t.me/nosaev_m Telegram} разработка Google таблиц и GAS скриптов
+ * @see {@link https://t.me/nosaev_m Telegram} development of Google Sheets and Apps Script
  * @license MIT
  */
 class TGbot extends _Client {
   /**
    * @constructor
-   * @type {object} options параметры конструктора.
-   * @property {string} options.botToken токен Telegram бота от \@BotFather.
-   * @property {string} [options.webAppUrl] ссылка на WebApp Google для работы с ответами doGet(e).
-   * @property {boolean} [options.logRequest] печать URL и OPTIONS запроса при выполнении, по умочанию false.
+   * @type {object} options - The configuration options for the TGbot.
+   * @property {string} options.botToken - The token of the Telegram bot from \@BotFather.
+   * @property {string} [options.webAppUrl] - The link to the Google WebApp for working with doGet(e) responses.
+   * @property {string} [options.service] The service PropertiesService.getScriptProperties() used by the TGbot.
+   * @property {string} [options.parseMode] - Set the parse mode, default is "HTML".
+   * @property {boolean} [options.logRequest] - Show the URL and OPTIONS request string when executed, default is false.
    */
-  constructor({ botToken, webAppUrl, logRequest }) {
-    super({ botToken, webAppUrl, logRequest });
+  constructor({ botToken, webAppUrl, service, parseMode, logRequest }) {
+    super({ botToken, webAppUrl, service, parseMode, logRequest });
     this.InputMediaDocument = InputMediaPhoto;
     this.InputMediaDocument = InputMediaVideo;
     this.InputMediaDocument = InputMediaAnimation;
@@ -24,25 +26,38 @@ class TGbot extends _Client {
     this.InputMediaDocument = InputMediaDocument;
   }
 
-  getInfo() {
+  /**
+   * Returns information about the Instance.
+   *
+   * @return {Object} info - An object containing information about the API:
+   *   - apiVersion (string): The version of the API.
+   *   - description (string): A description of the API.
+   *   - link (string): The link to the official documentation of the API.
+   *   - baseUrl (string): The base URL of the API.
+   *   - botToken (string): The token of the bot.
+   *   - webAppUrl (string): The URL of the web application.
+   *   - methods (Array): An array of methods available in the API.
+   */
+  info() {
     const info = {
       apiVersion: this.apiVersion,
       description: "A GAS wrapper for the Telegram API",
+      link: "https://core.telegram.org/bots/api",
       baseUrl: this.baseUrl,
       botToken: this.__botToken,
       webAppUrl: this.__webAppUrl,
-      methods: helper.getMethodsOfClass(TGbot),
+      methods: this.getMethods(TGbot),
     };
-    return helper.log(info);
+    return this.log(info);
   }
 
   /**
    * @private
-   * Проверка длины сообщения.
-   * @param {string} msg_text текст отправляемого сообщения.
-   * @param {string} caption_text подпись к документу отправляемого сообщения.
-   * @param {string} callback_query_text текст уведомления сообщения.
-   * @returns {Error} возвращает ошибку в случае превышения допустимого размера.
+   * Check message length.
+   * @param {string} msg_text the text of the message to be sent.
+   * @param {string} caption_text caption for the document of the message being sent.
+   * @param {string} callback_query_text message notification text.
+   * @returns {Error} returns an error if the size is exceeded.
    */
   _lengthError({
     msg_text,
@@ -98,20 +113,24 @@ class TGbot extends _Client {
   // Getting updates
 
   /**
-   * Метод для получения входящих обновлений с помощью длительного опроса.
-   * @see {@link https://core.telegram.org/bots/api#getupdates Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {number} [options.offset] идентификатор первого возвращаемого обновления.
-   * Должен быть на единицу больше, чем самый высокий среди идентификаторов ранее полученных обновлений.
-   * По умолчанию возвращаются обновления, начиная с самого раннего неподтвержденного обновления.
-   * Обновление считается подтвержденным, как только вызывается getUpdates со смещением выше, чем его update_id.
-   * Можно указать отрицательное смещение для получения обновлений, начиная с -offset update с конца очереди обновлений.
-   * Все предыдущие обновления будут забыты.
-   * @property {number} [options.limit] кол-во извлекаемых обновлений. Принимаются значения от 1 до 100. По умолчанию 100.
-   * @property {number} [options.timeout] Тайм-аут в секундах для длительного опроса. По умолчанию 0, т.е. обычный короткий опрос.
-   * @property {Array.<string>} [options.allowed_updates] JSON список типов обновлений, которые должен получать ваш бот.
-   * Укажите [“message”, “edited_channel_post”, “callback_query”], чтобы получать обновления только этих типов.
-   * @returns {Array.<Update>} возвращает массив объектов обновлени.
+   * Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects.
+   * @see {@link https://core.telegram.org/bots/api#getupdates getUpdates}
+   * @typedef {object} getUpdates
+   * @property {number} [offset] - Identifier of the first update to be returned. Must be greater by one than the highest among the identifiers
+   * of previously received updates.
+   * By default, updates starting with the earliest unconfirmed update are returned. An update is considered confirmed as soon as getUpdates
+   * is called with an offset higher
+   * than its update_id. The negative offset can be specified to retrieve updates starting from -offset update from the end of the updates queue.
+   * All previous updates will be forgotten.
+   * @property {number} [limit] - Limits the number of updates to be retrieved. Values between 1-100 are accepted. Defaults to 100.
+   * @property {number} [timeout] - Timeout in seconds for long polling. Defaults to 0, i.e. usual short polling. Should be positive,
+   * short polling should be used for testing purposes only.
+   * @property {string[]} [allowed_updates] - A JSON-serialized list of the update types you want your bot to receive.
+   * For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types.
+   * See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member (default).
+   * If not specified, the previous setting will be used. Please note that this parameter doesn't affect updates created before the call to the getUpdates,
+   * so unwanted updates may be received for a short period of time.
+   * @returns {Update[]}
    */
   getUpdates({ offset, limit, timeout, allowed_updates }) {
     const query = {
@@ -125,26 +144,36 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для указания URL-адреса и получения входящих обновлений через исходящий веб-перехватчик.
-   * Всякий раз, когда для бота появляется обновление, мы отправляем HTTPS-запрос POST на указанный URL-адрес, содержащий сериализованное обновление JSON.
-   * @see {@link https://core.telegram.org/bots/api#setwebhook Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} options.url URL этого метода HTTPS для отправки обновлений.
-   * @property {InputFile} [options.certificate] сертификат открытого ключа, чтобы можно было проверить используемый корневой сертификат.
-   * @property {string} [options.ip_address] фиксированный IP-адрес, который будет использоваться для отправки запросов веб-перехватчика вместо IP-адреса, разрешенного через DNS.
-   * @property {number} [options.max_connections] max допустимое количество одновременных подключений HTTPS к веб-перехватчику для доставки обновлений: 1–100. По умолчанию 40. Используйте более низкие значения, чтобы ограничить нагрузку на сервер вашего бота, и более высокие значения, чтобы увеличить пропускную способность вашего бота.
-   * @property {Array.<string>} [options.allowed_updates] JSON список типов обновлений, которые должен получать ваш бот.
-   * Укажите [“message”, “edited_channel_post”, “callback_query”], чтобы получать обновления только этих типов.
-   * @property {boolean} [options.drop_pending_updates] True, чтобы удалить все ожидающие обновления.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot,
+   * we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request,
+   * we will give up after a reasonable amount of attempts. Returns True on success.
+   * If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter secret_token.
+   * If specified, the request will contain a header "X-Telegram-Bot-Api-Secret-Token" with the secret token as content.
+   * @see {@link https://core.telegram.org/bots/api#setwebhook setWebhook}
+   * @typedef {object} setWebhook
+   * @property {string} url - HTTPS URL to send updates to. Use an empty string to remove webhook integration.
+   * @property {InputFile} [certificate] - Upload your public key certificate so that the root certificate in use can be checked. See our self-signed guide for details.
+   * @property {string} [ip_address] - The fixed IP address which will be used to send webhook requests instead of the IP address resolved through DNS.
+   * @property {number} [max_connections] - The maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery, 1-100.
+   * Defaults to 40. Use lower values to limit the load on your bot's server, and higher values to increase your bot's throughput.
+   * @property {string[]} [allowed_updates] - A JSON-serialized list of the update types you want your bot to receive.
+   * For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types.
+   * See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member (default).
+   * If not specified, the previous setting will be used. Please note that this parameter doesn't affect updates created before the call to the setWebhook,
+   * so unwanted updates may be received for a short period of time.
+   * @property {boolean} [drop_pending_updates] - Pass True to drop all pending updates.
+   * @property {string} [secret_token] - A secret token to be sent in a header "X-Telegram-Bot-Api-Secret-Token" in every webhook request, 1-256 characters.
+   * Only characters A-Z, a-z, 0-9, _ and - are allowed. The header is useful to ensure that the request comes from a webhook set by you.
+   * @returns {boolean}
    */
   setWebhook({
     url = this.__webAppUrl,
-    certificate = "",
-    ip_address = "",
+    certificate,
+    ip_address,
     max_connections = 40,
     allowed_updates = [],
-    drop_pending_updates = false,
+    drop_pending_updates,
+    secret_token,
   }) {
     // const _ = arguments[0];
     // _.url = url;
@@ -156,28 +185,31 @@ class TGbot extends _Client {
       max_connections: Number(max_connections),
       allowed_updates: allowed_updates ? JSON.stringify(allowed_updates) : null,
       drop_pending_updates: Boolean(drop_pending_updates),
+      secret_token: secret_token ? String(secret_token) : null,
     };
 
-    return helper.log(this.request(Methods.SET_WEBHOOK, query));
+    return this.log(this.request(Methods.SET_WEBHOOK, query));
   }
 
   /**
-   * Метод, для удаления интеграции с веб-перехватчиком, если вы решите вернуться к getUpdates.
-   * @see {@link https://core.telegram.org/bots/api#deletewebhook Telegram API}
-   * @param {boolean} [drop_pending_updates] True, чтобы удалить все ожидающие обновления, по умолчанию false.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to remove webhook integration if you decide to switch back to getUpdates. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletewebhook deleteWebhook}
+   * @typedef {object} deleteWebhook
+   * @property {boolean} [drop_pending_updates] - Pass True to drop all pending updates.
+   * @returns {boolean}
    */
-  deleteWebhook(drop_pending_updates = false) {
+  deleteWebhook(drop_pending_updates) {
     const query = {
       drop_pending_updates: Boolean(drop_pending_updates),
     };
 
-    return helper.log(this.request(Methods.DELETE_WEBHOOK, query));
+    return this.log(this.request(Methods.DELETE_WEBHOOK, query));
   }
 
   /**
-   * Метод, для получения текущего статуса веб-перехватчика. Не требует параметров.
-   * @see {@link https://core.telegram.org/bots/api#getwebhookinfo Telegram API}
+   * Use this method to get current webhook status. Requires no parameters. On success, returns a WebhookInfo object.
+   * If the bot is using getUpdates, will return an object with the url field empty.
+   * @see {@link https://core.telegram.org/bots/api#getwebhookinfo getWebhookInfo}
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
   getWebhookInfo() {
@@ -185,53 +217,54 @@ class TGbot extends _Client {
       url: String(this.__webAppUrl),
     };
 
-    return helper.log(this.request(Methods.GET_WEBHOOK_INFO, query));
+    return this.log(this.request(Methods.GET_WEBHOOK_INFO, query));
   }
 
   // Available methods
 
   /**
-   * Метод проверки токена аутентификации вашего бота. Не требует параметров.
-   * @see {@link https://core.telegram.org/bots/api#getme Telegram API}
-   * @returns {User} возвращает основную информацию о боте в виде объекта User.
+   * A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object.
+   * @see {@link https://core.telegram.org/bots/api#getme getMe}
+   * @returns {User}
    */
   getMe() {
     return this.request(Methods.GET_ME);
   }
 
   /**
-   * Метод выхода из сервера API облачного бота перед локальным запуском бота. Не требует параметров.
-   * @see {@link https://core.telegram.org/bots/api#logout Telegram API}
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to log out from the cloud Bot API server before launching the bot locally. You must log out the bot before running it locally,
+   * otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server,
+   * but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns True on success. Requires no parameters.
+   * @see {@link https://core.telegram.org/bots/api#logout logOut}
+   * @returns {boolean}
    */
   logOut() {
     return this.request(Methods.LOG_OUT);
   }
 
   /**
-   * Метод чтобы закрыть экземпляр бота перед его перемещением с одного локального сервера на другой.
-   * Вам необходимо удалить веб-хук перед вызовом этого метода, чтобы гарантировать, что бот не запустится снова после перезапуска сервера.
-   * Метод вернет ошибку 429 в первые 10 минут после запуска бота.
-   * Не требует параметров.
-   * @see {@link https://core.telegram.org/bots/api#close Telegram API}
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method
+   * to ensure that the bot isn't launched again after server restart.
+   * The method will return error 429 in the first 10 minutes after the bot is launched. Returns True on success. Requires no parameters.
+   * @see {@link https://core.telegram.org/bots/api#close close}
+   * @returns {boolean}
    */
   close() {
     return this.request(Methods.CLOSE);
   }
 
   /**
-   * Метод, для измения прав администратора по умолчанию, запрашиваемые ботом, когда он добавляется в качестве администратора в группы или каналы.
-   * Эти права будут предложены пользователям, но они могут изменить список перед добавлением бота.
-   * @see {@link https://core.telegram.org/bots/api#setmydefaultadministratorrights Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {ChatAdministratorRights} rights объект JSON, описывающий новые права администратора по умолчанию.
-   * Если не указано, права администратора по умолчанию будут удалены.
-   * @property {boolean} [for_channels] True, чтобы изменить права администратора бота по умолчанию в каналах.
-   * В противном случае будут изменены права администратора бота по умолчанию для групп и супергрупп.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels.
+   * These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setmydefaultadministratorrights setMyDefaultAdministratorRights}
+   * @typedef {object} setMyDefaultAdministratorRights
+   * @property {ChatAdministratorRights} [rights] - A JSON-serialized object describing new default administrator rights.
+   * If not specified, the default administrator rights will be cleared.
+   * @property {boolean} [for_channels] - Pass True to change the default administrator rights of the bot in channels.
+   * Otherwise, the default administrator rights of the bot for groups and supergroups will be changed.
+   * @returns {boolean}
    */
-  setMyDefaultAdministratorRights({ rights, for_channels = false }) {
+  setMyDefaultAdministratorRights({ rights, for_channels }) {
     if (!rights)
       helper.miss_parameter(
         "rights объект JSON, описывающий новые права администратора по умолчанию."
@@ -246,13 +279,14 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения текущих прав администратора бота по умолчанию.
-   * @see {@link https://core.telegram.org/bots/api#getmydefaultadministratorrights Telegram API}
-   * @param {boolean} for_channels True, чтобы получить права администратора бота по умолчанию в каналах.
-   * В противном случае будут возвращены права администратора бота по умолчанию для групп и супергрупп.
-   * @returns {ChatAdministratorRights} возвращает ChatAdministratorRights в случае успеха.
+   * Use this method to get the current default administrator rights of the bot. Returns ChatAdministratorRights on success.
+   * @see {@link https://core.telegram.org/bots/api#getmydefaultadministratorrights getMyDefaultAdministratorRights}
+   * @typedef {object} getMyDefaultAdministratorRights
+   * @property {boolean} [for_channels] - Pass True to get default administrator rights of the bot in channels. Otherwise, default administrator rights
+   *  of the bot for groups and supergroups will be returned.
+   * @returns {ChatAdministratorRights}
    */
-  getMyDefaultAdministratorRights(for_channels = false) {
+  getMyDefaultAdministratorRights(for_channels) {
     const query = {
       for_channels: Boolean(for_channels),
     };
@@ -261,16 +295,17 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для установки списока команд бота.
-   * @see {@link https://core.telegram.org/bots/api#setmycommands Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {BotCommand[]} commands список комманд.
-   * @property {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
-   * @property {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setmycommands setMyCommands}
+   * @typedef {object} setMyCommands
+   * @property {BotCommand[]} commands - A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
+   * @property {BotCommandScope} [scope] - A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope,
+   * for whose language there are no dedicated commands.
+   * @returns {boolean}
    */
-  setMyCommands({ commands, scope = "", language_code = "" }) {
-    if (!commands || commands == [])
+  setMyCommands({ commands, scope, language_code }) {
+    if (!commands || commands.length === 0)
       helper.miss_parameter(
         "commands объект JSON, описывающий новые права администратора по умолчанию."
       );
@@ -278,40 +313,43 @@ class TGbot extends _Client {
     const query = {
       commands: JSON.stringify(commands),
       scope: scope ? JSON.stringify(scope) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.SET_MY_COMMANDS, query);
   }
 
   /**
-   * Метод, для получения списка команд бота.
-   * @see {@link https://core.telegram.org/bots/api#getmycommands Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
-   * @property {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
-   * @returns {BotCommand[]|[]} возвращает массив BotCommand в случае успеха. Если команды не заданы, возвращается пустой список.
+   * Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects.
+   * If commands aren't set, an empty list is returned.
+   * @see {@link https://core.telegram.org/bots/api#getmycommands getMyCommands}
+   * @typedef {object} getMyCommands
+   * @property {BotCommandScope} [scope] - A JSON-serialized object, describing scope of users. Defaults to BotCommandScopeDefault.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code or an empty string.
+   * @returns {BotCommand[]}
    */
-  getMyCommands({ scope = "", language_code = "" }) {
+  getMyCommands({ scope, language_code }) {
     const query = {
       scope: scope ? JSON.stringify(scope) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
     return this.request(Methods.GET_MY_COMMANDS, query);
   }
 
   /**
-   * Метод, для удаления списока команд бота.
-   * @see {@link https://core.telegram.org/bots/api#deletemycommands Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(BotCommandScopeDefault|BotCommandScopeAllPrivateChats|BotCommandScopeAllGroupChats|BotCommandScopeAllChatAdministrators|BotCommandScopeChat|BotCommandScopeChatAdministrators|BotCommandScopeChatMember)[]} [scope] JSON, описывающий круг пользователей, для которых релевантны команды. По умолчанию используется BotCommandScopeDefault.
-   * @property {string} [language_code] двухбуквенный код языка ISO 639-1. Если пусто, команды будут применяться ко всем пользователям из заданной области, для языка которых нет выделенных команд.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, higher level commands will be shown to affected users.
+   * Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletemycommands deleteMyCommands}
+   * @typedef {object} deleteMyCommands
+   * @property {BotCommandScope} [scope] - A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope,
+   * for whose language there are no dedicated commands.
+   * @returns {boolean}
    */
-  deleteMyCommands({ scope = "", language_code = "" }) {
+  deleteMyCommands({ scope, language_code }) {
     const query = {
       scope: scope ? JSON.stringify(scope) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.DELETE_MY_COMMANDS, query);
@@ -320,10 +358,12 @@ class TGbot extends _Client {
   // Chat
 
   /**
-   * Используйте этот метод для получения актуальной информации о чате (текущее имя пользователя для разговоров один на один, текущее имя пользователя, группы или канала и т. д.).
-   * @see {@link https://core.telegram.org/bots/api#getchat Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {Chat} возвращает объект чата Chat в случае успеха.
+   * Use this method to get up to date information about the chat (current name of the user for one-on-one conversations, current username of a user, group or channel, etc.).
+   * Returns a Chat object on success.
+   * @see {@link https://core.telegram.org/bots/api#getchat getChat}
+   * @typedef {object} getChat
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername).
+   * @returns {Chat}
    */
   getChat(chat_id) {
     if (!chat_id)
@@ -339,15 +379,16 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения списка администраторов в чате.
-   * @see {@link https://core.telegram.org/bots/api#getchatadministrators Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {(ChatMemberOwner|ChatMemberAdministrator|ChatMemberMember|ChatMemberRestricted|ChatMemberLeft|ChatMemberBanned)} В случае успеха возвращает массив объектов ChatMember, содержащий информацию обо всех администраторах чата, кроме других ботов. Если чат является группой или супергруппой и не были назначены администраторы, будет возвращен только создатель.
+   * Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects.
+   * @see {@link https://core.telegram.org/bots/api#getchatadministrators getChatAdministrators}
+   * @typedef {object} getChatAdministrators
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername).
+   * @returns {ChatMember[]}
    */
   getChatAdministrators(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -358,18 +399,18 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы установить пользовательский титул для администратора в супергруппе, продвигаемой ботом.
-   * @see {@link https://core.telegram.org/bots/api#setchatadministratorcustomtitle Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} user_id уникальный идентификатор идентификатор целевого пользователя.
-   * @property {string} custom_title новый пользовательский титул для администратора, 0-16 символов, эмодзи не разрешены.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatadministratorcustomtitle setChatAdministratorCustomTitle}
+   * @typedef {object} setChatAdministratorCustomTitle
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} user_id - Unique identifier of the target user.
+   * @property {string} custom_title - New custom title for the administrator; 0-16 characters, emoji are not allowed.
+   * @returns {boolean}
    */
   setChatAdministratorCustomTitle({ chat_id, user_id, custom_title }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
       helper.miss_parameter(
@@ -390,15 +431,16 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения количества участников в чате.
-   * @see {@link https://core.telegram.org/bots/api#getchatmembercount Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {number} возвращает Int в случае успеха.
+   * Use this method to get the number of members in a chat. Returns Int on success.
+   * @see {@link https://core.telegram.org/bots/api#getchatmembercount getChatMemberCount}
+   * @typedef {object} getChatMemberCount
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername).
+   * @returns {number}
    */
   getChatMemberCount(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -409,17 +451,18 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, получения информации об участнике чата.
-   * @see {@link https://core.telegram.org/bots/api#getchatmember Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} user_id уникальный идентификатор идентификатор целевого пользователя.
-   * @returns {(ChatMemberOwner|ChatMemberAdministrator|ChatMemberMember|ChatMemberRestricted|ChatMemberLeft|ChatMemberBanned)} возвращает объект ChatMember в случае успеха.
+   * Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat.
+   * Returns a ChatMember object on success.
+   * @see {@link https://core.telegram.org/bots/api#getchatmember getChatMember}
+   * @typedef {object} getChatMember
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername).
+   * @property {number} user_id - Unique identifier of the target user.
+   * @returns {ChatMember}
    */
   getChatMember({ chat_id, user_id }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
       helper.miss_parameter(
@@ -435,24 +478,28 @@ class TGbot extends _Client {
   }
 
   /**
-   * Повысить или понизить пользователя в супергруппе или канале
+   * Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for
+   * this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user.
+   * Returns True on success.
    * @see {@link https://core.telegram.org/bots/api#promotechatmember promoteChatMember}
    * @typedef {object} promoteChatMember
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} user_id уникальный идентификатор идентификатор целевого пользователя.
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} user_id - Unique identifier of the target user.
    * @property {boolean} [is_anonymous] - Pass True if the administrator's presence in the chat is hidden.
-   * @property {boolean} [can_manage_chat] - Pass True if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege.
+   * @property {boolean} [can_manage_chat] - Pass True if the administrator can access the chat event log, chat statistics, message statistics in channels,
+   * see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege.
    * @property {boolean} [can_post_messages] - Pass True if the administrator can create channel posts, channels only.
    * @property {boolean} [can_edit_messages] - Pass True if the administrator can edit messages of other users and can pin messages, channels only.
    * @property {boolean} [can_delete_messages] - Pass True if the administrator can delete messages of other users.
    * @property {boolean} [can_manage_video_chats] - Pass True if the administrator can manage video chats.
    * @property {boolean} [can_restrict_members] - Pass True if the administrator can restrict, ban or unban chat members.
-   * @property {boolean} [can_promote_members] - Pass True if the administrator can add new administrators with a subset of their own privileges or demote administrators that they have promoted, directly or indirectly (promoted by administrators that were appointed by him).
+   * @property {boolean} [can_promote_members] - Pass True if the administrator can add new administrators with a subset of their own privileges or
+   * demote administrators that they have promoted, directly or indirectly (promoted by administrators that were appointed by him).
    * @property {boolean} [can_change_info] - Pass True if the administrator can change chat title, photo and other settings.
    * @property {boolean} [can_invite_users] - Pass True if the administrator can invite new users to the chat.
    * @property {boolean} [can_pin_messages] - Pass True if the administrator can pin messages, supergroups only.
    * @property {boolean} [can_manage_topics] - Pass True if the user is allowed to create, rename, close, and reopen forum topics, supergroups only.
-   * @returns {boolean} возвращает True в случае успеха.
+   * @returns {boolean}
    */
   promoteChatMember({
     chat_id,
@@ -500,18 +547,20 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для блокировки пользователя в группе, супергруппе или канале.
-   * В случае с супергруппами и каналами пользователь не сможет вернуться в чат самостоятельно по инвайт-ссылкам и т.п., если только его предварительно не разбанят.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#banchatmember Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} user_id уникальный идентификатор идентификатор целевого пользователя.
-   * @property {number} [until_date] дата, когда пользователь будет разбанен, unix-время. Пользователь забанен > 366 дней или > 30 сек. текущего времени, забаненным навсегда. Применяется только для супергрупп и каналов.
-   * @property {boolean} [revoke_messages] True, чтобы удалить все сообщения из чата для удаляемого пользователя. False, пользователь сможет видеть сообщения в группе, которые были отправлены до того, как пользователь был удален. Всегда верно для супергрупп и каналов.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels,
+   * the user will not be able to return to the chat on their own using invite links, etc., unless unbanned first.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#banchatmember banChatMember}
+   * @typedef {object} banChatMember
+   * @property {string|number} chat_id - Unique identifier for the target group or username of the target supergroup or channel (in the format @channelusername).
+   * @property {number} user_id - Unique identifier of the target user.
+   * @property {number} [until_date] - Date when the user will be unbanned; Unix time. If user is banned for more than 366 days or less than 30 seconds
+   * from the current time they are considered to be banned forever. Applied for supergroups and channels only.
+   * @property {boolean} [revoke_messages] - Pass True to delete all messages from the chat for the user that is being removed.
+   * If False, the user will be able to see messages in the group that were sent before the user was removed. Always True for supergroups and channels.
+   * @returns {boolean}
    */
-  banChatMember({ chat_id, user_id, until_date, revoke_messages = true }) {
+  banChatMember({ chat_id, user_id, until_date, revoke_messages }) {
     if (!chat_id)
       helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
@@ -532,19 +581,20 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для разблокировки ранее забаненного пользователя в супергруппе или канале.
-   * Пользователь не вернется в группу или канал автоматически, но сможет присоединиться по ссылке и т. д.
-   * По умолчанию этот метод гарантирует, что после звонка пользователь не будет участником чата, но сможет присоединиться к нему.
-   * Поэтому, если пользователь является участником чата, он также будет удален из чата. Если вы этого не хотите, используйте параметр only_if_banned.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#unbanchatmember Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} user_id уникальный идентификатор идентификатор целевого пользователя.
-   * @property {boolean} [only_if_banned] ничего не делать, если пользователь не забанен.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to unban a previously banned user in a supergroup or channel.
+   * The user will not return to the group or channel automatically, but will be able to join via link, etc.
+   * The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member
+   * of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat.
+   * If you don't want this, use the parameter only_if_banned. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unbanchatmember unbanChatMember}
+   * @typedef {object} unbanChatMember
+   * @property {string|number} chat_id - Unique identifier for the target group or username of the target supergroup or
+   * channel (in the format @channelusername).
+   * @property {number} user_id - Unique identifier of the target user.
+   * @property {boolean} [only_if_banned] - Do nothing if the user is not banned.
+   * @returns {boolean}
    */
-  unbanChatMember({ chat_id, user_id, only_if_banned = true }) {
+  unbanChatMember({ chat_id, user_id, only_if_banned }) {
     if (!chat_id)
       helper.miss_parameter(
         "chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername)."
@@ -564,20 +614,32 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы ограничить пользователя в супергруппе.
-   * Бот должен быть администратором в супергруппе и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#restrictchatmember Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername).
-   * @property {number} user_id уникальный идентификатор целевого пользователя.
-   * @property {ChatPermissions} permissions JSON-сериализованный объект для новых разрешений пользователя.
-   * @property {number} [until_date] дата снятия ограничений для пользователя, время unix. Заблокирован > 366 дней или < 30 сек. с текущего времени, считается заблокированным навсегда.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work
+   * and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#restrictchatmember restrictChatMember}
+   * @typedef {object} restrictChatMember
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {number} user_id - Unique identifier of the target user.
+   * @property {ChatPermissions} permissions - A JSON-serialized object for new user permissions.
+   * @property {boolean} [use_independent_chat_permissions] - Pass True if chat permissions are set independently.
+   * Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios,
+   * can_send_documents,
+   * can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply
+   * the can_send_messages permission.
+   * @property {number} [until_date] - Date when restrictions will be lifted for the user; Unix time.
+   * If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever.
+   * @returns {boolean}
    */
-  restrictChatMember({ chat_id, user_id, permissions, until_date }) {
+  restrictChatMember({
+    chat_id,
+    user_id,
+    permissions,
+    use_independent_chat_permissions,
+    until_date,
+  }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!user_id)
       helper.miss_parameter(
@@ -592,6 +654,9 @@ class TGbot extends _Client {
       chat_id: String(chat_id),
       user_id: Number(user_id),
       permissions: JSON.stringify(permissions),
+      use_independent_chat_permissions: Boolean(
+        use_independent_chat_permissions
+      ),
       until_date: until_date ? Number(until_date) : null,
     };
 
@@ -599,18 +664,64 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для установки разрешений чата по умолчанию для всех участников.
-   * Чтобы это работало, бот должен быть администратором в группе или супергруппе и иметь права администратора can_restrict_members.
-   * @see {@link https://core.telegram.org/bots/api#setchatpermissions Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
-   * @property {ChatPermissions} permissions JSON-сериализованный объект для новых разрешений чата по умолчанию.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner of
+   * the banned chat won't be able to send messages on behalf of any of their channels.
+   * The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights.
+   * Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#banchatsenderchat banChatSenderChat}
+   * @typedef {object} banChatSenderChat
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} sender_chat_id - Unique identifier of the target sender chat.
+   * @returns {boolean}
    */
-  setChatPermissions({ chat_id, permissions }) {
+  banChatSenderChat({ chat_id, sender_chat_id }) {
+    const query = {
+      chat_id: String(chat_id),
+      sender_chat_id: Number(sender_chat_id),
+    };
+
+    return this.request(Methods.BAN_CHAT_SENDER_CHAT, query);
+  }
+
+  /**
+   * Use this method to unban a previously banned channel chat in a supergroup or channel.
+   * The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unbanchatsenderchat unbanChatSenderChat}
+   * @typedef {object} unbanChatSenderChat
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} sender_chat_id - Unique identifier of the target sender chat.
+   * @returns {boolean}
+   */
+  unbanChatSenderChat({ chat_id, sender_chat_id }) {
+    const query = {
+      chat_id: String(chat_id),
+      sender_chat_id: Number(sender_chat_id),
+    };
+
+    return this.request(Methods.UNBAN_CHAT_SENDER_CHAT, query);
+  }
+
+  /**
+   * Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for
+   * this to work and must have the can_restrict_members administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatpermissions setChatPermissions}
+   * @typedef {object} setChatPermissions
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {ChatPermissions} permissions - A JSON-serialized object for new default chat permissions.
+   * @property {boolean} [use_independent_chat_permissions] - Pass True if chat permissions are set independently.
+   * Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios,
+   * can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions;
+   * the can_send_polls permission will imply the can_send_messages permission.
+   * @returns {boolean}
+   */
+  setChatPermissions({
+    chat_id,
+    permissions,
+    use_independent_chat_permissions,
+  }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!permissions || permissions == {})
       helper.miss_parameter(
@@ -620,22 +731,26 @@ class TGbot extends _Client {
     const query = {
       chat_id: String(chat_id),
       permissions: JSON.stringify(permissions),
+      use_independent_chat_permissions: Boolean(
+        use_independent_chat_permissions
+      ),
     };
 
     return this.request(Methods.SET_CHAT_PERMISSIONS, query);
   }
 
   /**
-   * Метод, для создания новой основной ссылки-приглашения для чата (любая ранее созданная первичная ссылка аннулируется).
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#exportchatinvitelink Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
-   * @returns {string} возвращает новую ссылку-приглашение в виде строки в случае успеха.
+   * Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success.
+   * @see {@link https://core.telegram.org/bots/api#exportchatinvitelink exportChatInviteLink}
+   * @typedef {object} exportChatInviteLink
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @returns {string}
    */
   exportChatInviteLink(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -646,35 +761,36 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы создать дополнительную ссылку для приглашения в чат.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * Ссылку можно отозвать с помощью метода revokeChatInviteLink.
-   * @see {@link https://core.telegram.org/bots/api#createchatinvitelink Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
-   * @property {string} [options.link_name] имя пригласительной ссылки, 0-32 символа.
-   * @property {number} [options.expire_date] момент времени (временная метка Unix), когда срок действия ссылки истечет.
-   * @property {number} [options.member_limit] max кол-во пользователей, которые могут одновременно быть участниками чата после присоединения к чату по данной инвайт-ссылке (1-99999).
-   * @property {boolean} [options.creates_join_request] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @returns {ChatInviteLink} возвращает новую ссылку-приглашение в виде объекта ChatInviteLink.
+   * Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat
+   * for this to work and must have the appropriate administrator rights. The link can be revoked using the method revokeChatInviteLink.
+   * Returns the new invite link as ChatInviteLink object.
+   * @see {@link https://core.telegram.org/bots/api#createchatinvitelink createChatInviteLink}
+   * @typedef {object} createChatInviteLink
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string} [name] - Invite link name; 0-32 characters.
+   * @property {number} [expire_date] - Point in time (Unix timestamp) when the link will expire.
+   * @property {number} [member_limit] - The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999.
+   * @property {boolean} [creates_join_request] - True, if users joining the chat via the link need to be approved by chat administrators.
+   * If True, member_limit can't be specified.
+   * @returns {ChatInviteLink}
    */
   createChatInviteLink({
     chat_id,
-    link_name = "",
-    expire_date = "",
-    member_limit = "",
-    creates_join_request = false,
+    name,
+    expire_date,
+    member_limit,
+    creates_join_request,
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    this._lengthError({ link_name: link_name });
+    this._lengthError({ link_name: name });
     this._lengthError({ member_limit: member_limit });
 
     const query = {
       chat_id: String(chat_id),
-      name: link_name ? String(link_name) : null,
+      name: name ? String(name) : null,
       expire_date: expire_date ? Number(expire_date) : null,
       member_limit: member_limit ? Number(member_limit) : null,
       creates_join_request: Boolean(creates_join_request),
@@ -684,41 +800,42 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования неосновной ссылки-приглашения, созданной ботом.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#editchatinvitelink Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате \@supergroupusername).
-   * @property {string} options.invite_link пригласительная ссылка для редактирования
-   * @property {string} [options.link_name] имя пригласительной ссылки, 0-32 символа.
-   * @property {number} [options.expire_date] момент времени (временная метка Unix), когда срок действия ссылки истечет.
-   * @property {number} [options.member_limit] max кол-во пользователей, которые могут одновременно быть участниками чата после присоединения к чату по данной инвайт-ссылке (1-99999).
-   * @property {boolean} [options.creates_join_request] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @returns {ChatInviteLink} возвращает отредактированную ссылку-приглашение в виде объекта ChatInviteLink.
+   * Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat
+   * for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object.
+   * @see {@link https://core.telegram.org/bots/api#editchatinvitelink editChatInviteLink}
+   * @typedef {object} editChatInviteLink
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string} invite_link - The invite link to edit.
+   * @property {string} [name] - Invite link name; 0-32 characters.
+   * @property {number} [expire_date] - Point in time (Unix timestamp) when the link will expire.
+   * @property {number} [member_limit] - The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999.
+   * @property {boolean} [creates_join_request] - True, if users joining the chat via the link need to be approved by chat administrators.
+   * If True, member_limit can't be specified.
+   * @returns {ChatInviteLink}
    */
   editChatInviteLink({
     chat_id,
     invite_link,
-    link_name = "",
-    expire_date = "",
-    member_limit = "",
-    creates_join_request = false,
+    name,
+    expire_date,
+    member_limit,
+    creates_join_request,
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!invite_link)
       helper.miss_parameter(
-        "invite_link уникальный идентификатор целевого чата или имя пользователя целевой супергруппы (в формате @supergroupusername)."
+        "invite_link Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
-    this._lengthError({ link_name: link_name });
+    this._lengthError({ link_name: name });
     this._lengthError({ member_limit: member_limit });
 
     const query = {
       chat_id: String(chat_id),
       invite_link: String(invite_link),
-      name: link_name ? String(link_name) : null,
+      name: name ? String(name) : null,
       expire_date: expire_date ? Number(expire_date) : null,
       member_limit: member_limit ? Number(member_limit) : null,
       creates_join_request: Boolean(creates_join_request),
@@ -728,23 +845,100 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы установить новую фотографию профиля для чата.
-   * Фотографии нельзя изменить для приватных чатов. Ч
-   * тобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#setchatphoto Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {InputFile} photo новое фото чата, загруженное с помощью multipart/form-data.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to revoke an invite link created by the bot. If the primary link is revoked, a
+   * new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the
+   * appropriate administrator rights. Returns the revoked invite link as ChatInviteLink object.
+   * @see {@link https://core.telegram.org/bots/api#revokechatinvitelink revokeChatInviteLink}
+   * @typedef {object} revokeChatInviteLink
+   * @property {string|number} chat_id - Unique identifier of the target chat or username of the target channel (in the format @channelusername).
+   * @property {string} invite_link - The invite link to revoke.
+   * @returns {ChatInviteLink}
+   */
+  revokeChatInviteLink({ chat_id, invite_link }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
+      );
+    if (!invite_link)
+      helper.miss_parameter(
+        "invite_link Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
+      );
+
+    const query = {
+      chat_id: String(chat_id),
+      invite_link: String(invite_link),
+    };
+
+    return this.request(Methods.REVOKE_CHAT_INVITE_LINK, query);
+  }
+
+  /**
+   * Use this method to approve a chat join request. The bot must be an administrator in the chat for
+   * this to work and must have the can_invite_users administrator right. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#approvechatjoinrequest approveChatJoinRequest}
+   * @typedef {object} approveChatJoinRequest
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} user_id - Unique identifier of the target user.
+   * @returns {boolean}
+   */
+  approveChatJoinRequest({ chat_id, user_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
+      );
+    if (!user_id)
+      helper.miss_parameter("user_id Unique identifier of the target user.");
+
+    const query = {
+      chat_id: String(chat_id),
+      user_id: Number(user_id),
+    };
+
+    return this.request(Methods.APPROVE_CHAT_JOIN_REQUEST, query);
+  }
+
+  /**
+   * Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work
+   * and must have the can_invite_users administrator right. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#declinechatjoinrequest declineChatJoinRequest}
+   * @typedef {object} declineChatJoinRequest
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} user_id - Unique identifier of the target user.
+   * @returns {boolean}
+   */
+  declineChatJoinRequest({ chat_id, user_id }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
+      );
+    if (!user_id)
+      helper.miss_parameter("user_id Unique identifier of the target user.");
+
+    const query = {
+      chat_id: String(chat_id),
+      user_id: Number(user_id),
+    };
+
+    return this.request(Methods.DECLINE_CHAT_JOIN_REQUEST, query);
+  }
+
+  /**
+   * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatphoto setChatPhoto}
+   * @typedef {object} setChatPhoto
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {InputFile} photo - New chat photo, uploaded using multipart/form-data.
+   * @returns {boolean}
    */
   setChatPhoto({ chat_id, photo }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!photo)
       helper.miss_parameter(
-        "photo новое фото чата, загруженное с помощью multipart/form-data."
+        "photo New chat photo, uploaded using multipart/form-data."
       );
 
     const query = {
@@ -756,17 +950,17 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы удалить фотографию чата.
-   * Фотографии нельзя изменить для приватных чатов.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#deletechatphoto Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to delete a chat photo. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletechatphoto deleteChatPhoto}
+   * @typedef {object} deleteChatPhoto
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @returns {boolean}
    */
   deleteChatPhoto(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -777,22 +971,21 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, чтобы изменить название чата.
-   * Названия не могут быть изменены для приватных чатов.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#setchattitle Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {string} title новое название чата, 1-255 символов.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the title of a chat. Titles can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchattitle setChatTitle}
+   * @typedef {object} setChatTitle
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string} title - New chat title, 1-128 characters.
+   * @returns {boolean}
    */
   setChatTitle({ chat_id, title }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!title)
-      helper.miss_parameter("title новое название чата, 1-255 символов.");
+      helper.miss_parameter("title New chat title, 1-128 characters.");
     this._lengthError({
       chat_title: title,
     });
@@ -806,18 +999,18 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод для изменения описания группы, супергруппы или канала.
-   * Чтобы это работало, бот должен быть администратором в чате и иметь соответствующие права администратора.
-   * @see {@link https://core.telegram.org/bots/api#setchatdescription Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {string} [description] новое описание чата, 0-255 символов.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the description of a group, a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatdescription setChatDescription}
+   * @typedef {object} setChatDescription
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {string} [description] - New chat description, 0-255 characters.
+   * @returns {boolean}
    */
-  setChatDescription({ chat_id, description = "" }) {
+  setChatDescription({ chat_id, description }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (description)
       this._lengthError({
@@ -833,133 +1026,180 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод изменения имени бота.
-   * @see {@link https://core.telegram.org/bots/api#setmyname Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} [name] новое имя бота; 0-64 символа. Передайте пустую строку, чтобы удалить выделенное имя для данного языка.
-   * @property {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatstickerset setChatStickerSet}
+   * @typedef {object} setChatStickerSet
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @property {string} sticker_set_name - Name of the sticker set to be set as the group sticker set.
+   * @returns {boolean}
    */
-  setMyName({ name = "", language_code = "" }) {
+  setChatStickerSet({ chat_id, sticker_set_name }) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    if (!sticker_set_name)
+      helper.miss_parameter(
+        "sticker_set_name Name of the sticker set to be set as the group sticker set."
+      );
+
+    const query = {
+      chat_id: String(chat_id),
+      sticker_set_name: String(sticker_set_name),
+    };
+
+    return this.request(Methods.SET_CHAT_STICKER_SET, query);
+  }
+
+  /**
+   * Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for
+   * this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat
+   * requests to check if the bot can use this method. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletechatstickerset deleteChatStickerSet}
+   * @typedef {object} deleteChatStickerSet
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
+   * @returns {boolean}
+   */
+  deleteChatStickerSet(chat_id) {
+    if (!chat_id)
+      helper.miss_parameter(
+        "chat_id Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)."
+      );
+
+    const query = {
+      chat_id: String(chat_id),
+    };
+
+    return this.request(Methods.DELETE_CHAT_STICKER_SET, query);
+  }
+
+  /**
+   * Use this method to change the bot's name. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setmyname setMyName}
+   * @typedef {object} setMyName
+   * @property {string} [name] - New bot name; 0-64 characters. Pass an empty string to remove the dedicated name for the given language.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code. If empty, the name will be shown to all users for
+   * whose language there is no dedicated name.
+   * @returns {boolean}
+   */
+  setMyName({ name, language_code }) {
     const query = {
       name: name ? String(name) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.SET_MY_NAME, query);
   }
 
   /**
-   * Метод получения текущего имени бота для данного пользовательского языка.
-   * @see {@link https://core.telegram.org/bots/api#getmyname Telegram API}
-   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {BotName} возвращает BotName в случае успеха.
+   * Use this method to get the current bot name for the given user language. Returns BotName on success.
+   * @see {@link https://core.telegram.org/bots/api#getmyname getMyName}
+   * @typedef {object} getMyName
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code or an empty string.
+   * @returns {BotName}
    */
-  getMyName(language_code = "") {
+  getMyName(language_code) {
     const query = {
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.GET_MY_NAME, query);
   }
 
   /**
-   * Метод изменения описания бота, которое отображается в чате с ботом, если чат пуст.
-   * @see {@link https://core.telegram.org/bots/api#setmydescription Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} [description] новое описание бота; 0-512 символов.
-   * Передайте пустую строку, чтобы удалить специальное описание для данного языка.
-   * @property {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setmydescription setMyDescription}
+   * @typedef {object} setMyDescription
+   * @property {string} [description] - New bot description; 0-512 characters. Pass an empty string to remove the dedicated description for the given language.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code. If empty, the description will be applied to all users for whose language
+   * there is no dedicated description.
+   * @returns {boolean}
    */
-  setMyDescription({ description = "", language_code = "" }) {
+  setMyDescription({ description, language_code }) {
     const query = {
       description: description ? String(description) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.SET_MY_DESCRIPTION, query);
   }
 
   /**
-   * Метод получения текущего описания бота для данного пользовательского языка.
-   * @see {@link https://core.telegram.org/bots/api#getmydescription Telegram API}
-   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {BotDescription} возвращает BotDescription в случае успеха.
+   * Use this method to get the current bot description for the given user language. Returns BotDescription on success.
+   * @see {@link https://core.telegram.org/bots/api#getmydescription getMyDescription}
+   * @typedef {object} getMyDescription
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code or an empty string.
+   * @returns {BotDescription}
    */
-  getMyDescription(language_code = "") {
+  getMyDescription(language_code) {
     const query = {
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.GET_MY_DESCRIPTION, query);
   }
 
   /**
-   * Метод изменения краткого описания бота, которое отображается на странице профиля бота и отправляется вместе со ссылкой,
-   * когда пользователи делятся ботом.
-   * @see {@link https://core.telegram.org/bots/api#setmyshortdescription Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} [short_description] новое краткое описание бота; 0-120 символов.
-   * Передайте пустую строку, чтобы удалить специальное краткое описание для данного языка.
-   * @property {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot.
+   * Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setmyshortdescription setMyShortDescription}
+   * @typedef {object} setMyShortDescription
+   * @property {string} [short_description] - New short description for the bot; 0-120 characters. Pass an empty string to remove the dedicated short description
+   *  for the given language.
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code. If empty, the short description will be applied to all users for whose language
+   *  there is no dedicated short description.
+   * @returns {boolean}
    */
-  setMyShortDescription({ short_description = "", language_code = "" }) {
+  setMyShortDescription({ short_description, language_code }) {
     const query = {
       short_description: short_description ? String(short_description) : null,
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.SET_MY_SHORT_DESCRIPTION, query);
   }
 
   /**
-   * Метод получения текущего описания бота для данного пользовательского языка.
-   * @see {@link https://core.telegram.org/bots/api#getmyshortdescription Telegram API}
-   * @param {string} [language_code] Двухбуквенный код языка ISO 639-1.
-   * Если пусто, то имя будет показано всем пользователям, для которых нет выделенного имени на языке.
-   * @returns {BotShortDescription} возвращает BotShortDescription в случае успеха.
+   * Use this method to get the current bot short description for the given user language. Returns BotShortDescription on success.
+   * @see {@link https://core.telegram.org/bots/api#getmyshortdescription getMyShortDescription}
+   * @typedef {object} getMyShortDescription
+   * @property {string} [language_code] - A two-letter ISO 639-1 language code or an empty string.
+   * @returns {BotShortDescription}
    */
-  getMyShortDescription(language_code = "") {
+  getMyShortDescription(language_code) {
     const query = {
-      language_code: language_code ? language_code : null,
+      language_code: language_code || null,
     };
 
     return this.request(Methods.GET_MY_SHORT_DESCRIPTION, query);
   }
 
   /**
-   * Метод изменения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
-   * @see {@link https://core.telegram.org/bots/api#setchatmenubutton Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [chat_id] уникальный идентификатор целевого приватного чата.
-   * Если не указано, кнопка меню бота по умолчанию будет изменена.
-   * @property {(MenuButtonCommands|MenuButtonWebApp|MenuButtonDefault)} [menu_button] JSON объект для новой кнопки меню бота, по умолчанию MenuButtonDefault.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to change the bot's menu button in a private chat, or the default menu button. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#setchatmenubutton setChatMenuButton}
+   * @typedef {object} setChatMenuButton
+   * @property {number} [chat_id] - Unique identifier for the target private chat. If not specified, default bot's menu button will be changed.
+   * @property {MenuButton} [menu_button] - A JSON-serialized object for the bot's new menu button. Defaults to MenuButtonDefault.
+   * @returns {boolean}
    */
-  setChatMenuButton({ chat_id = "", menu_button = "" }) {
+  setChatMenuButton({ chat_id, menu_button }) {
     const query = {
       chat_id: chat_id ? String(chat_id) : null,
-      menu_button: menu_button ? menu_button : null,
+      menu_button: menu_button || null,
     };
 
     return this.request(Methods.SET_CHAT_MENU_BUTTON, query);
   }
 
   /**
-   * Метод, получения текущего значения кнопки меню бота в приватном чате или кнопки меню по умолчанию.
-   * @see {@link https://core.telegram.org/bots/api#getchatmenubutton Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого приватного чата.
-   * Если не указано, будет возвращена кнопка меню бота по умолчанию.
-   * @returns {(MenuButtonCommands|MenuButtonWebApp|MenuButtonDefault)} возвращает MenuButton в случае успеха.
+   * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns MenuButton on success.
+   * @see {@link https://core.telegram.org/bots/api#getchatmenubutton getChatMenuButton}
+   * @typedef {object} getChatMenuButton
+   * @property {number} [chat_id] - Unique identifier for the target private chat. If not specified, default bot's menu button will be returned.
+   * @returns {MenuButton}
    */
-  getChatMenuButton(chat_id = "") {
+  getChatMenuButton(chat_id) {
     const query = {
       chat_id: chat_id ? String(chat_id) : null,
     };
@@ -968,20 +1208,21 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, добавления сообщения в список закрепленных сообщений в чате.
-   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
-   * @see {@link https://core.telegram.org/bots/api#pinchatmessage Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} message_id идентификатор сообщения для закрепления.
-   * @property {boolean} [disable_notification] True, если нет необходимости отправлять уведомление всем участникам чата о новом закрепленном сообщении.
-   * Уведомления всегда отключены в каналах и приватных чатах.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat,
+   * the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup
+   * or 'can_edit_messages' administrator right in a channel. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#pinchatmessage pinChatMessage}
+   * @typedef {object} pinChatMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} message_id - Identifier of a message to pin.
+   * @property {boolean} [disable_notification] - Pass True if it is not necessary to send a notification to all chat members about the new pinned message.
+   * Notifications are always disabled in channels and private chats.
+   * @returns {boolean}
    */
-  pinChatMessage({ chat_id, message_id, disable_notification = false }) {
+  pinChatMessage({ chat_id, message_id, disable_notification }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!message_id)
       helper.miss_parameter(
@@ -998,19 +1239,19 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод удаления закрепленного сообщения в чате.
-   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
-   * @see {@link https://core.telegram.org/bots/api#unpinchatmessage Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [message_id] идентификатор сообщения, которое нужно открепить.
-   * Если не указано, самое последнее закрепленное сообщение (по дате отправки) будет откреплено.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat,
+   * the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup
+   * or 'can_edit_messages' administrator right in a channel. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unpinchatmessage unpinChatMessage}
+   * @typedef {object} unpinChatMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_id] - Identifier of a message to unpin. If not specified, the most recent pinned message (by sending date) will be unpinned.
+   * @returns {boolean}
    */
-  unpinChatMessage({ chat_id, message_id = "" }) {
+  unpinChatMessage({ chat_id, message_id }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -1022,16 +1263,18 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод очистки списка закрепленных сообщений в чате.
-   * Если чат не является приватным, бот должен быть администратором в чате, иметь права администратора «can_pin_messages» в супергруппе или права администратора «can_edit_messages» в канале.
-   * @see {@link https://core.telegram.org/bots/api#unpinallchatmessages Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat
+   * for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel.
+   * Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#unpinallchatmessages unpinAllChatMessages}
+   * @typedef {object} unpinAllChatMessages
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @returns {boolean}
    */
   unpinAllChatMessages(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -1042,15 +1285,16 @@ class TGbot extends _Client {
   }
 
   /**
-   * Используйте этот метод чтобы ваш бот покинул группу, супергруппу или канал.
-   * @see {@link https://core.telegram.org/bots/api#leavechat Telegram API}
-   * @param {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method for your bot to leave a group, supergroup or channel. Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#leavechat leaveChat}
+   * @typedef {object} leaveChat
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername).
+   * @returns {boolean}
    */
   leaveChat(chat_id) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -1061,26 +1305,22 @@ class TGbot extends _Client {
   }
 
   /**
-   * Используйте этот метод, когда вам нужно сообщить пользователю, что что-то происходит на стороне бота. Статус устанавливается на 5 секунд или меньше (когда приходит сообщение от вашего бота, клиенты Telegram сбрасывают его статус набора).
-   * @see {@link https://core.telegram.org/bots/api#sendchataction Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {string} action тип действия для трансляции.
-   * Выберите в зависимости от того, что пользователь собирается получить:
-   * - "typing" для текстовых сообщений;
-   * - "upload_photo" для фотографий;
-   * - "record_video" или "upload_video" для видео;
-   * - "record_voice" или "upload_voice" для голосовых заметок;
-   * - "upload_document" для общих файлов;
-   * - "choose_sticker" для наклеек;
-   * - "find_location" для данных о местоположении;
-   * - "record_video_note" или "upload_video_note" для видеозаметок;
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method when you need to tell the user that something is happening on the bot's side.
+   * The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
+   * We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
+   * @see {@link https://core.telegram.org/bots/api#sendchataction sendChatAction}
+   * @typedef {object} sendChatAction
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread; supergroups only.
+   * @property {string} action - Type of action to broadcast. Choose one, depending on what the user is about to receive:
+   * typing for text messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice for voice notes,
+   * upload_document for general files, choose_sticker for stickers, find_location for location data, record_video_note or upload_video_note for video notes.
+   * @returns {boolean}
    */
   sendChatAction({ chat_id, action }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!action) helper.miss_parameter("action тип действия для трансляции.");
 
@@ -1093,18 +1333,18 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения списока изображений профиля для пользователя.
-   * @see {@link https://core.telegram.org/bots/api#getuserprofilephotos Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [offset] порядковый номер первой возвращаемой фотографии. По умолчанию возвращаются все фотографии.
-   * @property {number} [limit] ограничивает количество извлекаемых фотографий. Принимаются значения от 1 до 100. По умолчанию 100.
-   * @returns {UserProfilePhotos} возвращает объект UserProfilePhotos в случае успеха.
+   * Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object.
+   * @see {@link https://core.telegram.org/bots/api#getuserprofilephotos getUserProfilePhotos}
+   * @typedef {object} getUserProfilePhotos
+   * @property {number} user_id - Unique identifier of the target user.
+   * @property {number} [offset] - Sequential number of the first photo to be returned. By default, all photos are returned.
+   * @property {number} [limit] - Limits the number of photos to be retrieved. Values between 1-100 are accepted. Defaults to 100.
+   * @returns {UserProfilePhotos}
    */
-  getUserProfilePhotos({ chat_id, offset = "", limit = "" }) {
+  getUserProfilePhotos({ chat_id, offset, limit }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
 
     const query = {
@@ -1119,36 +1359,36 @@ class TGbot extends _Client {
   // Message
 
   /**
-   * Метод, для отправки текстовых сообщений.
-   * Чтобы использовать HTML, передайте HTML, использовать MarkdownV2, передайте MarkdownV2 в поле parse_mode.
-   * @see {@link https://core.telegram.org/bots/api#formatting-options Форматы}
-   * @see {@link https://core.telegram.org/bots/api#sendmessage Telegram API}
-   * @type {object} options параметры запроса.
-   * @property  {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {string} options.text текст сообщения, 1-4096 символов.
-   * @property {string} [options.parse_mode] режим разбора сущностей "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} options.reply_markup объект JSON для встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send text messages. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendmessage sendMessage}
+   * @see {@link https://core.telegram.org/bots/api#formatting-options Formats}
+   * @typedef {object} sendMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} text - Text of the message to be sent, 1-4096 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the message text. See formatting options for more details.
+   * @property {MessageEntity[]} [entities] - A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode.
+   * @property {boolean} [disable_web_page_preview] - Disables link previews for links in this message.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object for
+   * an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendMessage({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     text,
-    parse_mode = "HTML",
-    entities = "",
-    disable_web_page_preview = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    parse_mode,
+    entities,
+    disable_web_page_preview,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -1167,7 +1407,7 @@ class TGbot extends _Client {
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       text: String(text),
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
       disable_notification: Boolean(disable_notification),
@@ -1182,25 +1422,24 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для пересылки сообщений любого типа.
-   * Служебные сообщения не могут быть переадресованы.
-   * @see {@link https://core.telegram.org/bots/api#forwardmessage Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате @channelusername).
-   * @property {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to forward messages of any kind. Service messages can't be forwarded. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#forwardmessage forwardMessage}
+   * @typedef {object} forwardMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string|number} from_chat_id - Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername).
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the forwarded message from forwarding and saving.
+   * @property {number} message_id - Message identifier in the chat specified in from_chat_id.
+   * @returns {Message}
    */
   forwardMessage({
-    chat_id = "",
-    message_thread_id = "",
-    from_chat_id = "",
-    message_id = "",
-    disable_notification = false,
-    protect_content = false,
+    chat_id,
+    message_thread_id,
+    from_chat_id,
+    message_id,
+    disable_notification,
+    protect_content,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -1228,36 +1467,39 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для копирования сообщения.
-   * @see {@link https://core.telegram.org/bots/api#copymessage Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(string|number)} options.from_chat_id уникальный идентификатор чата, в который было отправлено исходное сообщение (или имя пользователя канала в формате \@channelusername).
-   * @property {number} options.message_id идентификатор сообщения в чате указанный в from_chat_id.
-   * @property {string} [options.caption] новая подпись для медиа, 0-1024 символов. Если не указано, исходная подпись сохраняется.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для встроенной клавиатуры.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @returns {MessageId} возвращает MessageId отправленного сообщения в случае успеха.
+   * Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. A quiz poll can be copied only if the
+   * value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a
+   * link to the original message. Returns the MessageId of the sent message on success.
+   * @see {@link https://core.telegram.org/bots/api#copymessage copyMessage}
+   * @typedef {object} copyMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string|number} from_chat_id - Unique identifier for the chat where the original message was sent (or channel username in the format @channelusername).
+   * @property {number} message_id - Message identifier in the chat specified in from_chat_id.
+   * @property {string} [caption] - New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept.
+   * @property {string} [parse_mode] - Mode for parsing entities in the new caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of parse_mode.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object for
+   * an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {MessageId}
    */
   copyMessage({
-    chat_id = "",
-    message_thread_id = "",
-    from_chat_id = "",
-    message_id = "",
-    caption = "",
-    reply_markup = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    from_chat_id,
+    message_id,
+    caption,
+    reply_markup,
+    parse_mode,
+    caption_entities,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -1282,7 +1524,7 @@ class TGbot extends _Client {
       message_id: Number(message_id),
       caption: caption ? String(caption) : null,
       reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1300,20 +1542,22 @@ class TGbot extends _Client {
   // Updating messages
 
   /**
-  * Метод, для удаления сообщения, в том числе служебного, со следующими ограничениями:
-   - Сообщение может быть удалено только в том случае, если оно было отправлено < 48 часов назад.
-   - Сообщение с кубиками в приватном чате можно удалить только в том случае, если оно было отправлено > 24 часов назад.
-   - Боты могут удалять исходящие сообщения в приватных чатах, группах и супергруппах.
-   - Боты могут удалять входящие сообщения в приватных чатах.
-   - Боты с разрешениями can_post_messages могут удалять исходящие сообщения в каналах.
-   - Если бот является администратором группы, он может удалить там любое сообщение.
-   - Если у бота есть разрешение can_delete_messages в супергруппе или канале, он может удалить там любое сообщение.
-  * @see {@link https://core.telegram.org/bots/api#deletemessage Telegram API}
-  * @type {object} options параметры запроса.
-  * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername).
-  * @property {number} options.message_id идентификатор сообщения для удаления.
-  * @returns {boolean} возвращает True в случае успеха.
- */
+   * Use this method to delete a message, including service messages, with the following limitations:.
+   * - A message can only be deleted if it was sent less than 48 hours ago.
+   * - Service messages about a supergroup, channel, or forum topic creation can't be deleted.
+   * - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.
+   * - Bots can delete outgoing messages in private chats, groups, and supergroups.
+   * - Bots can delete incoming messages in private chats.
+   * - Bots granted can_post_messages permissions can delete outgoing messages in channels.
+   * - If the bot is an administrator of a group, it can delete any message there.
+   * - If the bot has can_delete_messages permission in a supergroup or a channel, it can delete any message there.
+   * Returns True on success.
+   * @see {@link https://core.telegram.org/bots/api#deletemessage deleteMessage}
+   * @typedef {object} deleteMessage
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} message_id - Identifier of the message to delete.
+   * @returns {boolean}
+   */
   deleteMessage({ chat_id, message_id }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -1331,28 +1575,29 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования текстовых и игровых сообщений.
-   * @see {@link https://core.telegram.org/bots/api#editmessagetext Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
-   * @property {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
-   * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
-   * @property {string} options.text новый текст сообщения, 1-4096 символов.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.entities] JSON список специальных сущностей, которые появляются в тексте сообщения, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_web_page_preview] отключить предварительный просмотр ссылок в этом сообщении.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#editmessagetext editMessageText}
+   * @typedef {object} editMessageText
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   *  of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message to edit.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {string} text - New text of the message, 1-4096 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the message text. See formatting options for more details.
+   * @property {MessageEntity[]} [entities] - A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode.
+   * @property {boolean} [disable_web_page_preview] - Disables link previews for links in this message.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for an inline keyboard.
+   * @returns {Message|Boolean}
    */
   editMessageText({
-    chat_id = "",
-    message_id = "",
-    inline_message_id = "",
-    text = "",
-    parse_mode = "HTML",
-    entities = "",
-    disable_web_page_preview = false,
-    reply_markup = "",
+    chat_id,
+    message_id,
+    inline_message_id,
+    text,
+    parse_mode,
+    entities,
+    disable_web_page_preview,
+    reply_markup,
   }) {
     if (!text)
       helper.miss_parameter("text новый текст сообщения, 1-4096 символов.");
@@ -1366,7 +1611,7 @@ class TGbot extends _Client {
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
         text: String(text),
-        parse_mode: String(parse_mode),
+        parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
         entities: entities ? JSON.stringify(entities) : null,
         disable_web_page_preview: Boolean(disable_web_page_preview),
         reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
@@ -1376,26 +1621,27 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования подписей к сообщениям.
-   * @see {@link https://core.telegram.org/bots/api#editmessagecaption Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
-   * @property {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
-   * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
-   * @property {string} [options.caption] новый заголовок сообщения, 0-1024 символов.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#editmessagecaption editMessageCaption}
+   * @typedef {object} editMessageCaption
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   *  of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message to edit.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {string} [caption] - New caption of the message, 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the message caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for an inline keyboard.
+   * @returns {Message|Boolean}
    */
   editMessageCaption({
-    chat_id = "",
-    message_id = "",
-    inline_message_id = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    reply_markup = "",
+    chat_id,
+    message_id,
+    inline_message_id,
+    caption,
+    parse_mode,
+    caption_entities,
+    reply_markup,
   }) {
     if (!caption)
       helper.miss_parameter(
@@ -1411,7 +1657,7 @@ class TGbot extends _Client {
         message_id: message_id ? Number(message_id) : null,
         inline_message_id: inline_message_id ? String(inline_message_id) : null,
         caption: caption ? String(caption) : null,
-        parse_mode: String(parse_mode),
+        parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
         caption_entities: caption_entities
           ? JSON.stringify(caption_entities)
           : null,
@@ -1422,25 +1668,26 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования анимации, аудио, документа, фото или видео сообщения.
-   * @see {@link https://core.telegram.org/bots/api#editmessagemedia Telegram API}
-   * Если сообщение является частью альбома сообщений, его можно отредактировать только в аудио для аудиоальбомов, в документ для альбомов документов и в фото или видео в остальных случаях.
-   * При редактировании встроенного сообщения новый файл не может быть загружен;
-   * использовать ранее загруженный файл через его file_id или указать URL-адрес.
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
-   * @property {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
-   * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
-   * @property {InputMedia} options.media объект JSON для нового мультимедийного содержимого сообщения.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается Message отредактированное сообщение, в противном случае возвращается True.
+   * Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edite
+   * d only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited,
+   * a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message,
+   * the edited Message is returned, otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#editmessagemedia editMessageMedia}
+   * @typedef {object} editMessageMedia
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   * of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message to edit.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {InputMedia} media - A JSON-serialized object for a new media content of the message.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for a new inline keyboard.
+   * @returns {Message|Boolean}
    */
   editMessageMedia({
-    chat_id = "",
-    message_id = "",
-    inline_message_id = "",
-    media = "",
-    reply_markup = "",
+    chat_id,
+    message_id,
+    inline_message_id,
+    media,
+    reply_markup,
   }) {
     if (!media)
       helper.miss_parameter(
@@ -1460,20 +1707,22 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования разметки ответов сообщений.
-   * @see {@link https://core.telegram.org/bots/api#editmessagereplymarkup Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [options.chat_id] уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате \@channelusername), если inline_message_id не указан.
-   * @property {number} [options.message_id] идентификатор сообщения для редактирования, если inline_message_id не указан.
-   * @property {string} [options.inline_message_id] идентификатор встроенного сообщения, если chat_id и message_id не указаны.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message | boolean} В случае успеха, если отредактированное сообщение не является встроенным сообщением, возвращается отредактированное сообщение, в противном случае возвращается True.
+   * Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned,
+   * otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#editmessagereplymarkup editMessageReplyMarkup}
+   * @typedef {object} editMessageReplyMarkup
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   * of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message to edit.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for an inline keyboard.
+   * @returns {Message|Boolean}
    */
   editMessageReplyMarkup({
-    chat_id = "",
-    message_id = "",
-    inline_message_id = "",
-    reply_markup = "",
+    chat_id,
+    message_id,
+    inline_message_id,
+    reply_markup,
   }) {
     if (!reply_markup)
       helper.miss_parameter(
@@ -1497,42 +1746,41 @@ class TGbot extends _Client {
   // Other
 
   /**
-   * Метод, для отправки фотографий.
-   * @see {@link https://core.telegram.org/bots/api#sendphoto Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.photo фото для отправки.
-   * Передайте file_id в виде строки, чтобы отправить фотографию, которая существует на серверах Telegram (рекомендуется).
-   * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить фотографию из Интернета, или загрузите новую фотографию, используя multipart/form-data.
-   * Фотография должна быть размером не более 10 МБ.
-   * Суммарная ширина и высота фотографии не должны превышать 10000.
-   * Соотношение ширины и высоты должно быть не более 20.
-   * @property {string} [options.caption] подпись к фото (может использоваться при повторной отправке по file_id), 0-1024 символа.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.has_spoiler] True, если фото нужно прикрыть анимацией спойлера.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send photos. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendphoto sendPhoto}
+   * @typedef {object} sendPhoto
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} photo - Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data.
+   * The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Photo caption (may also be used when resending photos by file_id), 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the photo caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
+   * @property {boolean} [has_spoiler] - Pass True if the photo needs to be covered with a spoiler animation.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object for an
+   * inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendPhoto({
-    chat_id = "",
-    message_thread_id = "",
-    photo = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    has_spoiler = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    chat_id,
+    message_thread_id,
+    photo,
+    caption,
+    parse_mode,
+    caption_entities,
+    has_spoiler,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
     contentType,
   }) {
     if (!chat_id)
@@ -1550,7 +1798,7 @@ class TGbot extends _Client {
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       photo: photo,
       caption: caption ? String(caption) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1570,43 +1818,43 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали их в музыкальном проигрывателе.
-   * Ваш звук должен быть в формате .MP3 или .M4A. В случае успеха возвращается отправленное сообщение.
-   * @see {@link https://core.telegram.org/bots/api#sendaudio Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.audio аудио для отправки.
-   * @property {string} [options.caption] подпись к аудио, 0-1024 символа.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {number} [options.duration] продолжительность в секундах.
-   * @property {string} [options.performer] исполнитель аудио.
-   * @property {string} [options.title] название аудио.
-   * @property {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
+   * For sending voice messages, use the sendVoice method instead.
+   * @see {@link https://core.telegram.org/bots/api#sendaudio sendAudio}
+   * @typedef {object} sendAudio
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} audio - Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Audio caption, 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the audio caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
+   * @property {number} [duration] - Duration of the audio in seconds.
+   * @property {string} [performer] - Performer.
+   * @property {string} [title] - Track name.
+   * @property {InputFile|string} [thumbnail] - Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendAudio({
-    chat_id = "",
-    message_thread_id = "",
-    audio = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    duration = "",
-    performer = "",
-    title = "",
-    thumb = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    audio,
+    caption,
+    parse_mode,
+    caption_entities,
+    duration,
+    performer,
+    title,
+    thumb,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
     reply_markup,
     contentType,
   }) {
@@ -1625,7 +1873,7 @@ class TGbot extends _Client {
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       audio: audio,
       caption: caption ? String(caption) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1648,45 +1896,50 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки общих файлов.
-   * @see {@link https://core.telegram.org/bots/api#senddocument Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.document файл для отправки.
-   * В настоящее время боты могут отправлять файлы любого типа размером до 50 МБ, может быть изменено в будущем.
-   * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
-   * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить файл из Интернета, или загрузите новый, используя multipart/form-data.
-   * @property {string} [options.caption] подпись к документу (также может использоваться при повторной отправке документа по file_id), 0-1024 символа.
-   * @property {(InputFile|string)} [options.thumb] миниатюра отправленного файла, можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера, формат JPEG и иметь размер не более 200К.
-   * Ширина и высота эскиза не > 320, игнорируется, если файл загружен не с помощью multipart/form-data.
-   * Миниатюры не могут быть повторно использованы и могут быть загружены только как новый файл.
-   * Поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_content_type_detection] отключает автоматическое определение типа контента на стороне сервера для файлов, загруженных с помощью multipart/form-data.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size,
+   * this limit may be changed in the future.
+   * @see {@link https://core.telegram.org/bots/api#senddocument sendDocument}
+   * @typedef {object} sendDocument
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} document - File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {InputFile|string} [thumbnail] - Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
+   * The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320.
+   * Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file,
+   * so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Document caption (may also be used when resending documents by file_id), 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the document caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption,
+   * which can be specified instead of parse_mode.
+   * @property {boolean} [disable_content_type_detection] - Disables automatic server-side content type detection for files
+   * uploaded using multipart/form-data.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options.
+   * A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendDocument({
-    chat_id = "",
-    message_thread_id = "",
-    document = "",
-    caption = "",
-    thumb = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    disable_content_type_detection = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    chat_id,
+    message_thread_id,
+    document,
+    caption,
+    thumb,
+    parse_mode,
+    caption_entities,
+    disable_content_type_detection,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
     contentType,
   }) {
     if (!chat_id)
@@ -1704,8 +1957,8 @@ class TGbot extends _Client {
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       document: document,
       caption: caption ? String(caption) : null,
-      thumb: thumb ? thumb : null,
-      parse_mode: String(parse_mode),
+      thumb: thumb || null,
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1725,46 +1978,55 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки видео.
-   * @see {@link https://core.telegram.org/bots/api#sendvideo Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.video видео для отправки.
-   * @property {number} [options.duration] продолжительность в секундах.
-   * @property {number} [options.width] ширина.
-   * @property {number} [options.height] высота.
-   * @property {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
-   * @property {boolean} [options.has_spoiler] True, если видео нужно покрыть анимацией спойлера.
-   * @property {boolean} [options.supports_streaming] True, если загруженное видео подходит для потоковой передачи.
-   * @property {string} [options.caption] подпись к видео (может использоваться при повторной отправке по file_id), 0-1024 символа.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document).
+   * On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
+   * @see {@link https://core.telegram.org/bots/api#sendvideo sendVideo}
+   * @typedef {object} sendVideo
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} video - Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {number} [duration] - Duration of sent video in seconds.
+   * @property {number} [width] - Video width.
+   * @property {number} [height] - Video height.
+   * @property {InputFile|string} [thumbnail] - Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
+   * The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320.
+   * Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file,
+   * so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the video caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption,
+   * which can be specified instead of parse_mode.
+   * @property {boolean} [has_spoiler] - Pass True if the video needs to be covered with a spoiler animation.
+   * @property {boolean} [supports_streaming] - Pass True if the uploaded video is suitable for streaming.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized
+   *  object for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendVideo({
-    chat_id = "",
-    message_thread_id = "",
-    video = "",
-    duration = "",
-    width = "",
-    height = "",
-    thumb = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    has_spoiler = false,
-    supports_streaming = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    video,
+    duration,
+    width,
+    height,
+    thumb,
+    caption,
+    parse_mode,
+    caption_entities,
+    has_spoiler,
+    supports_streaming,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
     reply_markup,
     contentType,
   }) {
@@ -1785,9 +2047,9 @@ class TGbot extends _Client {
       duration: duration ? Number(duration) : null,
       width: width ? Number(width) : null,
       height: height ? Number(height) : null,
-      thumb: thumb ? thumb : null,
+      thumb: thumb || null,
       caption: caption ? String(caption) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1808,45 +2070,52 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки файлов анимации (видео GIF или H.264/MPEG-4 AVC без звука). В случае успеха возвращается отправленное сообщение.
-   * В настоящее время боты могут отправлять анимационные файлы размером до 50 МБ, это ограничение может быть изменено в будущем.
-   * @see {@link https://core.telegram.org/bots/api#sendanimation Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.animation анимация для отправки.
-   * @property {number} [options.duration] продолжительность в секундах.
-   * @property {number} [options.width]
-   * @property {number} [options.height]
-   * @property {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
-   * @property {string} [options.caption] подпись к аудио, 0-1024 символа.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.has_spoiler] True, если анимацию нужно закрыть анимацией спойлера.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned.
+   * Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
+   * @see {@link https://core.telegram.org/bots/api#sendanimation sendAnimation}
+   * @typedef {object} sendAnimation
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} animation - Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {number} [duration] - Duration of sent animation in seconds.
+   * @property {number} [width] - Animation width.
+   * @property {number} [height] - Animation height.
+   * @property {InputFile|string} [thumbnail] - Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
+   * The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320.
+   * Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file,
+   * so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Animation caption (may also be used when resending animation by file_id), 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the animation caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
+   * @property {boolean} [has_spoiler] - Pass True if the animation needs to be covered with a spoiler animation.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendAnimation({
-    chat_id = "",
-    message_thread_id = "",
-    animation = "",
-    duration = "",
-    width = "",
-    height = "",
-    thumb = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    has_spoiler = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    animation,
+    duration,
+    width,
+    height,
+    thumb,
+    caption,
+    parse_mode,
+    caption_entities,
+    has_spoiler,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
     reply_markup,
     contentType,
   }) {
@@ -1868,8 +2137,8 @@ class TGbot extends _Client {
       width: width ? Number(width) : null,
       height: height ? Number(height) : null,
       caption: caption ? String(caption) : null,
-      thumb: thumb ? thumb : null,
-      parse_mode: String(parse_mode),
+      thumb: thumb || null,
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1889,37 +2158,41 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки аудиофайлов, если вы хотите, чтобы клиенты Telegram отображали файл как воспроизводимое голосовое сообщение.
-   * Чтобы это работало, ваше аудио должно быть в файле .OGG, закодированном с помощью OPUS (другие форматы могут быть отправлены как аудио или документ). В случае успеха возвращается отправленное сообщение.
-   * @see {@link https://core.telegram.org/bots/api#sendvoice Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.voice аудио для отправки.
-   * @property {number} [options.duration] продолжительность в секундах.
-   * @property {string} [options.caption] подпись к аудио, 0-1024 символа.
-   * @property {string} [options.parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.caption_entities] JSON список специальных сущностей, которые появляются в новом заголовке, который можно указать вместо parse_mode.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio
+   * must be in an .OGG file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned.
+   * Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
+   * @see {@link https://core.telegram.org/bots/api#sendvoice sendVoice}
+   * @typedef {object} sendVoice
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} voice - Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {string} [caption] - Voice message caption, 0-1024 characters after entities parsing.
+   * @property {string} [parse_mode] - Mode for parsing entities in the voice message caption. See formatting options for more details.
+   * @property {MessageEntity[]} [caption_entities] - A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
+   * @property {number} [duration] - Duration of the voice message in seconds.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendVoice({
-    chat_id = "",
-    message_thread_id = "",
-    voice = "",
-    duration = "",
-    caption = "",
-    parse_mode = "HTML",
-    caption_entities = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    voice,
+    duration,
+    caption,
+    parse_mode,
+    caption_entities,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
     reply_markup,
     contentType,
   }) {
@@ -1939,7 +2212,7 @@ class TGbot extends _Client {
       voice: voice,
       duration: duration ? Number(duration) : null,
       caption: caption ? String(caption) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       caption_entities: caption_entities
         ? JSON.stringify(caption_entities)
         : null,
@@ -1958,35 +2231,42 @@ class TGbot extends _Client {
   }
 
   /**
-   * Начиная с версии 4.0, клиенты Telegram поддерживают закругленные квадратные видео MPEG4 продолжительностью до 1 минуты.
-   * Используйте этот метод для отправки видеосообщений. В случае успеха возвращается отправленное сообщение.
-   * @see {@link https://core.telegram.org/bots/api#sendvideonote Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.video_note видеозаметка для отправки.
-   * @property {number} [options.duration] продолжительность в секундах.
-   * @property {number} [options.length] ширина и высота видео, т.е. диаметр видеосообщения.
-   * @property {(InputFile|string)} [options.thumb] миниатюра отправленного файла; можно игнорировать, если генерация миниатюр для файла поддерживается на стороне сервера. Миниатюра должна быть в формате JPEG и иметь размер не более 200 КБ. Ширина и высота эскиза не должны превышать 320. Игнорируется, если файл загружен не с помощью multipart/form-data. Миниатюры нельзя использовать повторно, их можно загружать только как новый файл, поэтому вы можете передать «attach://<file_attach_name>», если миниатюра была загружена с использованием multipart/form-data в <file_attach_name>.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages.
+   * On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendvideonote sendVideoNote}
+   * @typedef {object} sendVideoNote
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} video_note - Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload
+   *  a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * Sending video notes by a URL is currently unsupported.
+   * @property {number} [duration] - Duration of sent video in seconds.
+   * @property {number} [length] - Video width and height, i.e. diameter of the video message.
+   * @property {InputFile|string} [thumbnail] - Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
+   * The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320.
+   * Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file,
+   * so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendVideoNote({
-    chat_id = "",
-    message_thread_id = "",
-    video_note = "",
-    duration = "",
-    length = "",
-    thumb = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    video_note,
+    duration,
+    length,
+    thumb,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
     reply_markup,
     contentType,
   }) {
@@ -2003,7 +2283,7 @@ class TGbot extends _Client {
       video_note: video_note,
       duration: duration ? Number(duration) : null,
       length: length ? Number(length) : null,
-      thumb: thumb ? thumb : null,
+      thumb: thumb || null,
       disable_notification: Boolean(disable_notification),
       protect_content: Boolean(protect_content),
       reply_to_message_id: reply_to_message_id
@@ -2019,31 +2299,32 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, отправки группы фотографий, видео, документов или аудио в виде альбома.
-   * Документы и аудиофайлы могут быть сгруппированы в альбом только с сообщениями одного типа.
-   * @see {@link https://core.telegram.org/bots/api#sendmediagroup Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {Array.<(InputMediaAudio|InputMediaDocument|InputMediaPhoto|InputMediaVideo)>} options.media объект JSON для нового мультимедийного содержимого сообщения.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped
+   *  in an album with messages of the same type. On success, an array of Messages that were sent is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendmediagroup sendMediaGroup}
+   * @typedef {object} sendMediaGroup
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {Array.<InputMediaAudio|InputMediaDocument|InputMediaPhoto|InputMediaVideo>} media - A JSON-serialized array describing messages
+   * to be sent, must include 2-10 items.
+   * @property {boolean} [disable_notification] - Sends messages silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent messages from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the messages are a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @returns {Message[]}
    */
   sendMediaGroup({
-    chat_id = "",
-    message_thread_id = "",
-    media = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
+    chat_id,
+    message_thread_id,
+    media,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
   }) {
     if (!chat_id)
       helper.miss_parameter(
-        "chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
+        "chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)."
       );
     if (!media)
       helper.miss_parameter(
@@ -2066,40 +2347,40 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки точки на карте.
-   * @see {@link https://core.telegram.org/bots/api#sendlocation Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {number} options.latitude широта местоположения.
-   * @property {number} options.longitude долгота местоположения.
-   * @property {string} [options.horizontal_accuracy] радиус неопределенности местоположения, измеряемый в метрах (0-1500).
-   * @property {string} [options.live_period] период в секундах, в течение которого будет обновляться местоположение (должно быть от 60 до 86400).
-   * @property {string} [options.heading] для живых местоположений — направление, в котором движется пользователь, в градусах.
-   * Должно быть от 1 до 360, если указано.
-   * @property {string} [options.proximity_alert_radius] расстояние для предупреждений о приближении к другому участнику чата в метрах.
-   * Должно быть от 1 до 100000, если указано.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send point on the map. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendlocation sendLocation}
+   * @typedef {object} sendLocation
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {number} latitude - Latitude of the location.
+   * @property {number} longitude - Longitude of the location.
+   * @property {number} [horizontal_accuracy] - The radius of uncertainty for the location, measured in meters; 0-1500.
+   * @property {number} [live_period] - Period in seconds for which the location will be updated (see Live Locations, should be between 60 and 86400.
+   * @property {number} [heading] - For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
+   * @property {number} [proximity_alert_radius] - For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters.
+   * Must be between 1 and 100000 if specified.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendLocation({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     latitude,
     longitude,
-    horizontal_accuracy = "",
-    live_period = "",
-    heading = "",
-    proximity_alert_radius = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    horizontal_accuracy,
+    live_period,
+    heading,
+    proximity_alert_radius,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -2134,22 +2415,23 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для редактирования сообщений о местоположении в реальном времени.
-   * @see {@link https://core.telegram.org/bots/api#editmessagelivelocation Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} [options.chat_id] Требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
-   * @property {number} [options.message_id] Требуется, если inline_message_id не указан. Идентификатор сообщения для редактирования.
-   * @property {string} [options.inline_message_id] Требуется, если chat_id и message_id не указаны. Идентификатор встроенного сообщения.
-   * @property {number} options.latitude широта нового местоположения.
-   * @property {number} options.longitude долгота нового местоположения.
-   * @property {string} [options.horizontal_accuracy] радиус неопределенности местоположения, измеряемый в метрах (0-1500).
-   * @property {string} [options.live_period] период в секундах, в течение которого будет обновляться местоположение (должно быть от 60 до 86400).
-   * @property {string} [options.heading] для живых местоположений — направление, в котором движется пользователь, в градусах.
-   * Должно быть от 1 до 360, если указано.
-   * @property {string} [options.proximity_alert_radius] расстояние для предупреждений о приближении к другому участнику чата в метрах.
-   * Должно быть от 1 до 100000, если указано.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly
+   * disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message,
+   * the edited Message is returned, otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#editmessagelivelocation editMessageLiveLocation}
+   * @typedef {object} editMessageLiveLocation
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   *  of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message to edit.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {number} latitude - Latitude of new location.
+   * @property {number} longitude - Longitude of new location.
+   * @property {number} [horizontal_accuracy] - The radius of uncertainty for the location, measured in meters; 0-1500.
+   * @property {number} [heading] - Direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
+   * @property {number} [proximity_alert_radius] - The maximum distance for proximity alerts about approaching another chat member, in meters.
+   * Must be between 1 and 100000 if specified.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for a new inline keyboard.
+   * @returns {Message|Boolean}
    */
   editMessageLiveLocation({
     chat_id,
@@ -2157,11 +2439,10 @@ class TGbot extends _Client {
     inline_message_id,
     latitude,
     longitude,
-    horizontal_accuracy = "",
-    live_period = "",
-    heading = "",
-    proximity_alert_radius = "",
-    reply_markup = "",
+    horizontal_accuracy,
+    heading,
+    proximity_alert_radius,
+    reply_markup,
   }) {
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
@@ -2185,7 +2466,6 @@ class TGbot extends _Client {
       horizontal_accuracy: horizontal_accuracy
         ? String(horizontal_accuracy)
         : null,
-      live_period: live_period ? String(live_period) : null,
       heading: heading ? String(heading) : null,
       proximity_alert_radius: proximity_alert_radius
         ? String(proximity_alert_radius)
@@ -2203,20 +2483,22 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для остановки обновления сообщения о текущем местоположении до истечения срока действия live_period.
-   * @see {@link https://core.telegram.org/bots/api#stopmessagelivelocation Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id требуется, если inline_message_id не указан. Уникальный идентификатор целевого чата или имя пользователя целевого канала (в формате @channelusername).
-   * @property {number} [options.message_id] требуется, если inline_message_id не указан. Идентификатор сообщения для редактирования.
-   * @property {string} [options.inline_message_id] требуется, если chat_id и message_id не указаны. Идентификатор встроенного сообщения.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message|boolean} В случае успеха, если сообщение не является встроенным сообщением, возвращается отредактированное сообщение, иначе True.
+   * Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message,
+   * the edited Message is returned, otherwise True is returned.
+   * @see {@link https://core.telegram.org/bots/api#stopmessagelivelocation stopMessageLiveLocation}
+   * @typedef {object} stopMessageLiveLocation
+   * @property {string|number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat or username
+   * of the target channel (in the format @channelusername).
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the message with live location to stop.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for a new inline keyboard.
+   * @returns {Message|Boolean}
    */
   stopMessageLiveLocation({
     chat_id,
     message_id,
     inline_message_id,
-    reply_markup = "",
+    reply_markup,
   }) {
     if (!chat_id && !inline_message_id)
       helper.miss_parameter(
@@ -2242,44 +2524,44 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки информации о месте проведения.
-   * @see {@link https://core.telegram.org/bots/api#sendvenue Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {number} options.latitude широта места проведения.
-   * @property {number} options.longitude долгота места проведения.
-   * @property {string} options.title название места.
-   * @property {string} options.address адрес места проведения.
-   * @property {string} [options.foursquare_id] идентификатор Foursquare места проведения.
-   * @property {string} [options.foursquare_type] тип площадки Foursquare, если известен.
-   * (Например, «искусство_развлечения/по умолчанию», «искусство_развлечения/аквариум» или «еда/мороженое».).
-   * @property {string} [options.google_place_id] идентификатор места проведения в Google Places.
-   * @property {string} [options.google_place_type] тип заведения в Google Places.
-   * @see {@link https://developers.google.com/maps/documentation/places/web-service/supported_types Типы}
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send information about a venue. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendvenue sendVenue}
+   * @typedef {object} sendVenue
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {number} latitude - Latitude of the venue.
+   * @property {number} longitude - Longitude of the venue.
+   * @property {string} title - Name of the venue.
+   * @property {string} address - Address of the venue.
+   * @property {string} [foursquare_id] - Foursquare identifier of the venue.
+   * @property {string} [foursquare_type] - Foursquare type of the venue, if known. (For example, "arts_entertainment/default",
+   * "arts_entertainment/aquarium" or "food/icecream".).
+   * @property {string} [google_place_id] - Google Places identifier of the venue.
+   * @property {string} [google_place_type] - Google Places type of the venue. (See supported types.).
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendVenue({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     latitude,
     longitude,
     title,
     address,
-    foursquare_id = "",
-    foursquare_type = "",
-    google_place_id = "",
-    google_place_type = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    foursquare_id,
+    foursquare_type,
+    google_place_id,
+    google_place_type,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -2315,34 +2597,35 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки телефонных контактов.
-   * @see {@link https://core.telegram.org/bots/api#sendcontact Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {string} options.phone_number телефон контакта.
-   * @property {string} options.first_name имя контакта.
-   * @property {string} [options.last_name] фамилия контакта.
-   * @property {string} [options.vcard] дополнительные данные о контакте в виде vCard, 0-2048 байт.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send phone contacts. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendcontact sendContact}
+   * @typedef {object} sendContact
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} phone_number - Contact's phone number.
+   * @property {string} first_name - Contact's first name.
+   * @property {string} [last_name] - Contact's last name.
+   * @property {string} [vcard] - Additional data about the contact in the form of a vCard, 0-2048 bytes.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendContact({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     phone_number,
     first_name,
-    last_name = "",
-    vcard = "",
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    last_name,
+    vcard,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -2371,29 +2654,30 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправики анимированный эмодзи, который будет отображать случайное значение.
-   * @see {@link https://core.telegram.org/bots/api#senddice Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {string} [options.emoji] эмодзи, на котором основана анимация броска костей.
-   * В настоящее время должен быть одним из «🎲», «🎯», «🏀», «⚽», «🎳» или «🎰». Кости могут иметь значения от 1 до 6 для «🎲», «🎯» и «🎳», значения от 1 до 5 для «🏀» и «⚽» и значения от 1 до 64 для «🎰». По умолчанию «🎲».
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#senddice sendDice}
+   * @typedef {object} sendDice
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} [emoji] - Emoji on which the dice throw animation is based. Currently, must be one of "🎲", "🎯", "🏀", "⚽", "🎳", or "🎰".
+   * Dice can have values 1-6 for "🎲", "🎯" and "🎳", values 1-5 for "🏀" and "⚽", and values 1-64 for "🎰". Defaults to "🎲".
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendDice({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     emoji,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -2417,50 +2701,54 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки отправки собственного опроса.
-   * @see {@link https://core.telegram.org/bots/api#sendpoll Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {string} options.question вопрос-опрос, 1-300 символов.
-   * @property {string[]} options.options JSON-сериализованный список вариантов ответа, от 2 до 10 строк по 1-100 символов каждая.
-   * @property {boolean} [options.is_anonymous] True, если опрос должен быть анонимным, по умолчанию True.
-   * @property {string} [options.type] тип опроса, «викторина» или «обычный» (“quiz” или “regular”), по умолчанию «обычный».
-   * @property {boolean} [options.allows_multiple_answers] True, если опрос допускает несколько ответов, игнорируется для опросов в режиме викторины, по умолчанию False.
-   * @property {number} [options.correct_option_id] отсчитываемый от 0 идентификатор правильного варианта ответа, необходимый для опросов в режиме викторины.
-   * @property {string} [options.explanation] текст, который отображается, когда пользователь выбирает неправильный ответ или нажимает на значок лампы в опросе в стиле викторины, 0–200 символов с не более чем двумя переводами строки после разбора сущностей.
-   * @property {string} [options.explanation_parse_mode] режим разбора сущностей в новой подписи "HTML" | "MarkdownV2".
-   * @property {MessageEntity[]} [options.explanation_entities] JSON список специальных сущностей, которые появляются в объяснении опроса, которые можно указать вместо parse_mode.
-   * @property {number} [options.open_period] время в секундах, в течение которого опрос будет активен после создания, 5-600. Нельзя использовать вместе с close_date.
-   * @property {number} [options.close_date] момент времени (временная метка Unix), когда опрос будет автоматически закрыт. Должно быть не менее 5 и не более 600 секунд в будущем. Нельзя использовать вместе с open_period.
-   * @property {boolean} [options.is_closed] True, если опрос нужно немедленно закрыть. Это может быть полезно для предварительного просмотра опроса.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send a native poll. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendpoll sendPoll}
+   * @typedef {object} sendPoll
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} question - Poll question, 1-300 characters.
+   * @property {string[]} options - A JSON-serialized list of answer options, 2-10 strings 1-100 characters each.
+   * @property {boolean} [is_anonymous] - True, if the poll needs to be anonymous, defaults to True.
+   * @property {string} [type] - Poll type, "quiz" or "regular", defaults to "regular".
+   * @property {boolean} [allows_multiple_answers] - True, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to False.
+   * @property {number} [correct_option_id] - 0-based identifier of the correct answer option, required for polls in quiz mode.
+   * @property {string} [explanation] - Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll,
+   * 0-200 characters with at most 2 line feeds after entities parsing.
+   * @property {string} [explanation_parse_mode] - Mode for parsing entities in the explanation. See formatting options for more details.
+   * @property {MessageEntity[]} [explanation_entities] - A JSON-serialized list of special entities that appear in the poll explanation, which
+   * can be specified instead of parse_mode.
+   * @property {number} [open_period] - Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with close_date.
+   * @property {number} [close_date] - Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future.
+   * Can't be used together with open_period.
+   * @property {boolean} [is_closed] - Pass True if the poll needs to be immediately closed. This can be useful for poll preview.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object
+   *  for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @returns {Message}
    */
   sendPoll({
-    chat_id = "",
-    message_thread_id = "",
-    question = "",
-    options = "",
+    chat_id,
+    message_thread_id,
+    question,
+    options,
     is_anonymous = true,
     type = "regular",
-    allows_multiple_answers = false,
+    allows_multiple_answers,
     correct_option_id = "0",
-    explanation = "",
-    explanation_parse_mode = "HTML",
-    explanation_entities = "",
-    open_periode = "",
-    close_date = "",
-    is_closed = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    explanation,
+    explanation_parse_mode,
+    explanation_entities,
+    open_periode,
+    close_date,
+    is_closed,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!chat_id)
       helper.miss_parameter(
@@ -2489,7 +2777,9 @@ class TGbot extends _Client {
       allows_multiple_answers: Boolean(allows_multiple_answers),
       correct_option_id: correct_option_id ? Number(correct_option_id) : null,
       explanation: explanation ? String(explanation) : null,
-      explanation_parse_mode: String(explanation_parse_mode),
+      explanation_parse_mode: explanation_parse_mode
+        ? String(explanation_parse_mode)
+        : this.__parseMode,
       explanation_entities: explanation_entities
         ? JSON.stringify(explanation_entities)
         : null,
@@ -2509,15 +2799,15 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для остановки опроса, отправленный ботом.
-   * @see {@link https://core.telegram.org/bots/api#stoppoll Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {string} options.message_id идентификатор исходного сообщения с опросом.
-   * @property {InlineKeyboardMarkup} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Poll} В случае успеха возвращается остановленный опрос.
+   * Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
+   * @see {@link https://core.telegram.org/bots/api#stoppoll stopPoll}
+   * @typedef {object} stopPoll
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} message_id - Identifier of the original message with the poll.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for a new message inline keyboard.
+   * @returns {Poll}
    */
-  stopPoll({ chat_id, message_id, reply_markup = "" }) {
+  stopPoll({ chat_id, message_id, reply_markup }) {
     if (!chat_id)
       helper.miss_parameter(
         "chat_id уникальный идентификатор целевой группы или имя пользователя целевой супергруппы или канала (в формате @channelusername)."
@@ -2534,23 +2824,26 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для отправки ответов на запросы обратного вызова, отправленные со встроенной клавиатуры.
-   * Ответ будет отображаться пользователю в виде уведомления в верхней части экрана чата или в виде предупреждения.
-   * @see {@link https://core.telegram.org/bots/api#answercallbackquery Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} callback_query_id уникальный идентификатор запроса, на который нужно ответить.
-   * @property {string} [text] текст уведомления. Если не указано, пользователю ничего не будет показано, 0-200 символов.
-   * @property {boolean} [show_alert] True, оповещение вместо уведомления в верхней части экрана чата. По умолчанию false.
-   * @property {string} [url] URL-адрес, который будет открыт клиентом пользователя. Если вы создали игру и приняли условия через @Botfather, укажите URL-адрес, который открывает вашу игру — обратите внимание, что это будет работать, только если запрос исходит от кнопки callback_game.
-   * @property {number} [cache_time] max время в секундах, в течение которого результат запроса обратного вызова может кэшироваться на стороне клиента.
-   * @returns {boolean} возвращает True в случае успеха.
+   * Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of
+   * the chat screen or as an alert. On success, True is returned.
+   * @see {@link https://core.telegram.org/bots/api#answercallbackquery answerCallbackQuery}
+   * @typedef {object} answerCallbackQuery
+   * @property {string} callback_query_id - Unique identifier for the query to be answered.
+   * @property {string} [text] - Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters.
+   * @property {boolean} [show_alert] - If True, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false.
+   * @property {string} [url] - URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @BotFather,
+   * specify the URL that opens your game - note that this will only work if the query comes from a callback_game button.
+   * Otherwise, you may use links like t.me/your_bot?start=XXXX that open your bot with a parameter.
+   * @property {number} [cache_time] - The maximum amount of time in seconds that the result of the callback query may be cached client-side.
+   * Telegram apps will support caching starting in version 3.14. Defaults to 0.
+   * @returns {boolean}
    */
   answerCallbackQuery({
     callback_query_id,
-    text = "",
-    show_alert = false,
-    url = "",
-    cache_time = "",
+    text,
+    show_alert,
+    url,
+    cache_time,
   }) {
     if (!callback_query_id)
       helper.miss_parameter(
@@ -2575,30 +2868,28 @@ class TGbot extends _Client {
   // Inline mode
 
   /**
-   * Метод, для отправки ответов на встроенный запрос.
-   * Допускается не более 50 результатов на запрос.
-   * @see {@link https://core.telegram.org/bots/api#answerinlinequery Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} options.inline_query_id уникальный идентификатор ответа на запрос.
-   * @property {InlineQueryResult[]} options.results сериализованный в формате JSON массив результатов для встроенного запроса.
-   * @property {number} [options.cache_time] max время в секундах, в течение которого результат встроенного запроса может кэшироваться на сервере. По умолчанию 300.
-   * @property {boolean} [options.is_personal] True, если результаты могут кэшироваться на стороне сервера только для пользователя, отправившего запрос. По умолчанию результаты могут быть возвращены любому пользователю, отправившему тот же запрос.
-   * @property {string} [options.next_offset] смещение, которое клиент должен отправить в следующем запросе с тем же текстом, чтобы получить больше результатов. Передайте пустую строку, если результатов больше нет или если вы не поддерживаете нумерацию страниц. Длина смещения не может превышать 64 байта.
-   * @property {string} [options.switch_pm_text] если передано, клиенты будут отображать кнопку с указанным текстом, которая переключает пользователя в приватный чат с ботом и отправляет боту стартовое сообщение с параметром switch_pm_parameter.
-   * @property {string} [options.switch_pm_parameter] параметр глубокой ссылки для сообщения /start, отправляемого боту, когда пользователь нажимает кнопку переключения. 1-64 символа, разрешены только A-Z, a-z, 0-9, _ и -.
-   * Пример. Встроенный бот, который отправляет видео на YouTube, может попросить пользователя подключить бота к своей учетной записи YouTube, чтобы соответствующим образом адаптировать результаты поиска.
-   * Для этого он отображает кнопку «Подключить свою учетную запись YouTube» над результатами или даже до их отображения. Пользователь нажимает кнопку, переключается на приватный чат с ботом и при этом передает начальный параметр, который указывает боту вернуть ссылку OAuth.
-   * После этого бот может предложить кнопку switch_inline, чтобы пользователь мог легко вернуться в чат, где он хотел использовать встроенные возможности бота.
-   * @returns {boolean} В случае успеха возвращается True.
+   * Use this method to send answers to an inline query. On success, True is returned.
+   * No more than 50 results per query are allowed.
+   * @see {@link https://core.telegram.org/bots/api#answerinlinequery answerInlineQuery}
+   * @typedef {object} answerInlineQuery
+   * @property {string} inline_query_id - Unique identifier for the answered query.
+   * @property {InlineQueryResult[]} results - A JSON-serialized array of results for the inline query.
+   * @property {number} [cache_time] - The maximum amount of time in seconds that the result of the inline query may be cached on the server.
+   * Defaults to 300.
+   * @property {boolean} [is_personal] - Pass True if results may be cached on the server side only for the user that sent the query.
+   * By default, results may be returned to any user who sends the same query.
+   * @property {string} [next_offset] - Pass the offset that a client should send in the next query with the same text to receive more results.
+   * Pass an empty string if there are no more results or if you don't support pagination. Offset length can't exceed 64 bytes.
+   * @property {InlineQueryResultsButton} [button] - A JSON-serialized object describing a button to be shown above inline query results.
+   * @returns {boolean}
    */
   answerInlineQuery({
     inline_query_id,
     results,
-    cache_time = "",
-    is_personal = true,
-    next_offset = "",
-    switch_pm_text = "",
-    switch_pm_parameter = "",
+    cache_time,
+    is_personal,
+    next_offset,
+    button,
   }) {
     if (!inline_query_id)
       helper.miss_parameter(
@@ -2615,25 +2906,22 @@ class TGbot extends _Client {
       cache_time: cache_time ? Number(cache_time) : null,
       is_personal: Boolean(is_personal),
       next_offset: next_offset ? String(next_offset) : null,
-      switch_pm_text: switch_pm_text ? String(switch_pm_text) : null,
-      switch_pm_parameter: switch_pm_parameter
-        ? String(switch_pm_parameter)
-        : null,
+      button: button ? JSON.stringify(button) : null,
     };
 
     return this.request(Methods.ANSWER_INLINE_QUERY, query);
   }
 
   /**
-   * Метод, чтобы установить результат взаимодействия с веб-приложением и отправить
-   * соответствующее сообщение от имени пользователя в чат, из которого исходит запрос.
-   * @see {@link https://core.telegram.org/bots/api#answerwebappquery Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} options.web_app_query_id идентификатор запроса, на который нужно ответить.
-   * @property {InlineQueryResult[]} options.results cериализованный объект JSON, описывающий отправляемое сообщение.
-   * @returns {SentWebAppMessage} В случае успеха возвращается объект SentWebAppMessage.
+   * Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat
+   * from which the query originated. On success, a SentWebAppMessage object is returned.
+   * @see {@link https://core.telegram.org/bots/api#answerwebappquery answerWebAppQuery}
+   * @typedef {object} answerWebAppQuery
+   * @property {string} web_app_query_id - Unique identifier for the query to be answered.
+   * @property {InlineQueryResult} result - A JSON-serialized object describing the message to be sent.
+   * @returns {SentWebAppMessage}
    */
-  answerWebAppQuery({ web_app_query_id, results }) {
+  answerWebAppQuery({ web_app_query_id, result }) {
     if (!web_app_query_id)
       helper.miss_parameter(
         "web_app_query_id идентификатор запроса, на который нужно ответить."
@@ -2645,7 +2933,7 @@ class TGbot extends _Client {
 
     const query = {
       web_app_query_id: String(web_app_query_id),
-      results: JSON.stringify(results),
+      result: JSON.stringify(result),
     };
 
     return this.request(Methods.ANSWER_WEB_APP_QUERY, query);
@@ -2654,31 +2942,34 @@ class TGbot extends _Client {
   // Stickers
 
   /**
-   * Метод, отправки статических стикеров .WEBP, анимированных .TGS или видео .WEBM.
-   * @see {@link https://core.telegram.org/bots/api#sendsticker Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {(InputFile|string)} options.sticker наклейка для отправки.
-   * Передайте file_id в виде строки, чтобы отправить файл, существующий на серверах Telegram (рекомендуется).
-   * Передайте URL-адрес HTTP в виде строки, чтобы Telegram мог получить файл .WEBP из Интернета, или загрузите новый, используя multipart/form-data.
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @property {string} [options.contentType] "multipart/form-data", по умолчанию "application/json".
-   * @returns {Message} В случае успеха возвращается Message отправленное сообщение.
+   * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendsticker sendSticker}
+   * @typedef {object} sendSticker
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {InputFile|string} sticker - Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended),
+   * pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP or .TGS sticker using multipart/form-data.
+   * More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Video stickers can only be sent by a file_id.
+   * Animated stickers can't be sent via an HTTP URL.
+   * @property {string} [emoji] - Emoji associated with the sticker; only for just uploaded stickers.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply} [reply_markup] - Additional interface options. A JSON-serialized object for
+   * an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+   * @property {string} [options.contentType] "multipart/form-data", default "application/json".
+   * @returns {Message}
    */
   sendSticker({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     sticker,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
     contentType,
   }) {
     if (!chat_id)
@@ -2706,10 +2997,11 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения набора наклеек по названию набора.
-   * @see {@link https://core.telegram.org/bots/api#getstickerset Telegram API}
-   * @param {string} name название набора наклеек.
-   * @returns {StickerSet} В случае успеха возвращается объект StickerSet.
+   * Use this method to get a sticker set. On success, a StickerSet object is returned.
+   * @see {@link https://core.telegram.org/bots/api#getstickerset getStickerSet}
+   * @typedef {object} getStickerSet
+   * @property {string} name - Name of the sticker set.
+   * @returns {StickerSet}
    */
   getStickerSet(name) {
     if (!name) helper.miss_parameter("name название набора наклеек.");
@@ -2724,67 +3016,77 @@ class TGbot extends _Client {
   // Payments
 
   /**
-   * Метод для отправки счетов.
-   * @see {@link https://core.telegram.org/bots/api#sendinvoice Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {(string|number)} options.chat_id уникальный идентификатор целевого чата или имя пользователя целевой супергруппы или канала (в формате \@channelusername).
-   * @property {number} [options.message_thread_id] уникальный идентификатор целевой ветки сообщений (темы) форума. Только для супергрупп форума.
-   * @property {string} options.title
-   * @property {string} options.description
-   * @property {string} options.payload
-   * @property {string} options.provider_token
-   * @property {string} options.currency
-   * @property {number} options.max_tip_amount
-   * @property {number[]} options.suggested_tip_amounts
-   * @property {string} options.start_parameter
-   * @property {string} options.provider_data
-   * @property {string} options.photo_url
-   * @property {number} options.photo_size
-   * @property {number} options.photo_width
-   * @property {number} options.photo_height
-   * @property {boolean} options.need_name
-   * @property {boolean} options.need_phone_number
-   * @property {boolean} options.need_email
-   * @property {boolean} options.need_shipping_address
-   * @property {boolean} options.send_phone_number_to_provider
-   * @property {boolean} options.send_email_to_provider
-   * @property {boolean} options.is_flexible
-   * @property {boolean} [options.disable_notification] True, пользователи получат уведомление без звука.
-   * @property {boolean} [options.protect_content] защищает содержимое отправленного сообщения от пересылки и сохранения.
-   * @property {number} [options.reply_to_message_id] если сообщение является ответом, ID исходного сообщения.
-   * @property {boolean} [options.allow_sending_without_reply] True, если сообщение должно быть отправлено, даже если указанное сообщение с ответом не найдено.
-   * @property {(InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|ForceReply)} [options.reply_markup] объект JSON для новой встроенной клавиатуры.
-   * @returns {Message} В случае успеха возвращается отправленное сообщение.
+   * Use this method to send invoices. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendinvoice sendInvoice}
+   * @typedef {object} sendInvoice
+   * @property {string|number} chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername)..
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} title - Product name, 1-32 characters.
+   * @property {string} description - Product description, 1-255 characters.
+   * @property {string} payload - Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
+   * @property {string} provider_token - Payment provider token, obtained via @BotFather.
+   * @property {string} currency - Three-letter ISO 4217 currency code, see more on currencies.
+   * @property {LabeledPrice[]} prices - Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.).
+   * @property {number} [max_tip_amount] - The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double).
+   * For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number
+   * of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0.
+   * @property {number[]} [suggested_tip_amounts] - A JSON-serialized array of suggested amounts of tips in the smallest units of the
+   * currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a
+   * strictly increased order and must not exceed max_tip_amount.
+   * @property {string} [start_parameter] - Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a
+   * Pay button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of
+   * the sent message will have a URL button with a deep link to the bot (instead of a Pay button), with the value used as the start parameter.
+   * @property {string} [provider_data] - JSON-serialized data about the invoice, which will be shared with the payment provider.
+   * A detailed description of required fields should be provided by the payment provider.
+   * @property {string} [photo_url] - URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service.
+   * People like it better when they see what they are paying for.
+   * @property {number} [photo_size] - Photo size in bytes.
+   * @property {number} [photo_width] - Photo width.
+   * @property {number} [photo_height] - Photo height.
+   * @property {boolean} [need_name] - Pass True if you require the user's full name to complete the order.
+   * @property {boolean} [need_phone_number] - Pass True if you require the user's phone number to complete the order.
+   * @property {boolean} [need_email] - Pass True if you require the user's email address to complete the order.
+   * @property {boolean} [need_shipping_address] - Pass True if you require the user's shipping address to complete the order.
+   * @property {boolean} [send_phone_number_to_provider] - Pass True if the user's phone number should be sent to provider.
+   * @property {boolean} [send_email_to_provider] - Pass True if the user's email address should be sent to provider.
+   * @property {boolean} [is_flexible] - Pass True if the final price depends on the shipping method.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for an inline keyboard.
+   * If empty, one 'Pay total price' button will be shown. If not empty, the first button must be a Pay button.
+   * @returns {Message}
    */
   sendInvoice({
     chat_id,
-    message_thread_id = "",
+    message_thread_id,
     title,
     description,
     payload,
     provider_token,
     currency,
     prices,
-    max_tip_amount = "",
-    suggested_tip_amounts = "",
-    start_parameter = "",
-    provider_data = "",
-    photo_url = "",
-    photo_size = "",
-    photo_width = "",
-    photo_height = "",
-    need_name = false,
-    need_phone_number = false,
-    need_email = false,
-    need_shipping_address = false,
-    send_phone_number_to_provider = false,
-    send_email_to_provider = false,
-    is_flexible = false,
-    disable_notification = false,
-    protect_content = false,
-    reply_to_message_id = "",
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    max_tip_amount,
+    suggested_tip_amounts,
+    start_parameter,
+    provider_data,
+    photo_url,
+    photo_size,
+    photo_width,
+    photo_height,
+    need_name,
+    need_phone_number,
+    need_email,
+    need_shipping_address,
+    send_phone_number_to_provider,
+    send_email_to_provider,
+    is_flexible,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     var query = {
       chat_id: String(chat_id),
@@ -2825,25 +3127,104 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для ответа на запросы о доставке.
-   * Если вы отправили счет-фактуру с запросом адреса доставки и был указан параметр is_flexible,
-   * Bot API отправит боту обновление с полем shipping_query.
-   * @see {@link https://core.telegram.org/bots/api#answershippingquery Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} options.shipping_query_id уникальный идентификатор запроса, на который нужно ответить.
-   * @property {boolean} options.ok True, если доставка по указанному адресу возможна и False,
-   * если есть какие-либо проблемы (например, если доставка по указанному адресу невозможна). По умолчанию True.
-   * @property {ShippingOption[]} [options.shipping_options] Требуется, если ok равно True.
-   * Сериализованный в формате JSON массив доступных вариантов доставки.
-   * @property {string} [options.error_message] Требуется, если ok имеет значение False.
-   * Сообщение об ошибке в удобочитаемой форме, объясняющее, почему невозможно выполнить заказ (например, «Извините, доставка по указанному вами адресу недоступна»). Telegram отобразит это сообщение пользователю.
-   * @returns {boolean} В случае успеха возвращается True.
+   * Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+   * @see {@link https://core.telegram.org/bots/api#createinvoicelink createInvoiceLink}
+   * @typedef {object} createInvoiceLink
+   * @property {string} title - Product name, 1-32 characters.
+   * @property {string} description - Product description, 1-255 characters.
+   * @property {string} payload - Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
+   * @property {string} provider_token - Payment provider token, obtained via BotFather.
+   * @property {string} currency - Three-letter ISO 4217 currency code, see more on currencies.
+   * @property {LabeledPrice[]} prices - Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.).
+   * @property {number} [max_tip_amount] - The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double).
+   * For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of
+   * digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0.
+   * @property {number[]} [suggested_tip_amounts] - A JSON-serialized array of suggested amounts of tips in the smallest units of
+   * the currency (integer, not float/double). At most 4 suggested tip amounts can be specified.
+   * The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
+   * @property {string} [provider_data] - JSON-serialized data about the invoice, which will be shared with the payment provider.
+   * A detailed description of required fields should be provided by the payment provider.
+   * @property {string} [photo_url] - URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service.
+   * @property {number} [photo_size] - Photo size in bytes.
+   * @property {number} [photo_width] - Photo width.
+   * @property {number} [photo_height] - Photo height.
+   * @property {boolean} [need_name] - Pass True if you require the user's full name to complete the order.
+   * @property {boolean} [need_phone_number] - Pass True if you require the user's phone number to complete the order.
+   * @property {boolean} [need_email] - Pass True if you require the user's email address to complete the order.
+   * @property {boolean} [need_shipping_address] - Pass True if you require the user's shipping address to complete the order.
+   * @property {boolean} [send_phone_number_to_provider] - Pass True if the user's phone number should be sent to the provider.
+   * @property {boolean} [send_email_to_provider] - Pass True if the user's email address should be sent to the provider.
+   * @property {boolean} [is_flexible] - Pass True if the final price depends on the shipping method.
+   * @returns {string}
+   */
+  createInvoiceLink({
+    title,
+    description,
+    payload,
+    provider_token,
+    currency,
+    prices,
+    max_tip_amount,
+    suggested_tip_amounts,
+    provider_data,
+    photo_url,
+    photo_size,
+    photo_width,
+    photo_height,
+    need_name,
+    need_phone_number,
+    need_email,
+    need_shipping_address,
+    send_phone_number_to_provider,
+    send_email_to_provider,
+    is_flexible,
+  }) {
+    var query = {
+      title: String(title),
+      description: String(description),
+      payload: String(payload),
+      provider_token: String(provider_token),
+      currency: String(currency),
+      prices: String(prices),
+      max_tip_amount: max_tip_amount ? Number(max_tip_amount) : null,
+      suggested_tip_amounts: suggested_tip_amounts
+        ? suggested_tip_amounts
+        : null,
+      provider_data: provider_data ? String(provider_data) : null,
+      photo_url: photo_url ? String(photo_url) : null,
+      photo_size: photo_size ? Number(photo_size) : null,
+      photo_width: photo_width ? Number(photo_width) : null,
+      photo_height: photo_height ? Number(photo_height) : null,
+      need_name: Boolean(need_name),
+      need_phone_number: Boolean(need_phone_number),
+      need_email: Boolean(need_email),
+      need_shipping_address: Boolean(need_shipping_address),
+      send_phone_number_to_provider: Boolean(send_phone_number_to_provider),
+      send_email_to_provider: Boolean(send_email_to_provider),
+      is_flexible: Boolean(is_flexible),
+    };
+
+    return this.request(Methods.CREATE_INVOICE_LINK, query);
+  }
+
+  /**
+   * If you sent an invoice requesting a shipping address and the parameter is_flexible was specified, the Bot API will send an Update with a
+   * shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned.
+   * @see {@link https://core.telegram.org/bots/api#answershippingquery answerShippingQuery}
+   * @typedef {object} answerShippingQuery
+   * @property {string} shipping_query_id - Unique identifier for the query to be answered.
+   * @property {boolean} ok - Pass True if delivery to the specified address is possible and False if there are any problems (for example, if delivery to the specified
+   * address is not possible).
+   * @property {ShippingOption[]} [shipping_options] - Required if ok is True. A JSON-serialized array of available shipping options.
+   * @property {string} [error_message] - Required if ok is False. Error message in human readable form that explains why it is impossible to
+   * complete the order (e.g. "Sorry, delivery to your desired address is unavailable'). Telegram will display this message to the user.
+   * @returns {boolean}
    */
   answerShippingQuery({
     shipping_query_id,
     ok = true,
-    shipping_options = "",
-    error_message = "",
+    shipping_options,
+    error_message,
   }) {
     if (!shipping_query_id)
       helper.miss_parameter(
@@ -2871,24 +3252,20 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для ответа запросы перед оформлением заказа.
-   * Как только пользователь подтвердит свои данные об оплате и доставке,
-   * Bot API отправляет окончательное подтверждение в виде обновления с полем pre_checkout_query.
-   * Примечание. Bot API должен получить ответ в течение 10 секунд после отправки запроса на предварительную проверку.
-   * @see {@link https://core.telegram.org/bots/api#answerprecheckoutquery Telegram API}
-   * @type {object} options параметры запроса.
-   * @property {string} options.pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить.
-   * @property {boolean} options.ok True, если все в порядке (товар есть в наличии и т.д.) и бот готов приступить к оформлению заказа.
-   * Используйте False, если есть какие-либо проблемы. По умолчанию True.
-   * @property {string} [options.error_message] Требуется, если ok имеет значение False.
-   * Сообщение об ошибке в удобочитаемой форме, объясняющее причину невозможности продолжить оформление заказа (например, «Извините, кто-то только что купил последнюю из наших потрясающих черных футболок, пока вы заполняли платежные реквизиты. Пожалуйста, выберите другой цвет или одежда!»). Telegram отобразит это сообщение пользователю.
-   * @returns {boolean} В случае успеха возвращается True.
+   * Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an Update with the field pre_checkout_query.
+   * Use this method to respond to such pre-checkout queries. On success, True is returned. Note: The Bot API must receive an answer within 10 seconds after
+   * the pre-checkout query was sent.
+   * @see {@link https://core.telegram.org/bots/api#answerprecheckoutquery answerPreCheckoutQuery}
+   * @typedef {object} answerPreCheckoutQuery
+   * @property {string} pre_checkout_query_id - Unique identifier for the query to be answered.
+   * @property {boolean} ok - Specify True if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order.
+   * Use False if there are any problems.
+   * @property {string} [error_message] - Required if ok is False. Error message in human readable form that explains the reason for
+   * failure to proceed with the checkout (e.g. "Sorry, somebody just bought the last of our amazing black T-shirts while you were busy filling out your payment details.
+   * Please choose a different color or garment!"). Telegram will display this message to the user.
+   * @returns {boolean}
    */
-  answerPreCheckoutQuery({
-    pre_checkout_query_id,
-    ok = true,
-    error_message = "",
-  }) {
+  answerPreCheckoutQuery({ pre_checkout_query_id, ok = true, error_message }) {
     if (!pre_checkout_query_id)
       helper.miss_parameter(
         "pre_checkout_query_id уникальный идентификатор запроса, на который нужно ответить."
@@ -2909,14 +3286,112 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения основной информации о файле и подготовки его к загрузке.
-   * На данный момент боты могут загружать файлы размером до 20 МБ.
-   * Файл можно скачать https://api.telegram.org/file/bot<token>/<file_path>, где <file_path> берется из ответа.
-   * Гарантируется, что ссылка будет действительна не менее 1 часа.
-   * Когда срок действия ссылки истекает, можно запросить новую, снова вызвав getFile.
-   * @see {@link https://core.telegram.org/bots/api#getfile Telegram API}
-   * @param {string} file_id идентификатор файла для получения информации.
-   * @returns {Bot.File} В случае успеха возвращается объект File.
+   * Use this method to send a game. On success, the sent Message is returned.
+   * @see {@link https://core.telegram.org/bots/api#sendgame sendGame}
+   * @typedef {object} sendGame
+   * @property {number} chat_id - Unique identifier for the target chat.
+   * @property {number} [message_thread_id] - Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+   * @property {string} game_short_name - Short name of the game, serves as the unique identifier for the game. Set up your games via @BotFather.
+   * @property {boolean} [disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+   * @property {boolean} [protect_content] - Protects the contents of the sent message from forwarding and saving.
+   * @property {number} [reply_to_message_id] - If the message is a reply, ID of the original message.
+   * @property {boolean} [allow_sending_without_reply] - Pass True if the message should be sent even if the specified replied-to message is not found.
+   * @property {InlineKeyboardMarkup} [reply_markup] - A JSON-serialized object for an inline keyboard.
+   * If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game.
+   * @returns {Message}
+   */
+  sendGame({
+    chat_id,
+    message_thread_id,
+    game_short_name,
+    disable_notification,
+    protect_content,
+    reply_to_message_id,
+    allow_sending_without_reply,
+    reply_markup,
+  }) {
+    const query = {
+      chat_id: Number(chat_id),
+      message_thread_id: message_thread_id ? Number(message_thread_id) : null,
+      game_short_name: String(game_short_name),
+      disable_notification: Boolean(disable_notification),
+      protect_content: Boolean(protect_content),
+      reply_to_message_id: reply_to_message_id
+        ? Number(reply_to_message_id)
+        : null,
+      allow_sending_without_reply: Boolean(allow_sending_without_reply),
+      reply_markup: reply_markup ? JSON.stringify(reply_markup) : null,
+    };
+
+    return this.request(Methods.SEND_GAME, query);
+  }
+
+  /**
+   * Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the Message is returned, otherwise True is returned. Returns an error, if the new score is not greater than the user's current score in the chat and force is False.
+   * @see {@link https://core.telegram.org/bots/api#setgamescore setGameScore}
+   * @typedef {object} setGameScore
+   * @property {number} user_id - User identifier.
+   * @property {number} score - New score, must be non-negative.
+   * @property {boolean} [force] - Pass True if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters.
+   * @property {boolean} [disable_edit_message] - Pass True if the game message should not be automatically edited to include the current scoreboard.
+   * @property {number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat.
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the sent message.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @returns {Message|Boolean}
+   */
+  setGameScore({
+    user_id,
+    score,
+    force,
+    disable_edit_message,
+    chat_id,
+    message_id,
+    inline_message_id,
+  }) {
+    const query = {
+      user_id: String(user_id),
+      score: Number(score),
+      force: Boolean(force),
+      chat_id: chat_id ? Number(chat_id) : null,
+      disable_edit_message: Boolean(disable_edit_message),
+      message_id: message_id ? Number(message_id) : null,
+      inline_message_id: inline_message_id ? String(inline_message_id) : null,
+    };
+
+    return this.request(Methods.SET_GAME_SCORE, query);
+  }
+
+  /**
+   * Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects.
+   * @see {@link https://core.telegram.org/bots/api#getgamehighscores getGameHighScores}
+   * @typedef {object} getGameHighScores
+   * @property {number} user_id - Target user id.
+   * @property {number} [chat_id] - Required if inline_message_id is not specified. Unique identifier for the target chat.
+   * @property {number} [message_id] - Required if inline_message_id is not specified. Identifier of the sent message.
+   * @property {string} [inline_message_id] - Required if chat_id and message_id are not specified. Identifier of the inline message.
+   * @returns {GameHighScore[]}
+   */
+  getGameHighScores({ user_id, chat_id, message_id, inline_message_id }) {
+    const query = {
+      user_id: String(user_id),
+      chat_id: chat_id ? Number(chat_id) : null,
+      message_id: message_id ? Number(message_id) : null,
+      inline_message_id: inline_message_id ? String(inline_message_id) : null,
+    };
+
+    return this.request(Methods.GET_GAME_HIGH_SCORES, query);
+  }
+
+  /**
+   * Use this method to get basic information about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size.
+   * On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>,
+   * where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires,
+   * a new one can be requested by calling getFile again.
+   * Note: This function may not preserve the original file name and MIME type. You should save the file's MIME type and name (if available)
+   * when the File object is received.
+   * @see {@link https://core.telegram.org/bots/api#getfile getFile}
+   * @param {string} file_id - File identifier to get information about.
+   * @returns {File}
    */
   getFile(file_id) {
     if (!file_id)
@@ -2932,12 +3407,12 @@ class TGbot extends _Client {
     }`;
   }
 
-  // Не официальные методы API
+  // Not official API methods
 
   /**
-   * Метод, для получения пути к файлу.
-   * @param {string} file_id идентификатор файла для получения информации.
-   * @returns {string} В случае успеха возвращается file_path.
+   * Method for getting the path to the file.
+   * @param {string} file_id identifier of the file to retrieve information from.
+   * @returns {string} If successful, file_path is returned.
    */
   getPath(file_id) {
     if (!file_id)
@@ -2953,9 +3428,9 @@ class TGbot extends _Client {
   }
 
   /**
-   * Метод, для получения ссылки на скачивание файла.
-   * @param {string} path путь до папки.
-   * @returns {string} В случае успеха возвращается url.
+   * Method for obtaining a link to download a file.
+   * @param {string} path path to the folder.
+   * @returns {string} If successful, the url is returned.
    */
   getFileDownloadUrl(path) {
     if (!path) helper.miss_parameter("path путь до папки.");
@@ -2981,15 +3456,15 @@ class TGbot extends _Client {
    */
   answerMessage({
     message,
-    message_thread_id = "",
+    message_thread_id,
     text,
-    parse_mode = "HTML",
-    entities = "",
-    disable_web_page_preview = false,
-    disable_notification = false,
-    protect_content = false,
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    parse_mode,
+    entities,
+    disable_web_page_preview,
+    disable_notification,
+    protect_content,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!message) helper.miss_parameter("Message");
     if (!text)
@@ -3004,7 +3479,7 @@ class TGbot extends _Client {
       chat_id: message.from.id,
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
       text: String(text),
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
       disable_notification: Boolean(disable_notification),
@@ -3033,15 +3508,15 @@ class TGbot extends _Client {
    */
   replyMessage({
     message,
-    message_thread_id = "",
+    message_thread_id,
     text,
-    parse_mode = "HTML",
-    entities = "",
-    disable_web_page_preview = false,
-    disable_notification = false,
-    protect_content = false,
-    allow_sending_without_reply = false,
-    reply_markup = "",
+    parse_mode,
+    entities,
+    disable_web_page_preview,
+    disable_notification,
+    protect_content,
+    allow_sending_without_reply,
+    reply_markup,
   }) {
     if (!message) helper.miss_parameter("Message");
     if (!text)
@@ -3057,7 +3532,7 @@ class TGbot extends _Client {
       text: String(text),
       reply_to_message_id: Number(message.message_id),
       message_thread_id: message_thread_id ? Number(message_thread_id) : null,
-      parse_mode: String(parse_mode),
+      parse_mode: parse_mode ? String(parse_mode) : this.__parseMode,
       entities: entities ? JSON.stringify(entities) : null,
       disable_web_page_preview: Boolean(disable_web_page_preview),
       disable_notification: Boolean(disable_notification),
@@ -3071,18 +3546,27 @@ class TGbot extends _Client {
 }
 
 /**
- * Вызывает методы для работы с
+ * Creates a new instance of TGbot with the provided configuration options.
  * {@link https://openapi.wb.ru/content.html Telegram API}
- * @param {string} botToken токен Telegram бота от \@BotFather.
- * @param {string} [webAppUrl] ссылка на WebApp Google, для работы с ответами doGet(e).
- * @param {boolean} [logRequest] показывать строку URL, OPTIONS запроса при выполнении, по умочанию false.
- * @returns {TGbot|ValidationError} экземпляр class TGbot, если пропущен botToken или не валиден
+ * @param {object} options - The configuration options for the TGbot.
+ * @param {string} options.botToken - The token of the Telegram bot from \@BotFather.
+ * @param {string} options.webAppUrl - The link to the Google WebApp for working with doGet(e) responses.
+ * @param {boolean} options.logRequest - Show the URL and OPTIONS request string when executed, default is false.
+ * @param {string} options.service - The service PropertiesService.getScriptProperties() used by the TGbot.
+ * @param {string} options.parseMode - Set the parse mode, default is "HTML".
+ * @return {TGbo|ValidationError} An instance of the TGbot class, if botToken is missing or invalid.
  */
-function bot(botToken, webAppUrl, logRequest) {
-  if (checkToken(botToken))
-    return new TGbot({
-      botToken,
-      webAppUrl,
-      logRequest,
-    });
+function bot({ botToken, webAppUrl, logRequest, service, parseMode }) {
+  if (!botToken || !service)
+    throw new ValidationError(
+      `Missed botToken or service (PropertiesService.getScriptProperties()) with botToken.`
+    );
+
+  return new TGbot({
+    botToken,
+    webAppUrl,
+    logRequest,
+    service,
+    parseMode,
+  });
 }
