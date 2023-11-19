@@ -113,7 +113,6 @@ class Calendar {
 
     calendar.push(this.headerMonthYear, this.header, this.weekDays);
 
-    // let week =  Array.from({ length: this.dayNumber(date) }, () => [""]);
     let week = this.padding(this.dayNumber(date));
 
     while (date.getMonth() === month) {
@@ -202,10 +201,25 @@ class Calendar {
     return day - 1;
   }
 
+  /**
+   * Add a description of the entire function.
+   *
+   * @param {type} pad - The number of spaces to pad the array with.
+   * @param {Array} array - The array to be padded. Defaults to an empty array if not provided.
+   * @return {Array} - The padded array.
+   */
   padding(pad, array = []) {
+    // return Array(pad).fill([" "]).concat(array);
     return [...Array(pad).fill([" "]), ...array];
   }
 
+   /**
+   * Slice an array into smaller arrays of a specified size.
+   *
+   * @param {Array} arr - The original array to be sliced.
+   * @param {number} size - The size of each sliced array.
+   * @yield {Array} - A sliced array of the specified size.
+   */
   *slicer(arr, size) {
     for (let i = 0; i < arr.length; i = i + size) {
       yield arr.slice(i, i + size);
@@ -214,10 +228,10 @@ class Calendar {
 }
 
 /**
- * Функйция создающая Inline календарь
- * @param {string|number} [month] месяц календаря.
- * @param {string|number} [year] год календаря.
- * @param {string} [language] язык кнопок клавиатуры 'ru' или 'en', по умолчанию 'ru'.
+ * Function that creates an Inline calendar
+ * @param {string|number} [month] calendar month.
+ * @param {string|number} [year] calendar year.
+ * @param {string} [language] language of keyboard buttons 'ru' or 'en', default 'ru'.
  * @returns {InlineKeyboardMarkup}
  */
 function calendar({ month, year, language }) {
