@@ -167,22 +167,20 @@ class TGbot extends _Client {
    * @returns {boolean}
    */
   setWebhook({
-    url = this.__webAppUrl,
+    url,
     certificate,
     ip_address,
-    max_connections = 40,
-    allowed_updates = [],
+    max_connections,
+    allowed_updates,
     drop_pending_updates,
     secret_token,
   }) {
-    // const _ = arguments[0];
-    // _.url = url;
 
     const query = {
-      url: url,
+      url: url || this.__webAppUrl,
       certificate: certificate ? JSON.stringify(certificate) : null,
       ip_address: ip_address ? String(ip_address) : null,
-      max_connections: Number(max_connections),
+      max_connections: max_connections ? Number(max_connections) : null,
       allowed_updates: allowed_updates ? JSON.stringify(allowed_updates) : null,
       drop_pending_updates: Boolean(drop_pending_updates),
       secret_token: secret_token ? String(secret_token) : null,
@@ -213,11 +211,9 @@ class TGbot extends _Client {
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
   getWebhookInfo() {
-    const query = {
+    return this.log(this.request(Methods.GET_WEBHOOK_INFO, {
       url: String(this.__webAppUrl),
-    };
-
-    return this.log(this.request(Methods.GET_WEBHOOK_INFO, query));
+    }));
   }
 
   // Available methods
@@ -4075,8 +4071,8 @@ class TGbot extends _Client {
  * @param {string} options.parseMode - Set the parse mode, default is "HTML".
  * @return {TGbo|ValidationError} An instance of the TGbot class, if botToken is missing or invalid.
  */
-function bot({ botToken, webAppUrl, logRequest, service, parseMode }) {
-  if (!botToken || !service)
+function bot({ botToken, webAppUrl, service, parseMode, logRequest }) {
+  if (!(botToken || service))
     throw new ValidationError(
       `Missed botToken or service (PropertiesService.getScriptProperties()) with botToken.`
     );
@@ -4084,8 +4080,8 @@ function bot({ botToken, webAppUrl, logRequest, service, parseMode }) {
   return new TGbot({
     botToken,
     webAppUrl,
-    logRequest,
     service,
     parseMode,
+    logRequest,
   });
 }
