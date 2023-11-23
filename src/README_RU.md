@@ -329,6 +329,7 @@ function doPost(e) {
 Добавлен файл Types.js, автор идеи [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br />
 Скопируйте содержимое файла Types.js в свой проект.<br/>
 После добавления вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
+
 ![](types.png)<br/>
 
 ## Неофициальные методы:
