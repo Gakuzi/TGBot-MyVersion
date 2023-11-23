@@ -23,7 +23,7 @@ ID библиотеки:
 
 > Поддерживает работу только через Webhook (doPost(e)).
 
-[Пример бота 🤖](https://t.me/guf_hub_test_bot)<br/>
+🤖 [Пример бота](https://t.me/guf_hub_test_bot)<br/>
 [Ошибки сюда](https://t.me/nosaev_m)<br/>
 Авторский канал [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
 Помощь [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)

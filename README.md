@@ -25,7 +25,7 @@ Library Script ID:
 
 > Supports work only via Webhook (doPost(e)).
 
-[Bot example 🤖](https://t.me/guf_hub_test_bot)<br/>
+🤖 [Bot example ](https://t.me/guf_hub_test_bot)<br/>
 [Send bugs here](https://t.me/nosaev_m)<br/>
 Author channel [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
 Help [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)
@@ -329,8 +329,9 @@ function doPost(e) {
 
 Added Types.js file, author of the idea [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br />
 Copy the contents from the Types.js file into your project.<br/>
-Once added, you can use JSDoc to refine variable types, which opens up possibilities for hints in the online editor.
-![](src/types.png)<br/>
+Once added, you can use JSDoc to refine variable types, which opens up possibilities for hints in the online editor.<br/>
+
+![](types.png)<br/>
 
 ## Unofficial methods:
 - [getPath](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1958) method for getting the path to the file.
