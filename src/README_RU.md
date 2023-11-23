@@ -1,15 +1,13 @@
 <!-- HEADER START -->
 <p>
 
-# TGbot <a href="https://core.telegram.org/bots/api"><img src="src/tg.webp" width="30" height="30"></a>
+# TGbot <a href="https://core.telegram.org/bots/api"><img src="tg.webp" width="30" height="30"></a>
 
 </p>
 <!-- HEADER END -->
 
-In english | [По-русски](src/README_RU.md)
-
-Google Apps Script Library for working with [API Telegram](https://core.telegram.org/bots/api).<br/>
-Have fun working in GAS using Google Sheets.
+Библиотека Google Apps Script для работы с [API Telegram](https://core.telegram.org/bots/api).<br/>
+Получайте удовольствие от работы в GAS с помощью Google Таблиц.
 
 [![Donate](https://img.shields.io/badge/Donate-Yoomoney-green.svg)](https://yoomoney.ru/to/410019620244262)
 ![GitHub last commit](https://img.shields.io/github/last-commit/Guf-Hub/TGBot)
@@ -17,86 +15,86 @@ Have fun working in GAS using Google Sheets.
 ![javascript](https://img.shields.io/badge/lang-javascript-red)
 ![GAS](https://img.shields.io/badge/google-apps%20script-red)
 
-Library Script ID:
+ID библиотеки:
 
 ```bash
 1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg
 ```
 
-> Supports work only via Webhook (doPost(e)).
+> Поддерживает работу только через Webhook (doPost(e)).
 
-[Bot example](https://t.me/guf_hub_test_bot)<br/>
-[Send bugs here](https://t.me/nosaev_m)<br/>
-Author channel [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
-Help [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)
+[Пример бота](https://t.me/guf_hub_test_bot)<br/>
+[Отправляйте сюда ошибки](https://t.me/nosaev_m)<br/>
+Авторский канал [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
+Помощь [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)
 
-## Connection
+## Подключение
 
-Open the script editor: Extensions -> Apps Script -> Libraries.
+Откройте редактор скриптов: Расширения -> Apps Script -> Библиотеки.
 
-Fill out the fields in the **Add Library** form:
+Заполните поля формы **Добавить библиотеку**:
 
-- insert Library Script ID;
-- click **Find**;
-- select the latest version and click **Add**.
+- вставьте ID библиотеки;
+- нажмите **Найти**;
+- выберите последнюю версию и нажмите **Добавить**.
 
-## Bot initialization
+## Инициализация бота
 
 ```JavaScript
-// Telegram bot token from \@BotFather.
+// Токен Telegram-бота от \@BotFather.
 const botToken = "<botToken>";
 
-// link to Google WebApp for working with doGet(e) responses.
+// ссылка на Google WebApp для работы с ответами doGet(e).
 const webAppUrl = "Optional[<webAppUrl>]";
 
-// print the URL and OPTIONS of the request when executed, false by default.
+// печатаем URL-адрес и OPTIONS запроса при выполнении, по умолчанию false.
 const logRequest = "Optional[<logRequest>]";
 
 // PropertiesService.getScriptProperties();
 const service = "Optional[<service>]";
 
-// set the parse mode, default "HTML".
+// установить parse mode, по умолчанию "HTML".
 const parseMode = "Optional[<parseMode>]";
 
 const Bot = TGbot.bot({ botToken, webAppUrl, logRequest, service, parseMode });
-// Bot.setParseMode("MarkdownV2"); // set the parse mode, default "HTML"
-// Bot.setLogRequest(); // if you don't pass logRequest as an argument
-// Bot.info(); // information about the bot and available methods
+// Bot.setParseMode("MarkdownV2"); // установить parse mode, по умолчанию "HTML"
+// Bot.setLogRequest(); // если вы не передадите logRequest в качестве аргумента
+// Bot.info(); // информация о боте и доступных методах
 ```
 
-## Using methods
+## Использование методов
 
 ```JavaScript
-const chat_id = "123456" // recipient's chat_id
+const chat_id = "123456" // chat_id получателя
 
-// send message
+// отправить сообщение
 const response = Bot.sendMessage({ chat_id: chat_id, text: "Some text 😁" });
 
 console.log(JSON.stringify(response, null, 7));
 
 const message_id = response?.result?.message_id;
 
-// change message
+// изменить сообщение
 Bot.editMessageText({
   chat_id: chat_id,
   message_id: message_id ,
   text: "Changed message",
 });
 
-// delete message
+// удалить сообщение
 Bot.deleteMessage({
   chat_id: chat_id,
   message_id: message_id,
 });
 
-// send photo
+// отправить фото
 Bot.sendPhoto({
     chat_id: chat_id,
     photo: "photo url",
     caption: "caption",
   });
 
-// send a group of media (photo)
+// отправляем группу медиа (фото)
 const data = [
   ["photo url", "caption 1"],
   ["photo url", "caption 2"],
@@ -106,38 +104,39 @@ const data = [
 console.log(JSON.stringify(data, null, 7));
 Bot.sendMediaGroup({ chat_id: chat_id, media: data });
 
-// send an image or document using Blob
+// отправляем изображение или документ с помощью Blob
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 const sheet = ss.getSheetByName("Sheet name");
-// example, sending a graph (photo .png) from a Google Sheets sheet
+
+// пример отправки графика (фото .png) из листа Google Sheets
 const blob = sheet.getCharts()[0].getBlob();
 
 Bot.sendPhoto({
   chat_id: chat_id,
   photo: blob,
-  contentType: "multipart/form-data" // must be specified
+  contentType: "multipart/form-data" // необходимо указать
 });
 
 Bot.sendDocument({
   chat_id: chat_id,
   document: blob,
-  contentType: "multipart/form-data" // must be specified
+  contentType: "multipart/form-data" // необходимо указать
 });
 
-// send an archive with data
-// transmit the file name only in Latin, use TGbot.translit(filename) for transliteration.
+// отправить архив с данными
+// имя файла передавайте только латиницей, для транслитерации используйте TGbot.translit(filename).
 const filename = 'Test';
-// [blob, ...] You can specify multiple Blob files (use different names for the blob)
+// [blob, ...] Вы можете указать несколько файлов BLOB-объектов (используйте разные имена для BLOB-объектов)
 const zip = Utilities.zip([blob], `${filename}.zip`);
 
 Bot.sendDocument({
   chat_id: chat_id,
   document: zip,
-  contentType: "multipart/form-data" // must be specified
+  contentType: "multipart/form-data" // необходимо указать
 });
 
-// send surveys
-// regular
+// отправляем опросы
+// обычный
 Bot.sendPoll({
   chat_id: chat_id,
   question: "How's the weekend?",
@@ -151,28 +150,28 @@ Bot.sendPoll({
   options: ["Parrot", "Hamster", "Nobody"],
   type: "quiz",
   is_anonymous: false,
-  correct_option_id: 1, // correct answer in the array, if 0 then do not transmit
+  correct_option_id: 1, // правильный ответ в массиве, если 0 то не передавать
   explanation: "Interesting riddles for children 10 years old!!!"
 });
 
-// stop polling
+// прекращаем опрос
 Bot.stopPoll({
   chat_id: chat_id,
-  message_id: message_id, // ID of the message with the poll that needs to be stopped
+  message_id: message_id, // Идентификатор сообщения с опросом, который нужно остановить
 });
 
 /**
- * Saving xlsx file sent to the Webhook bot - doPost(e)
- * on Goole Drive (must be connected to the Drive API project).
- * @param {Message} message the received message.
- * @param {string} folderId ID of the folder where the file will be saved.
- * @return {string} file id of the saved file.
+ * Сохранение файла xlsx, отправленного боту Webhook — doPost(e)
+ * на Goole Drive (должно быть подключено к проекту Drive API).
+ * @param {Message} message полученное сообщение.
+ * @param {string} folderId Идентификатор папки, в которой будет сохранен файл.
+ * @return {string} идентификатор сохраненного файла.
  */
 function saveXlsxFileToDrive(message, folderId) {
   const blob = UrlFetchApp.fetch(
     Bot.getFile(message.document.file_id)
   ).getBlob();
-  // const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob(); // or so
+  // const blob = UrlFetchApp.fetch(Bot.getFileDownloadUrl(Bot.getPath(message.document.file_id))).getBlob(); // или так
   const file_name = message.document.file_name.replace(
     `${
       message.document.file_name.split(".")[
@@ -184,7 +183,7 @@ function saveXlsxFileToDrive(message, folderId) {
 
   const resource = {
     title: file_name,
-    mimeType: MimeType.GOOGLE_SHEETS, // if the parameter is not specified, it will be saved in the original format
+    mimeType: MimeType.GOOGLE_SHEETS, // если параметр не указан, он будет сохранен в исходном формате
     parents: [{ id: folderId }],
   };
 
@@ -193,7 +192,7 @@ function saveXlsxFileToDrive(message, folderId) {
 }
 ```
 
-## Keyboard buttons
+## Кнопки клавиатуры
 
 ```JavaScript
 const Keyboard = TGbot.keyboard();
@@ -225,12 +224,12 @@ Bot.sendMessage({
   reply_markup: Keyboard.remove(),
 });
 
-// Inline calendar
-// Create a calendar
+// встроенный календарь
+// создаем календарь
 Bot.sendMessage({
   chat_id: chat_id,
   text: `Select date:`,
-  reply_markup: TGbot.calendar({ language: en }), // without parameters, current month
+  reply_markup: TGbot.calendar({ }), // без параметров, текущий месяц
   });
 
 // Callback Inline calendar return
@@ -256,7 +255,7 @@ if (callback) {
       return Bot.editMessageReplyMarkup({
         message_id: cb_msg.message_id,
         chat_id: cb_user_id,
-        reply_markup: TGbot.calendar({ month, year, language: "en" }), // pagination <<< >>>
+        reply_markup: TGbot.calendar({ month, year }), // пагинация <<< >>>
       });
     }
   }
@@ -272,7 +271,7 @@ const Bot = TGbot.bot({ botToken, webAppUrl });
 
 function doPost(e) {
   if (e?.postData?.contents) {
-    // parse the received object
+    // парсим полученный объект
     const contents = JSON.parse(e.postData.contents);
     const debug =
       ss.getSheetByName("Debug") || ss.insertSheet("Debug").setTabColor("RED");
@@ -280,9 +279,9 @@ function doPost(e) {
 
     if (contents.message) {
       /**
-       * Copy the criteria from the Types.js file into your project.
-       * Use JSDoc to define request types that
-       * opens up possibilities for hints in the online editor.
+       * Скопируйте критерии из файла Types.js в свой проект.
+       * Используйте JSDoc для определения типов запросов, которые
+       * открывает возможности для подсказок в онлайн-редакторе.
       */
 
       /** @type {Message}*/
@@ -327,16 +326,17 @@ function doPost(e) {
 
 ## JSDoc:
 
-Added Types.js file, author of the idea [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br />
-Copy the contents from the Types.js file into your project.<br/>
-Once added, you can use JSDoc to refine variable types, which opens up possibilities for hints in the online editor.
+Добавлен файл Types.js, автор идеи [**Alexander Ivanov**](https://github.com/contributorpw/telegram-bot-api-gas/blob/master/src/TelegramBot/types.js).<br />
+Скопируйте содержимое файла Types.js в свой проект.<br/>
+После добавления вы можете использовать JSDoc для уточнения типов переменных, что открывает возможности для подсказок в онлайн-редакторе.
 ![](src/types.png)<br/>
 
-## Unofficial methods:
-- [getPath](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1958) method for getting the path to the file.
-- [getFileDownloadUrl](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1977) method for obtaining a link to download a file.
-- [answerMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2001) response by from.id to the received message. Pass a message object as the first argument.
-- [replyMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2053) response by message_id to the received message. Pass a message object as the first argument.
+## Неофициальные методы:
+
+- [getPath](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1958) метод для получения пути к файлу.
+- [getFileDownloadUrl](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1977) метод получения ссылки для скачивания файла.
+- [answerMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2001) ответ from.id на полученное сообщение. Передайте объект сообщения в качестве первого аргумента.
+- [replyMessage](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L2053) ответ message_id на полученное сообщение. Передайте объект сообщения в качестве первого аргумента.
 
 ## Copyright & License
 
