@@ -331,7 +331,7 @@ Added Types.js file, author of the idea [**Alexander Ivanov**](https://github.co
 Copy the contents from the Types.js file into your project.<br/>
 Once added, you can use JSDoc to refine variable types, which opens up possibilities for hints in the online editor.<br/>
 
-![](types.png)<br/>
+![](src/types.png)<br/>
 
 ## Unofficial methods:
 - [getPath](https://github.com/Guf-Hub/TGBot/blob/ba5af6b76ca49d2a28194e0d649df061353062de/1%20Class%20TGBot.js#L1958) method for getting the path to the file.
