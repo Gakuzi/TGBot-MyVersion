@@ -25,7 +25,7 @@ Library Script ID:
 
 > Supports work only via Webhook (doPost(e)).
 
-[Bot example](https://t.me/guf_hub_test_bot)<br/>
+[Bot example 🤖](https://t.me/guf_hub_test_bot)<br/>
 [Send bugs here](https://t.me/nosaev_m)<br/>
 Author channel [ExceLifeHack](https://zen.yandex.ru/excelifehack)<br/>
 Help [Google Apps & API. Скрипты, Таблицы, BigQuery, Отчеты, Автоматизация ](https://t.me/googleappsscriptrc)
