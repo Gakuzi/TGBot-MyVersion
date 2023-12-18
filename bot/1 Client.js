@@ -15,16 +15,29 @@ class _Client {
    */
   constructor({ botToken, webAppUrl, service, parseMode, logRequest }) {
     this.apiVersion = "6.8";
-    this.__botToken = botToken ? botToken : service.getProperties()?.BOT_TOKEN;
+    this.__botToken = botToken
+      ? botToken
+      : service
+      ? service.getProperties()?.BOT_TOKEN
+      : null;
     this.__webAppUrl = webAppUrl
       ? webAppUrl
-      : service.getProperties()?.WEB_APP_URL;
+      : service
+      ? service.getProperties()?.WEB_APP_URL
+      : null;
     this.logRequest = logRequest || false;
     this.baseUrl = "https://api.telegram.org/";
     this.__parseMode = parseMode || "HTML";
     this.service = service;
 
     if (logRequest) checkToken(this.__botToken);
+  }
+
+  /**
+   * @type {{string}}
+   */
+  get token() {
+    return this.__botToken;
   }
 
   /**
