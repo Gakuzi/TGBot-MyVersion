@@ -19,10 +19,10 @@ class TGbot extends _Client {
    */
   constructor({ botToken, webAppUrl, service, parseMode, logRequest }) {
     super({ botToken, webAppUrl, service, parseMode, logRequest });
-    this.InputMediaDocument = InputMediaPhoto;
-    this.InputMediaDocument = InputMediaVideo;
-    this.InputMediaDocument = InputMediaAnimation;
-    this.InputMediaDocument = InputMediaAudio;
+    this.InputMediaPhoto = InputMediaPhoto;
+    this.InputMediaVideo = InputMediaVideo;
+    this.InputMediaAnimation = InputMediaAnimation;
+    this.nputMediaAudio = InputMediaAudio;
     this.InputMediaDocument = InputMediaDocument;
   }
 
@@ -175,7 +175,6 @@ class TGbot extends _Client {
     drop_pending_updates,
     secret_token,
   }) {
-
     const query = {
       url: url || this.__webAppUrl,
       certificate: certificate ? JSON.stringify(certificate) : null,
@@ -211,9 +210,11 @@ class TGbot extends _Client {
    * @returns {WebhookInfo} В случае успеха возвращает объект WebhookInfo. Если бот использует getUpdates, он вернет объект с пустым полем URL.
    */
   getWebhookInfo() {
-    return this.log(this.request(Methods.GET_WEBHOOK_INFO, {
-      url: String(this.__webAppUrl),
-    }));
+    return this.log(
+      this.request(Methods.GET_WEBHOOK_INFO, {
+        url: String(this.__webAppUrl),
+      })
+    );
   }
 
   // Available methods
