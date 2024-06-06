@@ -22,7 +22,7 @@ class TGbot extends _Client {
     this.InputMediaPhoto = InputMediaPhoto;
     this.InputMediaVideo = InputMediaVideo;
     this.InputMediaAnimation = InputMediaAnimation;
-    this.nputMediaAudio = InputMediaAudio;
+    this.InputMediaAudio = InputMediaAudio;
     this.InputMediaDocument = InputMediaDocument;
   }
 
