@@ -44,7 +44,7 @@ ID библиотеки:
 // Токен Telegram-бота от \@BotFather.
 const botToken = "<botToken>";
 
-// ссылка на Google WebApp для работы с ответами doGet(e).
+// ссылка на Google WebApp для работы с ответами doPost(e).
 const webAppUrl = "Optional[<webAppUrl>]";
 
 // печатаем URL-адрес и OPTIONS запроса при выполнении, по умолчанию false.
@@ -59,7 +59,57 @@ const parseMode = "Optional[<parseMode>]";
 const Bot = TGbot.bot({ botToken, webAppUrl, logRequest, service, parseMode });
 // Bot.setParseMode("MarkdownV2"); // установить parse mode, по умолчанию "HTML"
 // Bot.setLogRequest(); // если вы не передадите logRequest в качестве аргумента
-// Bot.info(); // информация о боте и доступных методах
+
+const log = TGbot.helper.log;
+
+const getMe = () => log(Bot.getMe());
+const getInfo = () => Bot.info(); // информация о боте и доступных методах
+const getToken = () => log(Bot.getToken());
+
+// Установка Webhook
+const setWebhook = () =>
+  Bot.setWebhook({
+    // max_connections: 50,
+    // allowed_updates: [],
+    // drop_pending_updates: false,
+  });
+
+const getWebhookInfo = () => Bot.getWebhookInfo();
+const deleteWebhook = () => Bot.deleteWebhook();
+
+// Получение Updates
+const getUpdates = () => {
+
+  const response = Bot.getUpdates({});
+  log(response);
+
+  /** @type {Update}*/
+  const updates = response?.result;
+  if (updates)
+    for (let i = 0; i < updates.length; i++) {
+      log(updates[i]);
+    }
+}
+
+// Очистка бота при зависании
+const clearBot = () => {
+  deleteWebhook();
+  getUpdates();
+  setWebhook();
+}
+
+// Усановка меню комманд
+const setMyCommands = () =>
+  log(
+    Bot.setMyCommands({
+      commands: [
+        { command: "указать команду", description: "описание команды" },
+      ]
+    })
+  );
+
+const getMyCommands = () => log(Bot.getMyCommands({}));
+const deleteMyCommands = () => log(Bot.deleteMyCommands({ chat_id: "указать chat_id", type: "chat" }));
 ```
 
 ## Использование методов
