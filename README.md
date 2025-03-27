@@ -46,7 +46,7 @@ Fill out the fields in the **Add Library** form:
 // Telegram bot token from \@BotFather.
 const botToken = "<botToken>";
 
-// link to Google WebApp for working with doGet(e) responses.
+// link to Google WebApp for working with doPost(e) responses.
 const webAppUrl = "Optional[<webAppUrl>]";
 
 // print the URL and OPTIONS of the request when executed, false by default.
@@ -61,7 +61,57 @@ const parseMode = "Optional[<parseMode>]";
 const Bot = TGbot.bot({ botToken, webAppUrl, logRequest, service, parseMode });
 // Bot.setParseMode("MarkdownV2"); // set the parse mode, default "HTML"
 // Bot.setLogRequest(); // if you don't pass logRequest as an argument
-// Bot.info(); // information about the bot and available methods
+
+const log = TGbot.helper.log;
+
+const getMe = () => log(Bot.getMe());
+const getInfo = () => Bot.info(); // information about the bot and available methods
+const getToken = () => log(Bot.getToken());
+
+// Webhook
+const setWebhook = () =>
+  Bot.setWebhook({
+    // max_connections: 50,
+    // allowed_updates: [],
+    // drop_pending_updates: false,
+  });
+
+const getWebhookInfo = () => Bot.getWebhookInfo();
+const deleteWebhook = () => Bot.deleteWebhook();
+
+// Updates
+const getUpdates = () => {
+
+  const response = Bot.getUpdates({});
+  log(response);
+
+  /** @type {Update}*/
+  const updates = response?.result;
+  if (updates)
+    for (let i = 0; i < updates.length; i++) {
+      log(updates[i]);
+    }
+}
+
+// Use if bot stuck
+const clearBot = () => {
+  deleteWebhook();
+  getUpdates();
+  setWebhook();
+}
+
+// Commands
+const setMyCommands = () =>
+  log(
+    Bot.setMyCommands({
+      commands: [
+        { command: "indicate command", description: "indicate description" },
+      ]
+    })
+  );
+
+const getMyCommands = () => log(Bot.getMyCommands({}));
+const deleteMyCommands = () => log(Bot.deleteMyCommands({ chat_id: "indicate chat_id", type: "chat" }));
 ```
 
 ## Using methods
