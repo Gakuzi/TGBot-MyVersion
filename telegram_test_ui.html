@@ -18,6 +18,8 @@
       --success-color: #2c7a7b;
       --error-bg: #fff5f5;
       --error-color: #c53030;
+      --code-bg: #2d3748; /* Темный фон для кода */
+      --code-color: #e2e8f0; /* Светлый текст для кода */
     }
     body {
       font-family: 'Inter', sans-serif;
@@ -135,17 +137,29 @@
     .btn-secondary:hover {
         background: #d8dde4;
     }
-    #result-container {
+    #result-wrapper {
       margin-top: 24px;
-      padding: 16px;
+    }
+    #result-container {
+      padding: 20px;
       border-radius: 8px;
-      background-color: var(--input-bg);
+      background-color: var(--code-bg);
+      color: var(--code-color);
       border: 1px solid var(--border-color);
-      min-height: 100px;
+      min-height: 150px;
       white-space: pre-wrap;
       word-wrap: break-word;
       font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
-      font-size: 13px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .result-placeholder {
+        color: var(--subtle-text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        min-height: 150px;
     }
     .status {
         padding: 12px;
@@ -368,16 +382,21 @@
             <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
         </div>
 
-
-        <div id="result-container">
-          Ожидание результатов...
+        <!-- Result Area -->
+        <div id="result-wrapper">
+            <label>Результат выполнения</label>
+            <div id="result-container">
+                <div class="result-placeholder">Ожидание результатов...</div>
+            </div>
         </div>
+
       </div>
     </div>
   </div>
 
   <script>
     let SETTINGS = {};
+    const TABS_WITH_RESULT_VIEW = ['basic', 'messages', 'media', 'keyboards', 'polls', 'webhook'];
 
     function showTab(tabName) {
       // Tabs
@@ -388,6 +407,10 @@
       document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
       document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`).classList.add('active');
       
+      // Toggle result view
+      const resultWrapper = document.getElementById('result-wrapper');
+      resultWrapper.style.display = TABS_WITH_RESULT_VIEW.includes(tabName) ? 'block' : 'none';
+
       if (tabName === 'webhook') {
         loadWebhookInfo();
       } else if (tabName === 'sheets') {
@@ -513,7 +536,7 @@
 
     function runTest(testName, options = {}) {
       const resultContainer = document.getElementById('result-container');
-      resultContainer.textContent = 'Выполнение...';
+      resultContainer.innerHTML = '<div class="spinner"></div> <i>Выполнение...</i>';
       
       try {
         switch(testName) {
@@ -585,6 +608,8 @@
                 document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
                 // Загружаем статус листов при инициализации
                 loadSheetsStatus();
+                // Показываем/скрываем блок результатов при запуске
+                showTab('basic');
             })
             .withFailureHandler(err => {
                 showStatus('Не удалось загрузить первоначальные настройки: ' + err.message, true);
