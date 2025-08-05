@@ -208,8 +208,15 @@
     function loadWebhookInfo() {
       const statusDiv = document.getElementById('webhook-status');
       statusDiv.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><div class="spinner"></div> <i>Загрузка информации...</i></div>';
+
+      // Set a timeout for the client-side display
+      const timeoutId = setTimeout(() => {
+        statusDiv.innerHTML = '<div class="status-box error">Не удалось получить информацию о Webhook. Возможно, истекло время ожидания или есть проблемы с подключением к Telegram API. Попробуйте еще раз.</div>';
+      }, 15000); // 15 seconds timeout
+
       google.script.run
         .withSuccessHandler(info => {
+          clearTimeout(timeoutId); // Clear the timeout if a response is received
           let statusText = '<h4>Статус Webhook</h4>';
           if (info && !info.error && info.url) {
             statusText += `<p><b>URL в Telegram:</b> ... (скрыто)</p><p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
@@ -220,7 +227,11 @@
           }
           statusDiv.innerHTML = statusText;
         })
-        .withFailureHandler(err => { statusDiv.innerHTML = `<div class="status-box error">${err.message}</div>`; });
+        .withFailureHandler(err => {
+          clearTimeout(timeoutId); // Clear the timeout if an error response is received
+          statusDiv.innerHTML = `<div class="status-box error">Ошибка: ${err.message}</div>`;
+        })
+        .getWebhookInfo();
     }
 
     function setWebhook() {
