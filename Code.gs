@@ -800,6 +800,50 @@ function getSettings() {
 }
 
 /**
+ * Получение URL развертывания
+ */
+function getDeploymentUrl() {
+  try {
+    // Получаем ID проекта
+    const projectId = ScriptApp.getScriptId();
+    
+    // Формируем URL для webhook
+    const webAppUrl = `https://script.google.com/macros/s/${projectId}/exec`;
+    
+    return { success: true, data: { webAppUrl, projectId } };
+  } catch (error) {
+    logError('getDeploymentUrl', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Автоматическая настройка webhook URL
+ */
+function autoSetupWebhookUrl() {
+  try {
+    const deploymentResult = getDeploymentUrl();
+    if (!deploymentResult.success) {
+      return deploymentResult;
+    }
+    
+    const properties = PropertiesService.getScriptProperties();
+    properties.setProperty('WEBAPP_URL', deploymentResult.data.webAppUrl);
+    
+    return { 
+      success: true, 
+      data: { 
+        webAppUrl: deploymentResult.data.webAppUrl,
+        message: 'URL развертывания автоматически настроен'
+      }
+    };
+  } catch (error) {
+    logError('autoSetupWebhookUrl', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Webhook обработчик
  */
 function doPost(e) {
@@ -921,17 +965,18 @@ function addUserToSheet(userData) {
  * Получение информации о webhook
  */
 function getWebhookInfo() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
   try {
-    return Bot.getWebhookInfo();
+    if (!Bot) {
+      if (!initializeBot()) {
+        return { success: false, error: 'Не удалось инициализировать бота' };
+      }
+    }
+    
+    const result = Bot.getWebhookInfo();
+    return { success: true, data: result };
   } catch (error) {
     console.error('Ошибка получения информации о webhook:', error.message);
-    return null;
+    return { success: false, error: error.message };
   }
 }
 
@@ -939,17 +984,18 @@ function getWebhookInfo() {
  * Удаление webhook
  */
 function deleteWebhook() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
   try {
-    return Bot.deleteWebhook();
+    if (!Bot) {
+      if (!initializeBot()) {
+        return { success: false, error: 'Не удалось инициализировать бота' };
+      }
+    }
+    
+    const result = Bot.deleteWebhook();
+    return { success: true, data: result };
   } catch (error) {
     console.error('Ошибка удаления webhook:', error.message);
-    return null;
+    return { success: false, error: error.message };
   }
 }
 
@@ -957,17 +1003,18 @@ function deleteWebhook() {
  * Получение обновлений
  */
 function getUpdates() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
   try {
-    return Bot.getUpdates({});
+    if (!Bot) {
+      if (!initializeBot()) {
+        return { success: false, error: 'Не удалось инициализировать бота' };
+      }
+    }
+    
+    const result = Bot.getUpdates({});
+    return { success: true, data: result };
   } catch (error) {
     console.error('Ошибка получения обновлений:', error.message);
-    return null;
+    return { success: false, error: error.message };
   }
 }
 
@@ -975,28 +1022,30 @@ function getUpdates() {
  * Установка webhook
  */
 function setWebhook() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
   try {
+    if (!Bot) {
+      if (!initializeBot()) {
+        return { success: false, error: 'Не удалось инициализировать бота' };
+      }
+    }
+    
     const properties = PropertiesService.getScriptProperties();
     const webAppUrl = properties.getProperty('WEBAPP_URL');
     
     if (!webAppUrl) {
-      throw new Error('URL веб-приложения не настроен');
+      return { success: false, error: 'URL веб-приложения не настроен. Сохраните настройки сначала.' };
     }
     
-    return Bot.setWebhook({
+    const result = Bot.setWebhook({
       url: webAppUrl,
       max_connections: 50,
       allowed_updates: ["message", "callback_query"],
       drop_pending_updates: false
     });
+    
+    return { success: true, data: result };
   } catch (error) {
     console.error('Ошибка установки webhook:', error.message);
-    return null;
+    return { success: false, error: error.message };
   }
 }

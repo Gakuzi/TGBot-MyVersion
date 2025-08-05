@@ -669,6 +669,7 @@
             <div class="flex gap-2">
               <button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки</button>
               <button class="btn btn-secondary" onclick="loadSettings()">Загрузить настройки</button>
+              <button class="btn btn-success" onclick="autoSetupWebhookUrl()">Авто-настройка URL</button>
             </div>
           </div>
 
@@ -1117,6 +1118,27 @@
       showAlert(`Ошибка загрузки настроек: ${error.message}`, 'error');
     }
 
+    function autoSetupWebhookUrl() {
+      google.script.run
+        .withSuccessHandler(handleAutoSetupResponse)
+        .withFailureHandler(handleAutoSetupError)
+        .autoSetupWebhookUrl();
+    }
+
+    function handleAutoSetupResponse(response) {
+      if (response.success) {
+        showAlert(`✅ ${response.data.message}: ${response.data.webAppUrl}`, 'success');
+        // Обновляем поле URL
+        document.getElementById('webAppUrl').value = response.data.webAppUrl;
+      } else {
+        showAlert(`❌ Ошибка авто-настройки: ${response.error}`, 'error');
+      }
+    }
+
+    function handleAutoSetupError(error) {
+      showAlert(`❌ Ошибка авто-настройки: ${error.message}`, 'error');
+    }
+
     function setWebhook() {
       google.script.run
         .withSuccessHandler(handleWebhookResponse)
@@ -1149,13 +1171,14 @@
 
     function handleWebhookInfoResponse(response) {
       const webhookInfo = document.getElementById('webhookInfo');
-      if (response.success) {
+      if (response.success && response.data && response.data.result) {
         webhookInfo.innerHTML = `
           <div><strong>URL:</strong> ${response.data.result.url || 'Не установлен'}</div>
           <div><strong>Статус:</strong> ${response.data.result.pending_update_count || 0} ожидающих обновлений</div>
+          <div><strong>Последняя ошибка:</strong> ${response.data.result.last_error_message || 'Нет'}</div>
         `;
       } else {
-        webhookInfo.innerHTML = `<div class="text-red-500">Ошибка получения информации</div>`;
+        webhookInfo.innerHTML = `<div class="text-red-500">Ошибка получения информации: ${response.error || 'Неизвестная ошибка'}</div>`;
       }
     }
 
