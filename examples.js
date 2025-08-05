@@ -3,18 +3,6 @@
  * Демонстрация различных возможностей
  */
 
-// === КОНФИГУРАЦИЯ ===
-const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE";
-const WEBAPP_URL = "YOUR_WEBAPP_URL_HERE";
-
-const Bot = new TGBot({ 
-  botToken: BOT_TOKEN, 
-  webAppUrl: WEBAPP_URL,
-  logRequest: true 
-});
-
-const ss = SpreadsheetApp.getActiveSpreadsheet();
-
 // === ПРИМЕР 1: ОТПРАВКА СООБЩЕНИЙ ===
 
 /**
@@ -55,8 +43,8 @@ function sendMarkdownMessage(chat_id) {
   const text = `
 *Курсив*
 **Жирный**
-\`Код\`
-[Ссылка](https://google\\.com)
+`Код`
+[Ссылка](https://google\.com)
   `;
   
   Bot.sendMessage({
@@ -508,4 +496,4 @@ function testAllFeatures() {
   sendQuiz(testChatId);
   
   console.log("=== ТЕСТИРОВАНИЕ ЗАВЕРШЕНО ===");
-} 
+}
