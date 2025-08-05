@@ -3,149 +3,217 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Стили будут добавлены позже для красоты */
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .step { display: none; }
-    .step.active { display: block; }
-    .button-group { margin-top: 20px; }
-    textarea { width: 100%; height: 80px; }
+    :root {
+      --primary-color: #667eea;
+      --primary-hover: #5a67d8;
+      --background-color: #f7fafc;
+      --card-background: #ffffff;
+      --text-color: #2d3748;
+      --subtle-text: #718096;
+      --border-color: #e2e8f0;
+      --success-color: #38a169;
+      --error-color: #e53e3e;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    #wizard {
+      background-color: var(--card-background);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: var(--border-color);
+      height: 8px;
+    }
+    .progress-bar-inner {
+      width: 0%;
+      height: 100%;
+      background-color: var(--primary-color);
+      transition: width 0.5s ease-in-out;
+    }
+    .step {
+      display: none;
+      padding: 32px 40px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .step.active {
+      display: block;
+      opacity: 1;
+    }
+    h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    p { color: var(--subtle-text); line-height: 1.6; margin-bottom: 24px; }
+    code { background-color: var(--border-color); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .button-group { margin-top: 24px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+    button:disabled { background-color: #a0aec0; cursor: not-allowed; }
+    .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    textarea, input[type="text"] { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; margin-top: 8px; box-sizing: border-box; }
+    .status-box { padding: 16px; border-radius: 8px; margin-top: 16px; }
+    .status-box.success { background-color: #c6f6d5; color: var(--success-color); }
+    .status-box.error { background-color: #fed7d7; color: var(--error-color); }
   </style>
 </head>
 <body>
   <div id="wizard">
+    <div class="progress-bar"><div class="progress-bar-inner" id="progressBar"></div></div>
 
     <!-- Шаг 1: Приветствие -->
-    <div id="step1" class="step active">
+    <div id="step1" class="step">
       <h2>🚀 Мастер Первоначальной Настройки</h2>
-      <p>Этот мастер поможет вам настроить таблицу и подключить Telegram-бота за несколько шагов.</p>
+      <p>Этот мастер поможет вам настроить таблицу и подключить Telegram-бота. Процесс займет не больше минуты.</p>
       <div class="button-group">
-        <button onclick="goToStep(2)">Начать настройку</button>
+        <button onclick="runSetupSheets()">Начать</button>
       </div>
     </div>
 
-    <!-- Шаг 2: Подготовка таблицы -->
+    <!-- Шаг 2: Настройка Токена -->
     <div id="step2" class="step">
-      <h2>Шаг 1: Подготовка Таблицы</h2>
-      <p>Нажимаем кнопку ниже, чтобы создать необходимые листы для работы.</p>
+      <h2>Шаг 1: Токен Telegram Бота</h2>
+      <p>Получите токен у <code>@BotFather</code> в Telegram, отправив ему команду <code>/newbot</code>. <a href="https://telegram.me/botfather" target="_blank">Открыть @BotFather</a></p>
+      <textarea id="token" placeholder="Вставьте ваш токен сюда..."></textarea>
       <div class="button-group">
-        <button onclick="setupSheets()">Создать листы</button>
+        <button id="saveTokenBtn" onclick="saveToken()">Сохранить и продолжить</button>
       </div>
-      <p id="step2-status"></p>
     </div>
 
-    <!-- Шаг 3: Настройка Токена -->
+    <!-- Шаг 3: Настройка ID Развертывания -->
     <div id="step3" class="step">
-      <h2>Шаг 2: Настройка Токена</h2>
-      <p>1. Откройте Telegram и найдите бота <b>@BotFather</b>.</p>
-      <p>2. Отправьте ему команду <code>/newbot</code> и следуйте инструкциям.</p>
-      <p>3. Скопируйте полученный токен и вставьте его в поле ниже.</p>
-      <label for="token">Токен вашего бота:</label>
-      <textarea id="token"></textarea>
+      <h2>Шаг 2: ID Развертывания</h2>
+      <p>Разверните скрипт как веб-приложение (<b>Развертывание &rarr; Новое развертывание</b>) и вставьте сюда <b>ID развертывания</b> (не URL!).</p>
+      <input type="text" id="deploymentId" placeholder="Вставьте ID развертывания...">
       <div class="button-group">
-        <button onclick="saveToken()">Сохранить и продолжить</button>
+        <button id="saveDepIdBtn" onclick="saveDeploymentId()">Сохранить и настроить Webhook</button>
       </div>
     </div>
 
-    <!-- Шаг 4: Настройка ID Развертывания -->
+    <!-- Шаг 4: Управление Webhook -->
     <div id="step4" class="step">
-      <h2>Шаг 3: Настройка Webhook</h2>
-      <p>1. В редакторе скриптов нажмите <b>"Развертывание"</b> -> <b>"Новое развертывание"</b>.</p>
-      <p>2. Выберите тип <b>"Веб-приложение"</b> и предоставьте доступ <b>"Всем"</b>.</p>
-      <p>3. Скопируйте <b>ID развертывания</b> (не URL!) и вставьте его ниже.</p>
-      <label for="deploymentId">ID развертывания:</label>
-      <input type="text" id="deploymentId" style="width: 100%;">
+      <h2>Шаг 3: Управление Webhook</h2>
+      <p>Здесь вы можете проверить статус вашего Webhook и при необходимости обновить или удалить его.</p>
+      <div id="webhook-status"></div>
       <div class="button-group">
-        <button onclick="saveDeploymentId()">Сохранить и проверить Webhook</button>
+        <button id="setWebhookBtn" onclick="setWebhook()">Установить / Обновить</button>
+        <button id="deleteWebhookBtn" onclick="deleteWebhook()">Удалить</button>
+        <button onclick="google.script.host.close()" style="background-color: var(--success-color);">Завершить</button>
       </div>
-    </div>
-
-    <!-- Шаг 5: Управление Webhook -->
-    <div id="step5" class="step">
-      <h2>Шаг 4: Диагностика Webhook</h2>
-      <div id="webhook-status">Загрузка информации...</div>
-      <div class="button-group">
-        <button onclick="setWebhook()">Установить / Обновить Webhook</button>
-        <button onclick="deleteWebhook()">Удалить Webhook</button>
-      </div>
-      <hr>
-      <button onclick="google.script.host.close()">Завершить</button>
     </div>
 
   </div>
 
   <script>
-    // --- Управление навигацией ---
-    function goToStep(stepNumber) {
-      document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
-      document.getElementById('step' + stepNumber).classList.add('active');
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    function updateProgressBar() {
+      const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
     }
 
-    // --- Функции для взаимодействия с Google Apps Script ---
+    function goToStep(stepNumber) {
+      currentStep = stepNumber;
+      document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+      setTimeout(() => {
+        document.getElementById('step' + stepNumber).classList.add('active');
+        updateProgressBar();
+      }, 50);
+    }
 
-    function setupSheets() {
+    function showLoader(buttonId) {
+      const button = document.getElementById(buttonId);
+      button.disabled = true;
+      button.innerHTML = '<div class="spinner"></div>' + button.innerText;
+    }
+
+    function hideLoader(buttonId, originalText) {
+      const button = document.getElementById(buttonId);
+      button.disabled = false;
+      button.innerHTML = originalText;
+    }
+
+    function runSetupSheets() {
+      showLoader(event.target.id);
       google.script.run
-        .withSuccessHandler(status => {
-          document.getElementById('step2-status').innerText = status;
-          setTimeout(() => goToStep(3), 2000); // Переход на следующий шаг через 2 сек
-        })
+        .withSuccessHandler(() => goToStep(2))
         .withFailureHandler(showError)
         .setupInitialSheets();
     }
 
     function saveToken() {
       const token = document.getElementById('token').value;
-      if (!token) { showError('Токен не может быть пустым.'); return; }
+      if (!token) { alert('Токен не может быть пустым.'); return; }
+      showLoader('saveTokenBtn');
       google.script.run
-        .withSuccessHandler(() => goToStep(4))
+        .withSuccessHandler(() => goToStep(3))
+        .withFailureHandler(err => { hideLoader('saveTokenBtn', 'Сохранить и продолжить'); showError(err); })
         .saveSettings({BOT_TOKEN: token});
     }
 
     function saveDeploymentId() {
       const deploymentId = document.getElementById('deploymentId').value;
-      if (!deploymentId) { showError('ID развертывания не может быть пустым.'); return; }
+      if (!deploymentId) { alert('ID развертывания не может быть пустым.'); return; }
+      showLoader('saveDepIdBtn');
       google.script.run
-        .withSuccessHandler(() => {
-          goToStep(5);
-          loadWebhookInfo();
-        })
+        .withSuccessHandler(() => { goToStep(4); loadWebhookInfo(); })
+        .withFailureHandler(err => { hideLoader('saveDepIdBtn', 'Сохранить и настроить Webhook'); showError(err); })
         .saveSettings({DEPLOYMENT_ID: deploymentId});
     }
 
     function loadWebhookInfo() {
-      document.getElementById('webhook-status').innerHTML = '<i>Загрузка...</i>';
+      const statusDiv = document.getElementById('webhook-status');
+      statusDiv.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><div class="spinner"></div> <i>Загрузка информации...</i></div>';
       google.script.run
         .withSuccessHandler(info => {
           let statusText = '<h4>Статус Webhook</h4>';
           if (info && info.url) {
-            statusText += `<p><b>URL в Telegram:</b> ... (скрыто из соображений безопасности)</p>`;
-            statusText += `<p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
+            statusText += `<p><b>URL в Telegram:</b> ... (скрыто)</p><p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
           } else {
             statusText += '<p>Webhook не установлен.</p>';
           }
-          document.getElementById('webhook-status').innerHTML = statusText;
+          statusDiv.innerHTML = statusText;
         })
-        .withFailureHandler(showError)
-        .getWebhookInfo();
+        .withFailureHandler(err => { statusDiv.innerHTML = `<div class="status-box error">${err.message}</div>`; });
     }
 
     function setWebhook() {
+      showLoader('setWebhookBtn');
       google.script.run
-        .withSuccessHandler(response => {
-          alert('Webhook успешно установлен/обновлен!');
-          loadWebhookInfo();
-        })
-        .withFailureHandler(showError)
+        .withSuccessHandler(() => { hideLoader('setWebhookBtn', 'Установить / Обновить'); loadWebhookInfo(); })
+        .withFailureHandler(err => { hideLoader('setWebhookBtn', 'Установить / Обновить'); showError(err); })
         .setWebhook();
     }
 
     function deleteWebhook() {
+      showLoader('deleteWebhookBtn');
       google.script.run
-        .withSuccessHandler(response => {
-          alert('Webhook успешно удален!');
-          loadWebhookInfo();
-        })
-        .withFailureHandler(showError)
+        .withSuccessHandler(() => { hideLoader('deleteWebhookBtn', 'Удалить'); loadWebhookInfo(); })
+        .withFailureHandler(err => { hideLoader('deleteWebhookBtn', 'Удалить'); showError(err); })
         .deleteWebhook();
     }
 
@@ -154,19 +222,24 @@
     }
 
     // --- Инициализация ---
-    // При загрузке окна, получаем текущие настройки и решаем, какой шаг показать
     google.script.run.withSuccessHandler(settings => {
-      if (!settings.BOT_TOKEN) {
-        goToStep(1); // Начинаем с начала, если нет токена
-      } else if (!settings.DEPLOYMENT_ID) {
-        document.getElementById('token').value = settings.BOT_TOKEN;
-        goToStep(3); // Если есть токен, но нет ID, начинаем с шага 3
-      } else {
-        // Если все настроено, сразу переходим к управлению Webhook
-        document.getElementById('token').value = settings.BOT_TOKEN;
-        document.getElementById('deploymentId').value = settings.DEPLOYMENT_ID;
-        goToStep(5);
+      const urlParams = new URLSearchParams(window.location.search);
+      const startAt = urlParams.get('start_at');
+
+      if (startAt === 'webhook') {
+         goToStep(4);
+         loadWebhookInfo();
+         return;
+      }
+
+      if (settings && settings.BOT_TOKEN && settings.DEPLOYMENT_ID) {
+        goToStep(4);
         loadWebhookInfo();
+      } else if (settings && settings.BOT_TOKEN) {
+        document.getElementById('token').value = settings.BOT_TOKEN;
+        goToStep(3);
+      } else {
+        goToStep(1);
       }
     }).getSettings();
 

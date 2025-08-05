@@ -20,7 +20,7 @@ function onOpen() {
 function showSetupWizard() {
   const html = HtmlService.createHtmlOutputFromFile('SetupWizard.html')
     .setWidth(600)
-    .setHeight(500);
+    .setHeight(550); // Увеличил высоту для нового дизайна
   SpreadsheetApp.getUi().showModalDialog(html, '🚀 Мастер Первоначальной Настройки');
 }
 
@@ -28,9 +28,10 @@ function showSetupWizard() {
  * Открывает менеджер Webhook (часть Мастера Настройки).
  */
 function showWebhookManager() {
-  // Эта функция будет открывать мастер сразу на 4-м шаге.
-  // Пока что она просто вызывает основной мастер.
-  showSetupWizard(); 
+  const html = HtmlService.createHtmlOutputFromFile('SetupWizard.html')
+    .setWidth(600)
+    .setHeight(550);
+  SpreadsheetApp.getUi().showModalDialog(html, '⚙️ Управление Webhook');
 }
 
 /**
@@ -70,8 +71,8 @@ function setupInitialSheets() {
  * Сохраняет токен и ID развертывания в свойства скрипта.
  */
 function saveSettings(settings) {
-  PropertiesService.getScriptProperties().setProperties(settings);
-  return getSettings(); // Возвращаем обновленные настройки для UI
+  PropertiesService.getScriptProperties().setProperties(settings, true); // true - удалить остальные свойства
+  return getSettings();
 }
 
 /**
@@ -85,10 +86,12 @@ function getSettings() {
  * Инициализирует объект бота с сохраненным токеном.
  */
 function initBot() {
+  if (Bot) return; // Если бот уже инициализирован, ничего не делаем
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
   if (token) {
     Bot = new TGbot({ botToken: token });
   } else {
+    // Не показываем alert, чтобы не прерывать UI. Ошибку обработает вызывающая функция.
     throw new Error('Токен бота не найден. Запустите Мастер Настройки.');
   }
 }
@@ -99,7 +102,7 @@ function initBot() {
  * Устанавливает Webhook, используя сохраненный ID развертывания.
  */
 function setWebhook() {
-  if (!Bot) initBot();
+  initBot();
   const deploymentId = PropertiesService.getScriptProperties().getProperty('DEPLOYMENT_ID');
   if (!deploymentId) {
     throw new Error('ID развертывания не найден. Запустите Мастер Настройки.');
@@ -112,7 +115,7 @@ function setWebhook() {
  * Получает информацию о Webhook.
  */
 function getWebhookInfo() {
-  if (!Bot) initBot();
+  initBot();
   return Bot.getWebhookInfo();
 }
 
@@ -120,6 +123,6 @@ function getWebhookInfo() {
  * Удаляет Webhook.
  */
 function deleteWebhook() {
-  if (!Bot) initBot();
+  initBot();
   return Bot.deleteWebhook();
 }
