@@ -4,15 +4,9 @@
  */
 
 // === КОНФИГУРАЦИЯ ===
-const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; // Замените на ваш токен
-const WEBAPP_URL = "YOUR_WEBAPP_URL_HERE"; // Замените на URL вашего веб-приложения
-
-// Инициализация бота
-const Bot = TGbot.bot({ 
-  botToken: BOT_TOKEN, 
-  webAppUrl: WEBAPP_URL,
-  logRequest: true 
-});
+if (!Bot) {
+  initBot();
+}
 
 // Получение активной таблицы
 const ss = SpreadsheetApp.getActiveSpreadsheet();

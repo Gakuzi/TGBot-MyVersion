@@ -4,14 +4,9 @@
  */
 
 // Конфигурация бота
-const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE";
-const WEBAPP_URL = "YOUR_WEBAPP_URL_HERE";
-
-const Bot = TGbot.bot({ 
-  botToken: BOT_TOKEN, 
-  webAppUrl: WEBAPP_URL,
-  logRequest: true 
-});
+if (!Bot) {
+  initBot();
+}
 
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 
