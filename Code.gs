@@ -1,93 +1,125 @@
-var Bot = null;
 const ss = SpreadsheetApp.getActiveSpreadsheet();
+var Bot = null;
 
+/**
+ * Создает кастомное меню при открытии таблицы.
+ */
 function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('🤖 Telegram Bot')
-    .addItem('🔧 Настроить Telegram', 'openTelegramSettings')
+  SpreadsheetApp.getUi()
+    .createMenu('🤖 Telegram Bot')
+    .addItem('🚀 Мастер Настройки', 'showSetupWizard')
+    .addItem('⚙️ Управление Webhook', 'showWebhookManager')
     .addSeparator()
     .addItem('🧪 Открыть тестовое окно', 'showTelegramTestUI')
-    .addItem('📨 Быстрое тестовое сообщение', 'sendQuickTestMessage')
-    .addItem('📊 Быстрая статистика', 'showQuickStats')
-    .addSeparator()
-    .addItem('📂 Экспортировать данные', 'exportBotData')
     .addToUi();
 }
 
-function initBot() {
-  var token = getBotToken();
-  if (token) {
-    Bot = new TGbot({ botToken: token });
-  } else {
-    SpreadsheetApp.getUi().alert('Токен не найден. Пожалуйста, настройте его в меню.');
-  }
+/**
+ * Запускает HTML-интерфейс Мастера Настройки.
+ */
+function showSetupWizard() {
+  const html = HtmlService.createHtmlOutputFromFile('SetupWizard.html')
+    .setWidth(600)
+    .setHeight(500);
+  SpreadsheetApp.getUi().showModalDialog(html, '🚀 Мастер Первоначальной Настройки');
 }
 
-function openTelegramSettings() {
-  var html = HtmlService.createHtmlOutputFromFile('telegram_settings.html')
-    .setWidth(500).setHeight(400);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Настройки Telegram');
+/**
+ * Открывает менеджер Webhook (часть Мастера Настройки).
+ */
+function showWebhookManager() {
+  // Эта функция будет открывать мастер сразу на 4-м шаге.
+  // Пока что она просто вызывает основной мастер.
+  showSetupWizard(); 
 }
 
+/**
+ * Открывает UI для тестирования функций бота.
+ */
 function showTelegramTestUI() {
-  var html = HtmlService.createHtmlOutputFromFile('telegram_test_ui.html')
-    .setWidth(1200).setHeight(800);
+  const html = HtmlService.createHtmlOutputFromFile('telegram_test_ui.html')
+    .setWidth(1200)
+    .setHeight(800);
   SpreadsheetApp.getUi().showModalDialog(html, 'Telegram Bot Test UI');
 }
 
-function saveTelegramSettings(token, webapp) {
-  PropertiesService.getScriptProperties().setProperty('BOT_TOKEN', token);
-  PropertiesService.getScriptProperties().setProperty('WEBAPP_URL', webapp);
-  setWebhook();
+// --- Функции для Мастера Настройки ---
+
+/**
+ * Создает необходимые листы в таблице с заголовками.
+ */
+function setupInitialSheets() {
+  const sheets = {
+    'Messages': ['Дата', 'ID Пользователя', 'Имя', 'Сообщение'],
+    'Users': ['ID Пользователя', 'Имя', 'Дата добавления'],
+    'Debug': ['Дата', 'Данные'],
+    'Errors': ['Дата', 'Ошибка']
+  };
+
+  for (const sheetName in sheets) {
+    if (!ss.getSheetByName(sheetName)) {
+      const newSheet = ss.insertSheet(sheetName);
+      newSheet.getRange(1, 1, 1, sheets[sheetName].length).setValues([sheets[sheetName]]);
+      newSheet.setFrozenRows(1);
+    }
+  }
+  return 'Листы успешно созданы и отформатированы!';
 }
 
-function getTelegramSettings() {
-  var token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
-  var webapp = PropertiesService.getScriptProperties().getProperty('WEBAPP_URL');
-  return { token: token, webapp: webapp };
+/**
+ * Сохраняет токен и ID развертывания в свойства скрипта.
+ */
+function saveSettings(settings) {
+  PropertiesService.getScriptProperties().setProperties(settings);
+  return getSettings(); // Возвращаем обновленные настройки для UI
 }
 
-function getBotToken() {
-  return PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
+/**
+ * Получает все настройки из свойств скрипта.
+ */
+function getSettings() {
+  return PropertiesService.getScriptProperties().getProperties();
 }
 
-function getWebAppUrl() {
-  return PropertiesService.getScriptProperties().getProperty('WEBAPP_URL');
-}
-
-function setWebhook() {
-  var token = getBotToken();
-  var webapp = getWebAppUrl();
-  if (token && webapp) {
-    var bot = new TGbot({ botToken: token });
-    var response = bot.setWebhook({ url: webapp });
-    SpreadsheetApp.getUi().alert('Вебхук установлен: ' + JSON.stringify(response));
+/**
+ * Инициализирует объект бота с сохраненным токеном.
+ */
+function initBot() {
+  const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
+  if (token) {
+    Bot = new TGbot({ botToken: token });
   } else {
-    SpreadsheetApp.getUi().alert('Токен или WebApp URL не найдены в настройках.');
+    throw new Error('Токен бота не найден. Запустите Мастер Настройки.');
   }
 }
 
-function sendQuickTestMessage() {
+// --- Функции для работы с Webhook ---
+
+/**
+ * Устанавливает Webhook, используя сохраненный ID развертывания.
+ */
+function setWebhook() {
   if (!Bot) initBot();
-  var chatId = Browser.inputBox('Введите Chat ID для теста:');
-  if (chatId && chatId !== 'cancel') {
-    var res = Bot.sendMessage({ chat_id: chatId, text: 'Тестовое сообщение из Google Таблиц!' });
-    SpreadsheetApp.getUi().alert('Сообщение отправлено!\n' + JSON.stringify(res));
+  const deploymentId = PropertiesService.getScriptProperties().getProperty('DEPLOYMENT_ID');
+  if (!deploymentId) {
+    throw new Error('ID развертывания не найден. Запустите Мастер Настройки.');
   }
+  const url = `https://script.google.com/macros/s/${deploymentId}/exec`;
+  return Bot.setWebhook({ url: url });
 }
 
-function showQuickStats() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Messages');
-  var usersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
-  var totalMessages = sheet ? sheet.getLastRow() - 1 : 0;
-  var totalUsers = usersSheet ? usersSheet.getLastRow() - 1 : 0;
-  SpreadsheetApp.getUi().alert(
-    '📊 Статистика:\n' +
-    'Всего сообщений: ' + totalMessages + '\n' +
-    'Пользователей: ' + totalUsers
-  );
+/**
+ * Получает информацию о Webhook.
+ */
+function getWebhookInfo() {
+  if (!Bot) initBot();
+  return Bot.getWebhookInfo();
 }
 
-function exportBotData() {
-  SpreadsheetApp.getUi().alert('Экспорт данных реализуйте по вашему сценарию!');
+/**
+ * Удаляет Webhook.
+ */
+function deleteWebhook() {
+  if (!Bot) initBot();
+  return Bot.deleteWebhook();
 }
