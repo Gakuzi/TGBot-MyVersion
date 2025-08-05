@@ -89,7 +89,7 @@
       <h2>🚀 Мастер Первоначальной Настройки</h2>
       <p>Этот мастер поможет вам настроить таблицу и подключить Telegram-бота. Вы сможете проверить и обновить существующие настройки.</p>
       <div class="button-group">
-        <button onclick="runSetupSheets()">Начать</button>
+        <button id="startBtn" onclick="runSetupSheets()">Начать</button>
       </div>
     </div>
 
@@ -148,26 +148,31 @@
 
     function showLoader(buttonId) {
       const button = document.getElementById(buttonId);
-      button.disabled = true;
-      button.innerHTML = '<div class="spinner"></div>' + button.innerText;
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<div class="spinner"></div>' + button.innerText;
+      }
     }
 
     function hideLoader(buttonId, originalText) {
       const button = document.getElementById(buttonId);
-      button.disabled = false;
-      button.innerHTML = originalText;
+       if (button) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+      }
     }
 
     function runSetupSheets() {
-      showLoader(event.target.id);
+      showLoader('startBtn');
       google.script.run
         .withSuccessHandler(() => {
-            // Заполняем поля после создания листов
-            document.getElementById('token').value = SETTINGS.BOT_TOKEN || '';
-            document.getElementById('deploymentId').value = SETTINGS.DEPLOYMENT_ID || '';
+            hideLoader('startBtn', 'Начать');
             goToStep(2);
         })
-        .withFailureHandler(showError)
+        .withFailureHandler(err => {
+            hideLoader('startBtn', 'Начать');
+            showError(err);
+        })
         .setupInitialSheets();
     }
 
@@ -238,21 +243,17 @@
 
     // --- Инициализация ---
     function initializeWizard() {
-        google.script.run.withSuccessHandler(settings => {
-            SETTINGS = settings || {};
-            const urlParams = new URLSearchParams(window.location.search);
-            const startAt = urlParams.get('start_at');
-
-            if (startAt === 'webhook') {
+        google.script.run
+            .withSuccessHandler(settings => {
+                SETTINGS = settings || {};
+                // Предзаполняем поля, чтобы пользователь видел текущие значения
                 document.getElementById('token').value = SETTINGS.BOT_TOKEN || '';
                 document.getElementById('deploymentId').value = SETTINGS.DEPLOYMENT_ID || '';
-                goToStep(4);
-                loadWebhookInfo();
-            } else {
                 // Всегда начинаем с первого шага
                 goToStep(1);
-            }
-        }).getSettings();
+            })
+            .withFailureHandler(showError)
+            .getSettings();
     }
 
     initializeWizard();
