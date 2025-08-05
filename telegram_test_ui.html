@@ -177,9 +177,15 @@
     }
     .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .status-box { padding: 16px; border-radius: 8px; margin-top: 16px; }
-    .status-box.success { background-color: #c6f6d5; color: var(--success-color); }
-    .status-box.error { background-color: #fed7d7; color: var(--error-color); }
+    .status-box {
+      padding: 16px; 
+      border-radius: 8px; 
+      margin-top: 16px; 
+      border: 1px solid transparent;
+    }
+    .status-box.success { background-color: #c6f6d5; color: #2f855a; border-color: #9ae6b4;}
+    .status-box.error { background-color: #fed7d7; color: #9b2c2c; border-color: #fbb6b6;}
+    .status-box.info { background-color: #e2e8f0; color: #4a5568; border-color: #cbd5e0;}
 
     /* Settings Tabs */
     .settings-container {
@@ -189,6 +195,7 @@
         width: 200px;
         border-right: 1px solid var(--border-color);
         padding-right: 20px;
+        flex-shrink: 0;
     }
     .settings-menu-item {
         padding: 10px 15px;
@@ -378,25 +385,25 @@
                 <div class="settings-content">
                     <!-- Telegram & Webhook Settings -->
                     <div id="telegram-settings-tab" class="settings-tab-content active">
-                        <h3>Telegram и Webhook</h3>
+                        <h3>Основные настройки</h3>
                         <div class="form-group">
                             <label for="bot-token">Токен Telegram Бота</label>
                             <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
-                            <p class="description">Получите токен у <code>@BotFather</code> в Telegram.</p>
                         </div>
                         <div class="form-group">
                             <label for="deployment-id">ID Развертывания</label>
                             <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
-                            <p class="description">Разверните скрипт как веб-приложение и вставьте сюда ID.</p>
                         </div>
                         <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
-                        <hr style="margin: 25px 0; border-color: var(--border-color); border-style: dashed;">
-                        <h4>Управление Webhook</h4>
-                        <p class="description">Для работы Webhook необходимо развернуть скрипт как веб-приложение, а затем сохранить здесь токен и ID развертывания.</p>
+                        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+                        <h3>Управление Webhook</h3>
+                        <div class="status-box info">
+                          <b>Важно:</b> Для работы Webhook ваш скрипт должен быть развернут как веб-приложение. Нажмите "Развертывание" -> "Новое развертывание" в редакторе Apps Script, выберите тип "Веб-приложение" и скопируйте ID развертывания в поле выше.
+                        </div>
                         <div id="webhook-status"></div>
-                        <div class="button-group">
-                            <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить статус</button>
-                            <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить / Обновить</button>
+                        <div class="button-group" style="margin-top: 16px; display: flex; gap: 10px;">
+                            <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить</button>
+                            <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить</button>
                             <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
                         </div>
                     </div>
@@ -428,7 +435,7 @@
         <div id="result-wrapper">
             <label>Результат выполнения</label>
             <div id="result-container">
-                <div class="result-placeholder">Ожидание результатов...</div>
+                <div class="result-placeholder">Выберите действие для просмотра результата...</div>
             </div>
         </div>
 
@@ -449,26 +456,25 @@
       document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
       document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`).classList.add('active');
       
-      // Toggle result view
       const resultWrapper = document.getElementById('result-wrapper');
       resultWrapper.style.display = TABS_WITH_RESULT_VIEW.includes(tabName) ? 'block' : 'none';
 
-      // Specific actions for tabs
       if (tabName === 'settings') {
-        showSettingsSubTab('telegram'); // Show first settings tab by default
-        loadSheetsStatus(); // Pre-load sheet data
-        runTest('getWebhookInfo', {}, true); // Pre-load webhook info without showing status
+        showSettingsSubTab('telegram');
+        loadSheetsStatus();
+        runTest('getWebhookInfo', {}, true);
       }
     }
 
     function showSettingsSubTab(subTabName) {
-        // Settings tabs
         document.querySelectorAll('.settings-tab-content').forEach(tab => tab.classList.remove('active'));
         document.getElementById(subTabName + '-settings-tab').classList.add('active');
 
-        // Settings menu
         document.querySelectorAll('.settings-menu-item').forEach(item => item.classList.remove('active'));
         document.querySelector(`.settings-menu-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
+        
+        const resultWrapper = document.getElementById('result-wrapper');
+        resultWrapper.style.display = (subTabName === 'telegram') ? 'block' : 'none';
     }
 
     function showStatus(message, isError = false) {
@@ -485,8 +491,11 @@
       const button = document.getElementById(buttonId);
       if (button) {
         button.disabled = true;
-        button.innerHTML = '<div class="spinner"></div>' + button.innerText;
+        const originalText = button.innerText;
+        button.innerHTML = `<div class="spinner"></div> ${originalText}`;
+        return originalText;
       }
+      return '';
     }
 
     function hideLoader(buttonId, originalText) {
@@ -500,12 +509,12 @@
     function updateWebhookStatus(info) {
         const statusDiv = document.getElementById('webhook-status');
         let statusText = '';
-        if (info && !info.error && info.url) {
-            statusText = `<div class="status-box success">Webhook установлен. URL: ${info.url} | Ожидает: ${info.pending_update_count}</div>`;
+        if (info && info.result && info.result.url) {
+            statusText = `<div class="status-box success"><b>Статус:</b> Установлен<br><b>URL:</b> ${info.result.url}</div>`;
         } else if (info && info.error) {
-            statusText = `<div class="status-box error">Ошибка: ${info.message}</div>`;
+            statusText = `<div class="status-box error"><b>Статус:</b> Ошибка<br>${info.message}</div>`;
         } else {
-            statusText = '<div class="status-box">Webhook не установлен.</div>';
+            statusText = '<div class="status-box info"><b>Статус:</b> Webhook не установлен.</div>';
         }
         statusDiv.innerHTML = statusText;
     }
@@ -530,7 +539,7 @@
         google.script.run
             .withSuccessHandler(result => {
                 showStatus(result, false);
-                loadSheetsStatus(); // Reload list
+                loadSheetsStatus();
             })
             .withFailureHandler(err => {
                 showStatus(`Ошибка: ${err.message}`, true);
@@ -540,7 +549,7 @@
 
     function loadSheetsStatus() {
         const list = document.getElementById('sheet-list');
-        list.innerHTML = '<li><div class="spinner"></div> <i>Загрузка статуса листов...</i></li>';
+        list.innerHTML = '<li><div class="spinner"></div> <i>Загрузка...</i></li>';
         google.script.run
             .withSuccessHandler(sheets => {
                 list.innerHTML = '';
@@ -591,12 +600,40 @@
           deleteWebhook: 'deleteWebhookBtn'
       };
       const buttonId = buttonMap[testName];
-      const button = document.getElementById(buttonId);
-      let originalButtonText = button ? button.innerText : '';
-      if(button) showLoader(buttonId);
+      let originalButtonText = '';
+      if(buttonId) originalButtonText = showLoader(buttonId);
 
       try {
-        // ... (rest of the switch statement)
+        // Populate options for tests that need them
+        switch(testName) {
+          case 'sendMessage':
+            options.chat_id = document.getElementById('msg-chat-id').value;
+            options.text = document.getElementById('msg-text').value;
+            options.parse_mode = document.getElementById('msg-parse-mode').value;
+            if (!options.chat_id || !options.text) throw new Error('Chat ID и текст сообщения обязательны.');
+            break;
+          case 'sendMedia':
+            options.chat_id = document.getElementById('media-chat-id').value;
+            options.mediaType = document.getElementById('media-type').value;
+            options.url = document.getElementById('media-url').value;
+            options.caption = document.getElementById('media-caption').value;
+            if (!options.chat_id || !options.url) throw new Error('Chat ID и URL медиа обязательны.');
+            break;
+          case 'sendKeyboard':
+            options.chat_id = document.getElementById('kbd-chat-id').value;
+            options.text = document.getElementById('kbd-text').value;
+            options.type = document.getElementById('kbd-type').value;
+            options.buttonsText = document.getElementById('kbd-buttons').value;
+            if (!options.chat_id || !options.text || !options.buttonsText) throw new Error('Все поля для клавиатуры обязательны.');
+            break;
+          case 'sendPoll':
+            options.chat_id = document.getElementById('poll-chat-id').value;
+            options.question = document.getElementById('poll-question').value;
+            options.optionsText = document.getElementById('poll-options').value;
+            if (!options.chat_id || !options.question || !options.optionsText) throw new Error('Все поля для опроса обязательны.');
+            break;
+        }
+
         google.script.run
           .withSuccessHandler(response => {
             if (testName.includes('Webhook')) {
@@ -606,7 +643,7 @@
                 resultContainer.textContent = JSON.stringify(response, null, 2);
                 showStatus('Тест "' + testName + '" выполнен успешно!');
             }
-            if(button) hideLoader(buttonId, originalButtonText);
+            if(buttonId) hideLoader(buttonId, originalButtonText);
           })
           .withFailureHandler(error => {
             if (testName.includes('Webhook')) {
@@ -616,7 +653,7 @@
                 resultContainer.textContent = 'Ошибка: ' + error.message;
                 showStatus('Ошибка выполнения теста "' + testName + '": ' + error.message, true);
             }
-            if(button) hideLoader(buttonId, originalButtonText);
+            if(buttonId) hideLoader(buttonId, originalButtonText);
           })
           .runTest(testName, options);
 
@@ -625,7 +662,7 @@
             resultContainer.textContent = 'Ошибка: ' + e.message;
             showStatus(e.message, true);
           }
-          if(button) hideLoader(buttonId, originalButtonText);
+          if(buttonId) hideLoader(buttonId, originalButtonText);
       }
     }
     
@@ -635,7 +672,7 @@
                 SETTINGS = settings || {};
                 document.getElementById('bot-token').value = SETTINGS.BOT_TOKEN || '';
                 document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
-                showTab('basic'); // Show first tab by default
+                showTab('basic');
             })
             .withFailureHandler(err => {
                 showStatus('Не удалось загрузить первоначальные настройки: ' + err.message, true);
