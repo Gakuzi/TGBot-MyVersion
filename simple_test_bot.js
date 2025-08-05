@@ -3,9 +3,6 @@
  * Упрощенная версия для быстрого тестирования
  */
 
-// Получение активной таблицы
-const ss = SpreadsheetApp.getActiveSpreadsheet();
-
 /**
  * Основная функция webhook
  */

@@ -1,4 +1,5 @@
 var Bot = null;
+const ss = SpreadsheetApp.getActiveSpreadsheet();
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
