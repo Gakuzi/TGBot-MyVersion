@@ -88,8 +88,6 @@ function initBot() {
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
   const webAppUrl = ScriptApp.getService().getUrl(); // Получаем URL развернутого веб-приложения
 
-  console.log(`initBot: Token - ${token ? 'Присутствует' : 'Отсутствует'}, WebAppUrl - ${webAppUrl}`);
-
   if (!token) {
     throw new Error('Токен бота не найден. Запустите Мастер Настройки и сохраните токен.');
   }
@@ -108,42 +106,55 @@ function initBot() {
   }
 }
 
-// --- Функции для работы с Webhook ---
-
-/**
- * Устанавливает Webhook, используя сохраненный ID развертывания.
- */
-function setWebhook() {
+function runTest(testName, options) {
   initBot();
   if (!Bot) {
-    throw new Error('Объект бота не инициализирован. Невозможно установить Webhook.');
+    throw new Error('Бот не инициализирован.');
   }
-  const url = ScriptApp.getService().getUrl(); // Используем текущий URL развертывания
-  return Bot.setWebhook({ url: url });
-}
 
-/**
- * Получает информацию о Webhook.
- */
-function getWebhookInfo() {
   try {
-    initBot();
-    if (!Bot) {
-      throw new Error('Объект бота не инициализирован. Невозможно получить информацию о Webhook.');
+    switch (testName) {
+      case 'getMe':
+        return Bot.getMe();
+      case 'getInfo':
+        return Bot.info();
+      case 'sendMessage':
+        return Bot.sendMessage(options);
+      case 'sendMedia':
+        const mediaOptions = {
+            chat_id: options.chat_id,
+            caption: options.caption
+        };
+        mediaOptions[options.mediaType] = options.url;
+        return Bot[`send${options.mediaType.charAt(0).toUpperCase() + options.mediaType.slice(1)}`](mediaOptions);
+      case 'sendKeyboard':
+        const Keyboard = TGbot.keyboard();
+        const Key = TGbot.key();
+        const buttonRows = options.buttonsText.split('\n').filter(row => row.trim());
+        const keyboardButtons = buttonRows.map(row => {
+            const parts = row.split('|');
+            return [Key.callback(parts[0].trim(), parts[1].trim())];
+        });
+        const keyboard = Keyboard.make(keyboardButtons).inline();
+        return Bot.sendMessage({ chat_id: options.chat_id, text: options.text, reply_markup: keyboard });
+      case 'sendPoll':
+        const pollOptions = {
+            chat_id: options.chat_id,
+            question: options.question,
+            options: options.optionsText.split('\n').filter(opt => opt.trim())
+        };
+        return Bot.sendPoll(pollOptions);
+      case 'setWebhook':
+        const url = ScriptApp.getService().getUrl();
+        return Bot.setWebhook({ url: url });
+      case 'getWebhookInfo':
+        return Bot.getWebhookInfo();
+      case 'deleteWebhook':
+        return Bot.deleteWebhook();
+      default:
+        throw new Error('Неизвестный тест: ' + testName);
     }
-    return Bot.getWebhookInfo();
   } catch (e) {
-    return { error: true, message: e.message };
+    return { error: true, message: e.message, stack: e.stack };
   }
-}
-
-/**
- * Удаляет Webhook.
- */
-function deleteWebhook() {
-  initBot();
-  if (!Bot) {
-    throw new Error('Объект бота не инициализирован. Невозможно удалить Webhook.');
-  }
-  return Bot.deleteWebhook();
 }
