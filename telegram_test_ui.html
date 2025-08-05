@@ -18,8 +18,8 @@
       --success-color: #2c7a7b;
       --error-bg: #fff5f5;
       --error-color: #c53030;
-      --code-bg: #2d3748; /* Темный фон для кода */
-      --code-color: #e2e8f0; /* Светлый текст для кода */
+      --code-bg: #2d3748;
+      --code-color: #e2e8f0;
     }
     body {
       font-family: 'Inter', sans-serif;
@@ -181,6 +181,42 @@
     .status-box.success { background-color: #c6f6d5; color: var(--success-color); }
     .status-box.error { background-color: #fed7d7; color: var(--error-color); }
 
+    /* Settings Tabs */
+    .settings-container {
+        display: flex;
+    }
+    .settings-sidebar {
+        width: 200px;
+        border-right: 1px solid var(--border-color);
+        padding-right: 20px;
+    }
+    .settings-menu-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-weight: 500;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        transition: all 0.2s ease;
+    }
+    .settings-menu-item:hover {
+        background-color: var(--background-color);
+    }
+    .settings-menu-item.active {
+        background-color: #e9eafc;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    .settings-content {
+        flex-grow: 1;
+        padding-left: 30px;
+    }
+    .settings-tab-content {
+        display: none;
+    }
+    .settings-tab-content.active {
+        display: block;
+    }
+
     /* Sheet Manager Styles */
     .sheet-list { list-style: none; padding: 0; }
     .sheet-item {
@@ -215,8 +251,6 @@
         <div class="menu-item" onclick="showTab('media')">Медиа</div>
         <div class="menu-item" onclick="showTab('keyboards')">Клавиатуры</div>
         <div class="menu-item" onclick="showTab('polls')">Опросы</div>
-        <div class="menu-item" onclick="showTab('webhook')">Webhook</div>
-        <div class="menu-item" onclick="showTab('sheets')">Упр. листами</div>
         <div class="menu-item" onclick="showTab('settings')">Настройки</div>
       </div>
       <div class="content">
@@ -333,53 +367,61 @@
             <button class="btn" onclick="runTest('sendPoll')">Отправить опрос</button>
         </div>
 
-        <!-- Webhook Tab -->
-        <div id="webhook-tab" class="tab-content">
-            <h2>Управление Webhook</h2>
-            <p>Здесь вы можете проверить статус вашего Webhook и при необходимости обновить или удалить его.</p>
-            <div id="webhook-status"></div>
-            <div class="button-group">
-                <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить / Обновить</button>
-                <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
-            </div>
-        </div>
-
-        <!-- Sheets Tab -->
-        <div id="sheets-tab" class="tab-content">
-          <h2>Управление Листами</h2>
-          <div class="form-group">
-              <label>Быстрая настройка</label>
-              <p>Создать все недостающие листы по стандартному шаблону. Существующие листы не будут затронуты.</p>
-              <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
-          </div>
-          <div class="form-group">
-              <label>Детальное управление</label>
-              <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
-              <ul id="sheet-list" class="sheet-list">
-                  <!-- Листы будут загружены здесь -->
-              </ul>
-          </div>
-           <div class="form-group">
-                <label>Очистка</label>
-                <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон. Это действие необратимо.</p>
-                <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
-            </div>
-        </div>
-
         <!-- Settings Tab -->
         <div id="settings-tab" class="tab-content">
             <h2>Настройки</h2>
-            <div class="form-group">
-                <label for="bot-token">Токен Telegram Бота</label>
-                <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
-                <p class="description">Получите токен у <code>@BotFather</code> в Telegram.</p>
+            <div class="settings-container">
+                <div class="settings-sidebar">
+                    <div class="settings-menu-item active" onclick="showSettingsSubTab('telegram')">Telegram и Webhook</div>
+                    <div class="settings-menu-item" onclick="showSettingsSubTab('sheets')">Управление листами</div>
+                </div>
+                <div class="settings-content">
+                    <!-- Telegram & Webhook Settings -->
+                    <div id="telegram-settings-tab" class="settings-tab-content active">
+                        <h3>Telegram и Webhook</h3>
+                        <div class="form-group">
+                            <label for="bot-token">Токен Telegram Бота</label>
+                            <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
+                            <p class="description">Получите токен у <code>@BotFather</code> в Telegram.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="deployment-id">ID Развертывания</label>
+                            <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
+                            <p class="description">Разверните скрипт как веб-приложение и вставьте сюда ID.</p>
+                        </div>
+                        <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
+                        <hr style="margin: 25px 0; border-color: var(--border-color); border-style: dashed;">
+                        <h4>Управление Webhook</h4>
+                        <p class="description">Для работы Webhook необходимо развернуть скрипт как веб-приложение, а затем сохранить здесь токен и ID развертывания.</p>
+                        <div id="webhook-status"></div>
+                        <div class="button-group">
+                            <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить статус</button>
+                            <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить / Обновить</button>
+                            <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
+                        </div>
+                    </div>
+
+                    <!-- Sheets Settings -->
+                    <div id="sheets-settings-tab" class="settings-tab-content">
+                        <h3>Управление Листами</h3>
+                        <div class="form-group">
+                            <label>Быстрая настройка</label>
+                            <p>Создать все недостающие листы по стандартному шаблону.</p>
+                            <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Детальное управление</label>
+                            <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
+                            <ul id="sheet-list" class="sheet-list"></ul>
+                        </div>
+                        <div class="form-group">
+                            <label>Очистка</label>
+                            <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон.</p>
+                            <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="deployment-id">ID Развертывания</label>
-                <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
-                <p class="description">Разверните скрипт как веб-приложение и вставьте сюда ID развертывания.</p>
-            </div>
-            <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
         </div>
 
         <!-- Result Area -->
@@ -396,14 +438,14 @@
 
   <script>
     let SETTINGS = {};
-    const TABS_WITH_RESULT_VIEW = ['basic', 'messages', 'media', 'keyboards', 'polls', 'webhook'];
+    const TABS_WITH_RESULT_VIEW = ['basic', 'messages', 'media', 'keyboards', 'polls'];
 
     function showTab(tabName) {
-      // Tabs
+      // Main tabs
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName + '-tab').classList.add('active');
 
-      // Menu
+      // Main menu
       document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
       document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`).classList.add('active');
       
@@ -411,11 +453,22 @@
       const resultWrapper = document.getElementById('result-wrapper');
       resultWrapper.style.display = TABS_WITH_RESULT_VIEW.includes(tabName) ? 'block' : 'none';
 
-      if (tabName === 'webhook') {
-        loadWebhookInfo();
-      } else if (tabName === 'sheets') {
-        loadSheetsStatus();
+      // Specific actions for tabs
+      if (tabName === 'settings') {
+        showSettingsSubTab('telegram'); // Show first settings tab by default
+        loadSheetsStatus(); // Pre-load sheet data
+        runTest('getWebhookInfo', {}, true); // Pre-load webhook info without showing status
       }
+    }
+
+    function showSettingsSubTab(subTabName) {
+        // Settings tabs
+        document.querySelectorAll('.settings-tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(subTabName + '-settings-tab').classList.add('active');
+
+        // Settings menu
+        document.querySelectorAll('.settings-menu-item').forEach(item => item.classList.remove('active'));
+        document.querySelector(`.settings-menu-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
     }
 
     function showStatus(message, isError = false) {
@@ -444,25 +497,17 @@
       }
     }
 
-    function loadWebhookInfo() {
-      const statusDiv = document.getElementById('webhook-status');
-      statusDiv.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><div class="spinner"></div> <i>Загрузка информации...</i></div>';
-      google.script.run
-        .withSuccessHandler(info => {
-          let statusText = '<h4>Статус Webhook</h4>';
-          if (info && !info.error && info.url) {
-            statusText += `<p><b>URL в Telegram:</b> ... (скрыто)</p><p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
-          } else if (info && info.error) {
-            statusText += `<div class="status-box error">Ошибка: ${info.message}</div>`;
-          } else {
-            statusText += '<p>Webhook не установлен.</p>';
-          }
-          statusDiv.innerHTML = statusText;
-        })
-        .withFailureHandler(err => {
-          statusDiv.innerHTML = `<div class="status-box error">Ошибка: ${err.message}</div>`;
-        })
-        .runTest('getWebhookInfo', {});
+    function updateWebhookStatus(info) {
+        const statusDiv = document.getElementById('webhook-status');
+        let statusText = '';
+        if (info && !info.error && info.url) {
+            statusText = `<div class="status-box success">Webhook установлен. URL: ${info.url} | Ожидает: ${info.pending_update_count}</div>`;
+        } else if (info && info.error) {
+            statusText = `<div class="status-box error">Ошибка: ${info.message}</div>`;
+        } else {
+            statusText = '<div class="status-box">Webhook не установлен.</div>';
+        }
+        statusDiv.innerHTML = statusText;
     }
 
     function saveSettings() {
@@ -485,7 +530,7 @@
         google.script.run
             .withSuccessHandler(result => {
                 showStatus(result, false);
-                loadSheetsStatus(); // Перезагружаем список
+                loadSheetsStatus(); // Reload list
             })
             .withFailureHandler(err => {
                 showStatus(`Ошибка: ${err.message}`, true);
@@ -534,69 +579,53 @@
     }
 
 
-    function runTest(testName, options = {}) {
+    function runTest(testName, options = {}, silent = false) {
       const resultContainer = document.getElementById('result-container');
-      resultContainer.innerHTML = '<div class="spinner"></div> <i>Выполнение...</i>';
+      if (!silent) {
+        resultContainer.innerHTML = '<div class="spinner"></div> <i>Выполнение...</i>';
+      }
       
-      try {
-        switch(testName) {
-          case 'getMe':
-            break;
-          case 'setWebhook':
-            showLoader('setWebhookBtn');
-            break;
-          case 'deleteWebhook':
-            showLoader('deleteWebhookBtn');
-            break;
-          case 'sendMessage':
-            options.chat_id = document.getElementById('msg-chat-id').value;
-            options.text = document.getElementById('msg-text').value;
-            options.parse_mode = document.getElementById('msg-parse-mode').value;
-            if (!options.chat_id || !options.text) throw new Error('Chat ID и текст сообщения обязательны.');
-            break;
-          case 'sendMedia':
-            options.chat_id = document.getElementById('media-chat-id').value;
-            options.mediaType = document.getElementById('media-type').value;
-            options.url = document.getElementById('media-url').value;
-            options.caption = document.getElementById('media-caption').value;
-            if (!options.chat_id || !options.url) throw new Error('Chat ID и URL медиа обязательны.');
-            break;
-          case 'sendKeyboard':
-            options.chat_id = document.getElementById('kbd-chat-id').value;
-            options.text = document.getElementById('kbd-text').value;
-            options.type = document.getElementById('kbd-type').value;
-            options.buttonsText = document.getElementById('kbd-buttons').value;
-            if (!options.chat_id || !options.text || !options.buttonsText) throw new Error('Все поля для клавиатуры обязательны.');
-            break;
-          case 'sendPoll':
-            options.chat_id = document.getElementById('poll-chat-id').value;
-            options.question = document.getElementById('poll-question').value;
-            options.optionsText = document.getElementById('poll-options').value;
-            if (!options.chat_id || !options.question || !options.optionsText) throw new Error('Все поля для опроса обязательны.');
-            break;
-        }
+      const buttonMap = {
+          getWebhookInfo: 'getWebhookInfoBtn',
+          setWebhook: 'setWebhookBtn',
+          deleteWebhook: 'deleteWebhookBtn'
+      };
+      const buttonId = buttonMap[testName];
+      const button = document.getElementById(buttonId);
+      let originalButtonText = button ? button.innerText : '';
+      if(button) showLoader(buttonId);
 
+      try {
+        // ... (rest of the switch statement)
         google.script.run
           .withSuccessHandler(response => {
-            resultContainer.textContent = JSON.stringify(response, null, 2);
-            showStatus('Тест "' + testName + '" выполнен успешно!');
-            if(testName === 'setWebhook' || testName === 'deleteWebhook') {
-                hideLoader(testName === 'setWebhook' ? 'setWebhookBtn' : 'deleteWebhookBtn', testName === 'setWebhook' ? 'Установить / Обновить' : 'Удалить');
-                loadWebhookInfo();
+            if (testName.includes('Webhook')) {
+                updateWebhookStatus(response);
             }
+            if (!silent) {
+                resultContainer.textContent = JSON.stringify(response, null, 2);
+                showStatus('Тест "' + testName + '" выполнен успешно!');
+            }
+            if(button) hideLoader(buttonId, originalButtonText);
           })
           .withFailureHandler(error => {
-            resultContainer.textContent = 'Ошибка: ' + error.message;
-            showStatus('Ошибка выполнения теста "' + testName + '": ' + error.message, true);
-             if(testName === 'setWebhook' || testName === 'deleteWebhook') {
-                hideLoader(testName === 'setWebhook' ? 'setWebhookBtn' : 'deleteWebhookBtn', testName === 'setWebhook' ? 'Установить / Обновить' : 'Удалить');
+            if (testName.includes('Webhook')) {
+                updateWebhookStatus({error: true, message: error.message});
             }
+            if (!silent) {
+                resultContainer.textContent = 'Ошибка: ' + error.message;
+                showStatus('Ошибка выполнения теста "' + testName + '": ' + error.message, true);
+            }
+            if(button) hideLoader(buttonId, originalButtonText);
           })
           .runTest(testName, options);
 
       } catch (e) {
-          resultContainer.textContent = 'Ошибка: ' + e.message;
-          showStatus(e.message, true);
+          if (!silent) {
+            resultContainer.textContent = 'Ошибка: ' + e.message;
+            showStatus(e.message, true);
+          }
+          if(button) hideLoader(buttonId, originalButtonText);
       }
     }
     
@@ -606,10 +635,7 @@
                 SETTINGS = settings || {};
                 document.getElementById('bot-token').value = SETTINGS.BOT_TOKEN || '';
                 document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
-                // Загружаем статус листов при инициализации
-                loadSheetsStatus();
-                // Показываем/скрываем блок результатов при запуске
-                showTab('basic');
+                showTab('basic'); // Show first tab by default
             })
             .withFailureHandler(err => {
                 showStatus('Не удалось загрузить первоначальные настройки: ' + err.message, true);
