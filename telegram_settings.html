@@ -6,18 +6,24 @@
     body { font-family: Arial, sans-serif; padding: 20px; }
     input, button { font-size: 16px; margin: 8px 0; width: 100%; }
     label { font-weight: bold; }
+    .description { font-size: 12px; color: #666; }
   </style>
 </head>
 <body>
   <label>Токен бота:</label>
   <input type="text" id="token" value="">
+  <p class="description">Получите токен у @BotFather в Telegram.</p>
   <label>WebApp URL:</label>
   <input type="text" id="webapp" value="">
+  <p class="description">URL вашего веб-приложения Google Apps Script.</p>
   <button onclick="save()">Сохранить</button>
   <script>
     function save() {
       google.script.run
-        .withSuccessHandler(() => google.script.host.close())
+        .withSuccessHandler(() => {
+          google.script.host.close();
+          SpreadsheetApp.getUi().alert('Настройки сохранены!');
+        })
         .saveTelegramSettings(
           document.getElementById('token').value,
           document.getElementById('webapp').value
