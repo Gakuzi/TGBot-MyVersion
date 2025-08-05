@@ -6,285 +6,477 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-color: #667eea;
-      --primary-hover: #5a67d8;
-      --background-color: #f7f8fa;
-      --container-bg: #ffffff;
-      --text-color: #2d3748;
-      --subtle-text: #718096;
-      --border-color: #e2e8f0;
-      --input-bg: #f8f9fb;
-      --success-bg: #e6fffa;
-      --success-color: #2c7a7b;
-      --error-bg: #fff5f5;
-      --error-color: #c53030;
-      --code-bg: #2d3748;
-      --code-color: #e2e8f0;
+      --primary-color: #4F46E5;
+      --primary-hover: #4338CA;
+      --background-color: #F3F4F6;
+      --container-bg: #FFFFFF;
+      --text-color: #1F2937;
+      --subtle-text: #6B7280;
+      --border-color: #D1D5DB;
+      --input-bg: #F9FAFB;
+      --success-bg: #D1FAE5;
+      --success-color: #065F46;
+      --error-bg: #FEE2E2;
+      --error-color: #991B1B;
+      --code-bg: #1F2937;
+      --code-color: #F3F4F6;
     }
+    
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--background-color);
       margin: 0;
-      padding: 20px;
+      padding: 0;
       color: var(--text-color);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
+
+    /* Header with horizontal tabs */
+    .header {
+      background-color: var(--container-bg);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .tab-bar {
+      display: flex;
+      background-color: var(--container-bg);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-item {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--subtle-text);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+      position: relative;
+    }
+    
+    .tab-item:hover {
+      color: var(--primary-color);
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+    
+    .tab-item.active {
+      color: var(--primary-color);
+      font-weight: 600;
+      border-bottom-color: var(--primary-color);
+    }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       background-color: var(--container-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      overflow: hidden;
+      min-height: calc(100vh - 60px);
     }
-    .header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 20px 30px;
-      font-size: 1.2em;
-      font-weight: 600;
-    }
-    .main {
-      display: flex;
-    }
-    .sidebar {
-      width: 220px;
-      background-color: var(--container-bg);
-      border-right: 1px solid var(--border-color);
-      padding: 20px 0;
-    }
-    .menu-item {
-      padding: 12px 30px;
-      cursor: pointer;
-      font-weight: 500;
-      border-left: 3px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .menu-item:hover {
-      background-color: var(--background-color);
-    }
-    .menu-item.active {
-      background-color: #e9eafc;
-      border-left-color: var(--primary-color);
-      font-weight: 600;
-      color: var(--primary-color);
-    }
+
     .content {
-      flex-grow: 1;
-      padding: 30px;
+      padding: 2rem;
     }
+    
     .tab-content {
       display: none;
     }
+    
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease-in-out;
     }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      gap: 1.5rem;
     }
+    
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 1.5rem;
     }
+    
     label {
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
       display: block;
-      font-size: 14px;
+      font-size: 0.875rem;
+      color: var(--text-color);
     }
+    
     input[type="text"], input[type="number"], textarea, select {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
       border: 1px solid var(--border-color);
-      font-size: 14px;
+      font-size: 0.875rem;
       background-color: var(--input-bg);
       transition: border-color 0.2s, box-shadow 0.2s;
       box-sizing: border-box;
     }
+    
     input[type="text"]:focus, textarea:focus, select:focus {
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
       outline: none;
     }
+    
     textarea {
-      min-height: 80px;
+      min-height: 100px;
       resize: vertical;
     }
+    
     .btn {
       background: var(--primary-color);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 0.875rem;
       cursor: pointer;
       transition: background-color 0.2s, box-shadow 0.2s;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.5rem;
     }
+    
     .btn:hover {
       background: var(--primary-hover);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
+    
+    .btn:disabled { 
+      background-color: #9CA3AF; 
+      cursor: not-allowed; 
+    }
+    
     .btn-secondary {
-        background: var(--border-color);
-        color: var(--text-color);
+      background: #E5E7EB;
+      color: var(--text-color);
     }
+    
     .btn-secondary:hover {
-        background: #d8dde4;
+      background: #D1D5DB;
     }
-    #result-wrapper {
-      margin-top: 24px;
+
+    /* Notification system */
+    .notification-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
     }
-    #result-container {
-      padding: 20px;
-      border-radius: 8px;
+    
+    .notification {
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      animation: slideIn 0.3s ease-out;
+      opacity: 0.95;
+      border-left: 4px solid;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .notification.success {
+      background-color: var(--success-bg);
+      color: var(--success-color);
+      border-left-color: var(--success-color);
+    }
+    
+    .notification.error {
+      background-color: var(--error-bg);
+      color: var(--error-color);
+      border-left-color: var(--error-color);
+    }
+    
+    .notification.info {
+      background-color: #E5E7EB;
+      color: #4B5563;
+      border-left-color: #4B5563;
+    }
+
+    /* Loading indicators */
+    .spinner { 
+      border: 2px solid #e5e7eb; 
+      border-top: 2px solid var(--primary-color); 
+      border-radius: 50%; 
+      width: 1rem; 
+      height: 1rem; 
+      animation: spin 1s linear infinite; 
+    }
+    
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+
+    /* Result area */
+    .result-area {
+      margin-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+    }
+    
+    .result-container {
+      padding: 1.5rem;
+      border-radius: 0.5rem;
       background-color: var(--code-bg);
       color: var(--code-color);
-      border: 1px solid var(--border-color);
+      border: 1px solid #374151;
       min-height: 150px;
       white-space: pre-wrap;
       word-wrap: break-word;
       font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
-      font-size: 14px;
+      font-size: 0.875rem;
       line-height: 1.6;
     }
+    
     .result-placeholder {
-        color: var(--subtle-text);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        min-height: 150px;
+      color: var(--subtle-text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      min-height: 150px;
+      font-style: italic;
     }
-    .status {
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-weight: 500;
-    }
-    .status.success {
-        background-color: var(--success-bg);
-        color: var(--success-color);
-    }
-    .status.error {
-        background-color: var(--error-bg);
-        color: var(--error-color);
-    }
-    .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Status boxes */
     .status-box {
-      padding: 16px; 
-      border-radius: 8px; 
-      margin-top: 16px; 
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
       border: 1px solid transparent;
+      font-size: 0.875rem;
     }
-    .status-box.success { background-color: #c6f6d5; color: #2f855a; border-color: #9ae6b4;}
-    .status-box.error { background-color: #fed7d7; color: #9b2c2c; border-color: #fbb6b6;}
-    .status-box.info { background-color: #e2e8f0; color: #4a5568; border-color: #cbd5e0;}
+    
+    .status-box.success { 
+      background-color: var(--success-bg); 
+      color: var(--success-color); 
+      border-color: #A7F3D0;
+    }
+    
+    .status-box.error { 
+      background-color: var(--error-bg); 
+      color: var(--error-color); 
+      border-color: #FECACA;
+    }
+    
+    .status-box.info { 
+      background-color: #E5E7EB; 
+      color: #4B5563; 
+      border-color: #D1D5DB;
+    }
 
-    /* Settings Tabs */
+    /* Settings tabs */
     .settings-tab-bar {
-        display: flex;
-        gap: 5px;
-        border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
     }
+    
     .settings-tab-item {
-        padding: 10px 15px;
-        cursor: pointer;
-        font-weight: 500;
-        border-radius: 8px 8px 0 0;
-        border: 1px solid transparent;
-        border-bottom: none;
-        background-color: var(--background-color);
-        color: var(--subtle-text);
-        position: relative;
-        top: 1px;
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      font-weight: 500;
+      border-radius: 0.5rem 0.5rem 0 0;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background-color: var(--background-color);
+      color: var(--subtle-text);
+      position: relative;
+      top: 1px;
     }
+    
     .settings-tab-item.active {
-        background-color: var(--container-bg);
-        border-color: var(--border-color);
-        color: var(--primary-color);
-        font-weight: 600;
+      background-color: var(--container-bg);
+      border-color: var(--border-color);
+      color: var(--primary-color);
+      font-weight: 600;
     }
-    .settings-content {
-        padding: 20px;
-        border: 1px solid var(--border-color);
-        border-top: none;
-        border-radius: 0 0 8px 8px;
-    }
+    
     .settings-tab-content {
-        display: none;
+      display: none;
     }
+    
     .settings-tab-content.active {
-        display: block;
+      display: block;
     }
 
-    /* Sheet Manager Styles */
-    .sheet-list { list-style: none; padding: 0; }
+    /* Sheet manager */
+    .sheet-list { 
+      list-style: none; 
+      padding: 0; 
+    }
+    
     .sheet-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
     }
-    .sheet-item:last-child { border-bottom: none; }
-    .sheet-name { font-weight: 500; }
+    
+    .sheet-item:last-child { 
+      border-bottom: none; 
+    }
+    
+    .sheet-name { 
+      font-weight: 500; 
+    }
+    
     .status-badge {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
       font-weight: 600;
-      margin-left: 8px;
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .status-badge.created { background-color: #c6f6d5; color: #2f855a; }
-    .status-badge.missing { background-color: #fed7d7; color: #9b2c2c; }
+    
+    .status-badge.created { 
+      background-color: var(--success-bg); 
+      color: var(--success-color); 
+    }
+    
+    .status-badge.missing { 
+      background-color: var(--error-bg); 
+      color: var(--error-color); 
+    }
+
+    /* Typography */
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 1.5rem 0;
+      color: var(--text-color);
+    }
+    
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 1rem 0;
+      color: var(--text-color);
+    }
+    
+    hr {
+      margin: 2rem 0;
+      border: 0;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .button-group {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* User selector improvements */
+    .user-selector {
+      position: relative;
+    }
+    
+    .user-selector select {
+      width: 100%;
+    }
+    
+    .user-info {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--subtle-text);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .content {
+        padding: 1rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tab-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      Telegram Bot Test Dashboard
+  <div class="header">
+    <div class="tab-bar">
+      <div class="tab-item active" onclick="showTab('basic')">Основные</div>
+      <div class="tab-item" onclick="showTab('messages')">Сообщения</div>
+      <div class="tab-item" onclick="showTab('media')">Медиа</div>
+      <div class="tab-item" onclick="showTab('keyboards')">Клавиатуры</div>
+      <div class="tab-item" onclick="showTab('polls')">Опросы</div>
+      <div class="tab-item" onclick="showTab('settings')">Настройки</div>
     </div>
-    <div class="main">
-      <div class="sidebar">
-        <div class="menu-item active" onclick="showTab('basic')">Основные</div>
-        <div class="menu-item" onclick="showTab('messages')">Сообщения</div>
-        <div class="menu-item" onclick="showTab('media')">Медиа</div>
-        <div class="menu-item" onclick="showTab('keyboards')">Клавиатуры</div>
-        <div class="menu-item" onclick="showTab('polls')">Опросы</div>
-        <div class="menu-item" onclick="showTab('settings')">Настройки</div>
-      </div>
-      <div class="content">
-        <div id="status-container"></div>
+  </div>
 
-        <!-- Basic Tab -->
-        <div id="basic-tab" class="tab-content active">
-          <h2>Основные тесты</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Проверить соединение</label>
-              <button class="btn" onclick="runTest('getMe')">getMe</button>
-            </div>
-            <div class="form-group">
-              <label>Получить Chat ID</label>
-              <input type="text" id="chat-id-input" placeholder="Введите ваш Chat ID">
-               <button class="btn btn-secondary" onclick="document.getElementById('chat-id-input').value = prompt('Введите ваш Chat ID:') || ''">Получить мой ID</button>
-            </div>
+  <div class="container">
+    <div class="content">
+      <div class="notification-container" id="notification-container"></div>
+
+      <!-- Basic Tab -->
+      <div id="basic-tab" class="tab-content active">
+        <h2>Основные тесты</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Проверить соединение</label>
+            <button class="btn" onclick="runTest('getMe')">getMe</button>
+          </div>
+          <div class="form-group user-selector">
+            <label for="user-select">Выберите пользователя</label>
+            <select id="user-select" onchange="updateChatIdInputs(this.value)">
+              <option value="">Загрузка пользователей...</option>
+            </select>
+            <div class="user-info" id="user-info"></div>
           </div>
         </div>
+      </div>
 
-        <!-- Messages Tab -->
-        <div id="messages-tab" class="tab-content">
-          <h2>Отправка сообщений</h2>
-          <div class="form-group">
-            <label for="msg-chat-id">Chat ID</label>
-            <input type="text" id="msg-chat-id" placeholder="Введите Chat ID">
+      <!-- Messages Tab -->
+      <div id="messages-tab" class="tab-content">
+        <h2>Отправка сообщений</h2>
+        <div class="form-grid">
+          <div class="form-group user-selector">
+            <label for="msg-chat-id">Пользователь</label>
+            <select id="msg-chat-id" onchange="updateUserInfo(this.value, 'msg-user-info')">
+              <option value="">Выберите пользователя...</option>
+            </select>
+            <div class="user-info" id="msg-user-info"></div>
           </div>
           <div class="form-group">
             <label for="msg-text">Текст сообщения</label>
@@ -298,151 +490,169 @@
               <option value="">None</option>
             </select>
           </div>
-          <button class="btn" onclick="runTest('sendMessage')">Отправить сообщение</button>
         </div>
+        <button class="btn" onclick="runTest('sendMessage')">Отправить сообщение</button>
+      </div>
 
-        <!-- Media Tab -->
-        <div id="media-tab" class="tab-content">
-            <h2>Отправка медиа</h2>
-            <div class="form-group">
-                <label for="media-chat-id">Chat ID</label>
-                <input type="text" id="media-chat-id" placeholder="Введите Chat ID">
-            </div>
-            <div class="form-group">
-                <label for="media-type">Тип медиа</label>
-                <select id="media-type">
-                    <option value="photo">Фото</option>
-                    <option value="document">Документ</option>
-                    <option value="video">Видео</option>
-                    <option value="audio">Аудио</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="media-url">URL медиа</label>
-                <input type="text" id="media-url" placeholder="https://example.com/image.jpg">
-            </div>
-            <div class="form-group">
-                <label for="media-caption">Подпись</label>
-                <textarea id="media-caption" placeholder="Введите подпись..."></textarea>
-            </div>
-            <button class="btn" onclick="runTest('sendMedia')">Отправить медиа</button>
+      <!-- Media Tab -->
+      <div id="media-tab" class="tab-content">
+        <h2>Отправка медиа</h2>
+        <div class="form-grid">
+          <div class="form-group user-selector">
+            <label for="media-chat-id">Пользователь</label>
+            <select id="media-chat-id" onchange="updateUserInfo(this.value, 'media-user-info')">
+              <option value="">Выберите пользователя...</option>
+            </select>
+            <div class="user-info" id="media-user-info"></div>
+          </div>
+          <div class="form-group">
+            <label for="media-type">Тип медиа</label>
+            <select id="media-type">
+              <option value="photo">Фото</option>
+              <option value="document">Документ</option>
+              <option value="video">Видео</option>
+              <option value="audio">Аудио</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="media-url">URL медиа</label>
+            <input type="text" id="media-url" placeholder="https://example.com/image.jpg">
+          </div>
+          <div class="form-group">
+            <label for="media-caption">Подпись</label>
+            <textarea id="media-caption" placeholder="Введите подпись..."></textarea>
+          </div>
         </div>
-        
-        <!-- Keyboards Tab -->
-        <div id="keyboards-tab" class="tab-content">
-             <h2>Отправка клавиатуры</h2>
-             <div class="form-group">
-                <label for="kbd-chat-id">Chat ID</label>
-                <input type="text" id="kbd-chat-id" placeholder="Введите Chat ID">
-            </div>
-            <div class="form-group">
-                <label for="kbd-text">Текст сообщения</label>
-                <input type="text" id="kbd-text" value="Тестовое сообщение с клавиатурой">
-            </div>
-            <div class="form-group">
-                <label for="kbd-type">Тип клавиатуры</label>
-                <select id="kbd-type">
-                    <option value="inline">Inline</option>
-                    <option value="reply">Reply</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="kbd-buttons">Кнопки (одна на строку: text|callback_data)</label>
-                <textarea id="kbd-buttons">Кнопка 1|callback1
+        <button class="btn" onclick="runTest('sendMedia')">Отправить медиа</button>
+      </div>
+      
+      <!-- Keyboards Tab -->
+      <div id="keyboards-tab" class="tab-content">
+        <h2>Отправка клавиатуры</h2>
+        <div class="form-grid">
+          <div class="form-group user-selector">
+            <label for="kbd-chat-id">Пользователь</label>
+            <select id="kbd-chat-id" onchange="updateUserInfo(this.value, 'kbd-user-info')">
+              <option value="">Выберите пользователя...</option>
+            </select>
+            <div class="user-info" id="kbd-user-info"></div>
+          </div>
+          <div class="form-group">
+            <label for="kbd-text">Текст сообщения</label>
+            <input type="text" id="kbd-text" value="Тестовое сообщение с клавиатурой">
+          </div>
+          <div class="form-group">
+            <label for="kbd-type">Тип клавиатуры</label>
+            <select id="kbd-type">
+              <option value="inline">Inline</option>
+              <option value="reply">Reply</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="kbd-buttons">Кнопки (одна на строку: text|callback_data)</label>
+            <textarea id="kbd-buttons">Кнопка 1|callback1
 Кнопка 2|callback2</textarea>
-            </div>
-            <button class="btn" onclick="runTest('sendKeyboard')">Отправить клавиатуру</button>
+          </div>
         </div>
+        <button class="btn" onclick="runTest('sendKeyboard')">Отправить клавиатуру</button>
+      </div>
 
-        <!-- Polls Tab -->
-        <div id="polls-tab" class="tab-content">
-            <h2>Отправка опроса</h2>
-            <div class="form-group">
-                <label for="poll-chat-id">Chat ID</label>
-                <input type="text" id="poll-chat-id" placeholder="Введите Chat ID">
-            </div>
-            <div class="form-group">
-                <label for="poll-question">Вопрос</label>
-                <input type="text" id="poll-question" value="Ваше мнение?">
-            </div>
-            <div class="form-group">
-                <label for="poll-options">Варианты ответа (один на строку)</label>
-                <textarea id="poll-options">Да
+      <!-- Polls Tab -->
+      <div id="polls-tab" class="tab-content">
+        <h2>Отправка опроса</h2>
+        <div class="form-grid">
+          <div class="form-group user-selector">
+            <label for="poll-chat-id">Пользователь</label>
+            <select id="poll-chat-id" onchange="updateUserInfo(this.value, 'poll-user-info')">
+              <option value="">Выберите пользователя...</option>
+            </select>
+            <div class="user-info" id="poll-user-info"></div>
+          </div>
+          <div class="form-group">
+            <label for="poll-question">Вопрос</label>
+            <input type="text" id="poll-question" value="Ваше мнение?">
+          </div>
+          <div class="form-group">
+            <label for="poll-options">Варианты ответа (один на строку)</label>
+            <textarea id="poll-options">Да
 Нет
 Возможно</textarea>
-            </div>
-            <button class="btn" onclick="runTest('sendPoll')">Отправить опрос</button>
+          </div>
         </div>
+        <button class="btn" onclick="runTest('sendPoll')">Отправить опрос</button>
+      </div>
 
-        <!-- Settings Tab -->
-        <div id="settings-tab" class="tab-content">
-            <h2>Настройки</h2>
-            <div class="settings-tab-bar">
-                <div class="settings-tab-item active" onclick="showSettingsSubTab('telegram')">Telegram и Webhook</div>
-                <div class="settings-tab-item" onclick="showSettingsSubTab('sheets')">Управление листами</div>
-            </div>
-            <div class="settings-content">
-                <!-- Telegram & Webhook Settings -->
-                <div id="telegram-settings-tab" class="settings-tab-content active">
-                    <h3>Основные настройки</h3>
-                    <div class="form-group">
-                        <label for="bot-token">Токен Telegram Бота</label>
-                        <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
-                    </div>
-                    <div class="form-group">
-                        <label for="deployment-id">ID Развертывания</label>
-                        <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
-                    </div>
-                    <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
-                    <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
-                    <h3>Управление Webhook</h3>
-                    <div class="status-box info">
-                      <b>Важно:</b> Для работы Webhook ваш скрипт должен быть развернут как веб-приложение. Нажмите "Развертывание" -> "Новое развертывание" в редакторе Apps Script, выберите тип "Веб-приложение" и скопируйте ID развертывания в поле выше.
-                    </div>
-                    <div id="webhook-status"></div>
-                    <div class="button-group" style="margin-top: 16px; display: flex; gap: 10px;">
-                        <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить</button>
-                        <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить</button>
-                        <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
-                    </div>
-                </div>
-
-                <!-- Sheets Settings -->
-                <div id="sheets-settings-tab" class="settings-tab-content">
-                    <h3>Управление Листами</h3>
-                    <div class="form-group">
-                        <label>Быстрая настройка</label>
-                        <p>Создать все недостающие листы по стандартному шаблону.</p>
-                        <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
-                    </div>
-                    <div class="form-group">
-                        <label>Детальное управление</label>
-                        <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
-                        <ul id="sheet-list" class="sheet-list"></ul>
-                    </div>
-                    <div class="form-group">
-                        <label>Очистка</label>
-                        <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон.</p>
-                        <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
-                    </div>
-                </div>
-            </div>
+      <!-- Settings Tab -->
+      <div id="settings-tab" class="tab-content">
+        <h2>Настройки</h2>
+        <div class="settings-tab-bar">
+          <div class="settings-tab-item active" onclick="showSettingsSubTab('telegram')">Telegram и Webhook</div>
+          <div class="settings-tab-item" onclick="showSettingsSubTab('sheets')">Управление листами</div>
         </div>
-
-        <!-- Result Area -->
-        <div id="result-wrapper">
-            <label>Результат выполнения</label>
-            <div id="result-container">
-                <div class="result-placeholder">Выберите действие для просмотра результата...</div>
+        <div class="settings-content">
+          <!-- Telegram & Webhook Settings -->
+          <div id="telegram-settings-tab" class="settings-tab-content active">
+            <h3>Основные настройки</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="bot-token">Токен Telegram Бота</label>
+                <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
+              </div>
+              <div class="form-group">
+                <label for="deployment-id">ID Развертывания</label>
+                <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
+              </div>
             </div>
-        </div>
+            <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
+            
+            <hr>
+            <h3>Управление Webhook</h3>
+            <div class="status-box info">
+              <b>Важно:</b> Для работы Webhook ваш скрипт должен быть развернут как веб-приложение. Нажмите "Развертывание" -> "Новое развертывание" в редакторе Apps Script, выберите тип "Веб-приложение" и скопируйте ID развертывания в поле выше.
+            </div>
+            <div id="webhook-status"></div>
+            <div class="button-group">
+              <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить</button>
+              <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить</button>
+              <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
+            </div>
+          </div>
 
+          <!-- Sheets Settings -->
+          <div id="sheets-settings-tab" class="settings-tab-content">
+            <h3>Управление Листами</h3>
+            <div class="form-group">
+              <label>Быстрая настройка</label>
+              <p>Создать все недостающие листы по стандартному шаблону.</p>
+              <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
+            </div>
+            <div class="form-group">
+              <label>Детальное управление</label>
+              <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
+              <ul id="sheet-list" class="sheet-list"></ul>
+            </div>
+            <div class="form-group">
+              <label>Очистка</label>
+              <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон.</p>
+              <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Area -->
+      <div class="result-area" id="result-area">
+        <label>Результат выполнения</label>
+        <div class="result-container" id="result-container">
+          <div class="result-placeholder">Выберите действие для просмотра результата...</div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
     let SETTINGS = {};
+    let USERS_LIST = [];
     const TABS_WITH_RESULT_VIEW = ['basic', 'messages', 'media', 'keyboards', 'polls'];
 
     function showTab(tabName) {
@@ -451,38 +661,54 @@
       document.getElementById(tabName + '-tab').classList.add('active');
 
       // Main menu
-      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-      document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`).classList.add('active');
+      document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+      document.querySelector(`.tab-item[onclick="showTab('${tabName}')"]`).classList.add('active');
       
-      const resultWrapper = document.getElementById('result-wrapper');
-      resultWrapper.style.display = TABS_WITH_RESULT_VIEW.includes(tabName) ? 'block' : 'none';
+      const resultArea = document.getElementById('result-area');
+      resultArea.style.display = TABS_WITH_RESULT_VIEW.includes(tabName) ? 'block' : 'none';
 
       if (tabName === 'settings') {
         showSettingsSubTab('telegram');
         loadSheetsStatus();
         runTest('getWebhookInfo', {}, true);
       }
+      
+      // Load users for tabs that need them
+      if (['basic', 'messages', 'media', 'keyboards', 'polls'].includes(tabName)) {
+        loadUsersList();
+      }
     }
 
     function showSettingsSubTab(subTabName) {
-        document.querySelectorAll('.settings-tab-content').forEach(tab => tab.classList.remove('active'));
-        document.getElementById(subTabName + '-settings-tab').classList.add('active');
+      document.querySelectorAll('.settings-tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(subTabName + '-settings-tab').classList.add('active');
 
-        document.querySelectorAll('.settings-tab-item').forEach(item => item.classList.remove('active'));
-        document.querySelector(`.settings-tab-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
-        
-        const resultWrapper = document.getElementById('result-wrapper');
-        resultWrapper.style.display = (subTabName === 'telegram') ? 'block' : 'none';
+      document.querySelectorAll('.settings-tab-item').forEach(item => item.classList.remove('active'));
+      document.querySelector(`.settings-tab-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
+      
+      const resultArea = document.getElementById('result-area');
+      resultArea.style.display = (subTabName === 'telegram') ? 'block' : 'none';
     }
 
-    function showStatus(message, isError = false) {
-        const statusContainer = document.getElementById('status-container');
-        statusContainer.innerHTML = '';
-        const statusDiv = document.createElement('div');
-        statusDiv.className = `status ${isError ? 'error' : 'success'}`;
-        statusDiv.textContent = message;
-        statusContainer.appendChild(statusDiv);
-        setTimeout(() => statusDiv.style.display = 'none', 5000);
+    function showNotification(message, type = 'info') {
+      const container = document.getElementById('notification-container');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      container.appendChild(notification);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.animation = 'slideIn 0.3s ease-out reverse';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 300);
+        }
+      }, 5000);
     }
 
     function showLoader(buttonId) {
@@ -498,93 +724,149 @@
 
     function hideLoader(buttonId, originalText) {
       const button = document.getElementById(buttonId);
-       if (button) {
+      if (button) {
         button.disabled = false;
         button.innerHTML = originalText;
       }
     }
 
     function updateWebhookStatus(info) {
-        const statusDiv = document.getElementById('webhook-status');
-        let statusText = '';
-        if (info && info.result && info.result.url) {
-            statusText = `<div class="status-box success"><b>Статус:</b> Установлен<br><b>URL:</b> ${info.result.url}</div>`;
-        } else if (info && info.error) {
-            statusText = `<div class="status-box error"><b>Статус:</b> Ошибка<br>${info.message}</div>`;
-        } else {
-            statusText = '<div class="status-box info"><b>Статус:</b> Webhook не установлен.</div>';
+      const statusDiv = document.getElementById('webhook-status');
+      let statusText = '';
+      if (info && info.result && info.result.url) {
+        statusText = `<div class="status-box success"><b>Статус:</b> Установлен<br><b>URL:</b> ${info.result.url}</div>`;
+      } else if (info && info.error) {
+        statusText = `<div class="status-box error"><b>Статус:</b> Ошибка<br>${info.message}</div>`;
+      } else {
+        statusText = '<div class="status-box info"><b>Статус:</b> Webhook не установлен.</div>';
+      }
+      statusDiv.innerHTML = statusText;
+    }
+
+    function loadUsersList() {
+      if (USERS_LIST.length > 0) {
+        populateUserSelects();
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(users => {
+          USERS_LIST = users || [];
+          populateUserSelects();
+        })
+        .withFailureHandler(err => {
+          showNotification('Ошибка загрузки пользователей: ' + err.message, 'error');
+        })
+        .getUsersList();
+    }
+
+    function populateUserSelects() {
+      const selects = document.querySelectorAll('select[id$="-chat-id"], #user-select');
+      selects.forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Выберите пользователя...</option>';
+        
+        USERS_LIST.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user.id;
+          option.textContent = user.name;
+          select.appendChild(option);
+        });
+        
+        if (currentValue) {
+          select.value = currentValue;
         }
-        statusDiv.innerHTML = statusText;
+      });
+    }
+
+    function updateUserInfo(userId, infoElementId) {
+      const user = USERS_LIST.find(u => u.id == userId);
+      const infoElement = document.getElementById(infoElementId);
+      
+      if (user && infoElement) {
+        infoElement.textContent = `ID: ${user.id}`;
+      } else if (infoElement) {
+        infoElement.textContent = '';
+      }
+    }
+
+    function updateChatIdInputs(userId) {
+      const user = USERS_LIST.find(u => u.id == userId);
+      if (user) {
+        updateUserInfo(userId, 'user-info');
+      }
     }
 
     function saveSettings() {
-        const token = document.getElementById('bot-token').value;
-        const depId = document.getElementById('deployment-id').value;
-        showStatus('Сохранение...');
-        google.script.run
-            .withSuccessHandler((savedSettings) => {
-                SETTINGS = savedSettings;
-                showStatus('Настройки успешно сохранены!', false);
-            })
-            .withFailureHandler((err) => {
-                showStatus('Ошибка сохранения: ' + err.message, true);
-            })
-            .saveSettings({BOT_TOKEN: token, DEPLOYMENT_ID: depId});
+      const token = document.getElementById('bot-token').value;
+      const depId = document.getElementById('deployment-id').value;
+      showNotification('Сохранение...', 'info');
+      
+      google.script.run
+        .withSuccessHandler((savedSettings) => {
+          SETTINGS = savedSettings;
+          showNotification('Настройки успешно сохранены!', 'success');
+        })
+        .withFailureHandler((err) => {
+          showNotification('Ошибка сохранения: ' + err.message, 'error');
+        })
+        .saveSettings({BOT_TOKEN: token, DEPLOYMENT_ID: depId});
     }
 
     function runSheetAction(action, sheetName = null) {
-        showStatus(`Выполнение: ${action}...`);
-        google.script.run
-            .withSuccessHandler(result => {
-                showStatus(result, false);
-                loadSheetsStatus();
-            })
-            .withFailureHandler(err => {
-                showStatus(`Ошибка: ${err.message}`, true);
-            })
-            .manageSheets({action: action, sheetName: sheetName});
+      showNotification(`Выполнение: ${action}...`, 'info');
+      
+      google.script.run
+        .withSuccessHandler(result => {
+          showNotification(result, 'success');
+          loadSheetsStatus();
+        })
+        .withFailureHandler(err => {
+          showNotification(`Ошибка: ${err.message}`, 'error');
+        })
+        .manageSheets({action: action, sheetName: sheetName});
     }
 
     function loadSheetsStatus() {
-        const list = document.getElementById('sheet-list');
-        list.innerHTML = '<li><div class="spinner"></div> <i>Загрузка...</i></li>';
-        google.script.run
-            .withSuccessHandler(sheets => {
-                list.innerHTML = '';
-                if (sheets && sheets.length > 0) {
-                    sheets.forEach(sheet => {
-                        const item = document.createElement('li');
-                        item.className = 'sheet-item';
-                        let buttons = '';
-                        if (sheet.isTemplate) {
-                            if (sheet.exists) {
-                                buttons = `<button class="btn btn-secondary" onclick="runSheetAction('clearSheet', '${sheet.name}')">Очистить</button>`;
-                            } else {
-                                buttons = `<button class="btn" onclick="runSheetAction('createSheet', '${sheet.name}')">Создать</button>`;
-                            }
-                        } else {
-                             buttons = `<button class="btn btn-secondary" onclick="runSheetAction('deleteSheet', '${sheet.name}')">Удалить</button>`;
-                        }
-
-                        item.innerHTML = `
-                            <div>
-                                <span class="sheet-name">${sheet.name}</span>
-                                <span class="status-badge ${sheet.exists ? 'created' : 'missing'}">${sheet.exists ? 'Существует' : 'Отсутствует'}</span>
-                            </div>
-                            <div>${buttons}</div>
-                        `;
-                        list.appendChild(item);
-                    });
+      const list = document.getElementById('sheet-list');
+      list.innerHTML = '<li><div class="spinner"></div> <i>Загрузка...</i></li>';
+      
+      google.script.run
+        .withSuccessHandler(sheets => {
+          list.innerHTML = '';
+          if (sheets && sheets.length > 0) {
+            sheets.forEach(sheet => {
+              const item = document.createElement('li');
+              item.className = 'sheet-item';
+              let buttons = '';
+              if (sheet.isTemplate) {
+                if (sheet.exists) {
+                  buttons = `<button class="btn btn-secondary" onclick="runSheetAction('clearSheet', '${sheet.name}')">Очистить</button>`;
                 } else {
-                    list.innerHTML = '<li>Нет информации о листах.</li>';
+                  buttons = `<button class="btn" onclick="runSheetAction('createSheet', '${sheet.name}')">Создать</button>`;
                 }
-            })
-            .withFailureHandler(err => {
-                list.innerHTML = `<li><div class="status error">Ошибка загрузки: ${err.message}</div></li>`;
-            })
-            .getSheetsStatus();
-    }
+              } else {
+                buttons = `<button class="btn btn-secondary" onclick="runSheetAction('deleteSheet', '${sheet.name}')">Удалить</button>`;
+              }
 
+              item.innerHTML = `
+                <div>
+                  <span class="sheet-name">${sheet.name}</span>
+                  <span class="status-badge ${sheet.exists ? 'created' : 'missing'}">${sheet.exists ? 'Существует' : 'Отсутствует'}</span>
+                </div>
+                <div>${buttons}</div>
+              `;
+              list.appendChild(item);
+            });
+          } else {
+            list.innerHTML = '<li>Нет информации о листах.</li>';
+          }
+        })
+        .withFailureHandler(err => {
+          list.innerHTML = `<li><div class="notification error">Ошибка загрузки: ${err.message}</div></li>`;
+        })
+        .getSheetsStatus();
+    }
 
     function runTest(testName, options = {}, silent = false) {
       const resultContainer = document.getElementById('result-container');
@@ -593,9 +875,9 @@
       }
       
       const buttonMap = {
-          getWebhookInfo: 'getWebhookInfoBtn',
-          setWebhook: 'setWebhookBtn',
-          deleteWebhook: 'deleteWebhookBtn'
+        getWebhookInfo: 'getWebhookInfoBtn',
+        setWebhook: 'setWebhookBtn',
+        deleteWebhook: 'deleteWebhookBtn'
       };
       const buttonId = buttonMap[testName];
       let originalButtonText = '';
@@ -608,14 +890,14 @@
             options.chat_id = document.getElementById('msg-chat-id').value;
             options.text = document.getElementById('msg-text').value;
             options.parse_mode = document.getElementById('msg-parse-mode').value;
-            if (!options.chat_id || !options.text) throw new Error('Chat ID и текст сообщения обязательны.');
+            if (!options.chat_id || !options.text) throw new Error('Пользователь и текст сообщения обязательны.');
             break;
           case 'sendMedia':
             options.chat_id = document.getElementById('media-chat-id').value;
             options.mediaType = document.getElementById('media-type').value;
             options.url = document.getElementById('media-url').value;
             options.caption = document.getElementById('media-caption').value;
-            if (!options.chat_id || !options.url) throw new Error('Chat ID и URL медиа обязательны.');
+            if (!options.chat_id || !options.url) throw new Error('Пользователь и URL медиа обязательны.');
             break;
           case 'sendKeyboard':
             options.chat_id = document.getElementById('kbd-chat-id').value;
@@ -635,64 +917,52 @@
         google.script.run
           .withSuccessHandler(response => {
             if (testName.includes('Webhook')) {
-                updateWebhookStatus(response);
+              updateWebhookStatus(response);
             }
             if (!silent) {
-                resultContainer.textContent = JSON.stringify(response, null, 2);
-                showStatus('Тест "' + testName + '" выполнен успешно!');
+              resultContainer.textContent = JSON.stringify(response, null, 2);
+              showNotification('Тест "' + testName + '" выполнен успешно!', 'success');
             }
             if(buttonId) hideLoader(buttonId, originalButtonText);
           })
           .withFailureHandler(error => {
             if (testName.includes('Webhook')) {
-                updateWebhookStatus({error: true, message: error.message});
+              updateWebhookStatus({error: true, message: error.message});
             }
             if (!silent) {
-                resultContainer.textContent = 'Ошибка: ' + error.message;
-                showStatus('Ошибка выполнения теста "' + testName + '": ' + error.message, true);
+              resultContainer.textContent = 'Ошибка: ' + error.message;
+              showNotification('Ошибка выполнения теста "' + testName + '": ' + error.message, 'error');
             }
             if(buttonId) hideLoader(buttonId, originalButtonText);
           })
           .runTest(testName, options);
 
       } catch (e) {
-          if (!silent) {
-            resultContainer.textContent = 'Ошибка: ' + e.message;
-            showStatus(e.message, true);
-          }
-          if(buttonId) hideLoader(buttonId, originalButtonText);
+        if (!silent) {
+          resultContainer.textContent = 'Ошибка: ' + e.message;
+          showNotification(e.message, 'error');
+        }
+        if(buttonId) hideLoader(buttonId, originalButtonText);
       }
     }
     
     function initializeDashboard() {
-        google.script.run
-            .withSuccessHandler(settings => {
-                SETTINGS = settings || {};
-                document.getElementById('bot-token').value = SETTINGS.BOT_TOKEN || '';
-                document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
-                showTab('basic');
-            })
-            .withFailureHandler(err => {
-                showStatus('Не удалось загрузить первоначальные настройки: ' + err.message, true);
-            })
-            .getSettings();
+      google.script.run
+        .withSuccessHandler(settings => {
+          SETTINGS = settings || {};
+          document.getElementById('bot-token').value = SETTINGS.BOT_TOKEN || '';
+          document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
+          showTab('basic');
+        })
+        .withFailureHandler(err => {
+          showNotification('Не удалось загрузить первоначальные настройки: ' + err.message, 'error');
+        })
+        .getSettings();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        const chatIdInput = document.getElementById('chat-id-input');
-        const allChatIdInputs = document.querySelectorAll('input[placeholder="Введите Chat ID"]');
-        
-        chatIdInput.addEventListener('change', () => {
-            allChatIdInputs.forEach(input => {
-                if(input !== chatIdInput) {
-                    input.value = chatIdInput.value;
-                }
-            });
-        });
-
-        initializeDashboard();
+      initializeDashboard();
     });
-
   </script>
 </body>
 </html>

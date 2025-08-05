@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Тест нового UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .test-button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #4338CA;
+    }
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🧪 Тест нового UI Telegram Bot</h1>
+    
+    <div class="test-section">
+      <h3>1. Тест загрузки пользователей</h3>
+      <button class="test-button" onclick="testGetUsers()">Загрузить пользователей</button>
+      <div id="users-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>2. Тест настроек</h3>
+      <button class="test-button" onclick="testGetSettings()">Получить настройки</button>
+      <button class="test-button" onclick="testSaveSettings()">Сохранить тестовые настройки</button>
+      <div id="settings-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>3. Тест управления листами</h3>
+      <button class="test-button" onclick="testGetSheetsStatus()">Статус листов</button>
+      <button class="test-button" onclick="testCreateAllSheets()">Создать все листы</button>
+      <div id="sheets-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>4. Тест Webhook</h3>
+      <button class="test-button" onclick="testGetWebhookInfo()">Информация о Webhook</button>
+      <div id="webhook-result" class="result"></div>
+    </div>
+  </div>
+
+  <script>
+    function showResult(elementId, data) {
+      const element = document.getElementById(elementId);
+      element.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function testGetUsers() {
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('users-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('users-result', { error: error.message });
+        })
+        .getUsersList();
+    }
+
+    function testGetSettings() {
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('settings-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('settings-result', { error: error.message });
+        })
+        .getSettings();
+    }
+
+    function testSaveSettings() {
+      const testSettings = {
+        BOT_TOKEN: 'test_token_123',
+        DEPLOYMENT_ID: 'test_deployment_456'
+      };
+      
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('settings-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('settings-result', { error: error.message });
+        })
+        .saveSettings(testSettings);
+    }
+
+    function testGetSheetsStatus() {
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('sheets-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('sheets-result', { error: error.message });
+        })
+        .getSheetsStatus();
+    }
+
+    function testCreateAllSheets() {
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('sheets-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('sheets-result', { error: error.message });
+        })
+        .manageSheets({ action: 'createAllSheets' });
+    }
+
+    function testGetWebhookInfo() {
+      google.script.run
+        .withSuccessHandler(result => {
+          showResult('webhook-result', result);
+        })
+        .withFailureHandler(error => {
+          showResult('webhook-result', { error: error.message });
+        })
+        .runTest('getWebhookInfo', {});
+    }
+  </script>
+</body>
+</html> 

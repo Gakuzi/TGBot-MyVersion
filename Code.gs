@@ -28,7 +28,85 @@ function showTelegramTestUI() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Панель управления Telegram Ботом');
 }
 
-// --- Функции для панели управления (Листы) ---
+// --- Функции для UI ---
+
+/**
+ * Возвращает список пользователей для UI.
+ */
+function getUsersList() {
+  const usersSheet = ss.getSheetByName('Users');
+  if (!usersSheet) {
+    throw new Error("Лист 'Users' не найден. Создайте его в 'Настройках' -> 'Управление листами'.");
+  }
+  const data = usersSheet.getDataRange().getValues();
+  if (data.length < 2) {
+    return []; // Только заголовок или пустой лист
+  }
+  const headers = data[0];
+  const idIndex = headers.indexOf('ID Пользователя');
+  const nameIndex = headers.indexOf('Имя');
+  const lastNameIndex = headers.indexOf('Фамилия');
+  const nickIndex = headers.indexOf('Ник');
+
+  if (idIndex === -1 || nameIndex === -1) {
+      throw new Error("В листе 'Users' отсутствуют обязательные столбцы 'ID Пользователя' или 'Имя'.");
+  }
+
+  const users = data.slice(1).map(row => {
+    const id = row[idIndex];
+    if (!id) return null;
+
+    const firstName = row[nameIndex] || '';
+    const lastName = row[lastNameIndex] || '';
+    const nick = row[nickIndex] ? `(@${row[nickIndex]})` : '';
+    const name = [firstName, lastName, nick].filter(Boolean).join(' ').trim();
+    
+    return { id: id, name: name || id };
+  }).filter(Boolean);
+
+  return users;
+}
+
+/**
+ * Сохраняет настройки бота.
+ */
+function saveSettings(settings) {
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    
+    if (settings.BOT_TOKEN) {
+      properties.setProperty('BOT_TOKEN', settings.BOT_TOKEN);
+    }
+    
+    if (settings.DEPLOYMENT_ID) {
+      properties.setProperty('DEPLOYMENT_ID', settings.DEPLOYMENT_ID);
+    }
+    
+    return { BOT_TOKEN: settings.BOT_TOKEN, DEPLOYMENT_ID: settings.DEPLOYMENT_ID };
+  } catch (e) {
+    const errorSheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
+    errorSheet.appendRow([new Date(), `saveSettings Error: ${e.message}`]);
+    throw new Error(e.message);
+  }
+}
+
+/**
+ * Возвращает сохраненные настройки бота.
+ */
+function getSettings() {
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    return {
+      BOT_TOKEN: properties.getProperty('BOT_TOKEN') || '',
+      DEPLOYMENT_ID: properties.getProperty('DEPLOYMENT_ID') || ''
+    };
+  } catch (e) {
+    const errorSheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
+    errorSheet.appendRow([new Date(), `getSettings Error: ${e.message}`]);
+    throw new Error(e.message);
+  }
+}
+
 
 /**
  * Возвращает статус всех листов (шаблонных и пользовательских).
@@ -49,7 +127,7 @@ function getSheetsStatus() {
     }
   });
 
-  return statuses;
+  return statuses.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -58,6 +136,8 @@ function getSheetsStatus() {
 function manageSheets(options) {
   try {
     switch (options.action) {
+      case 'recreateAllSheets':
+        return recreateAllSheetsFromTemplate();
       case 'createAllSheets':
         return createAllSheets();
       case 'createSheet':
@@ -72,10 +152,9 @@ function manageSheets(options) {
         throw new Error('Неизвестное действие.');
     }
   } catch (e) {
-    // Логируем и возвращаем ошибку
     const errorSheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
     errorSheet.appendRow([new Date(), `manageSheets Error: ${e.message}`]);
-    throw new Error(e.message); // Передаем ошибку в UI
+    throw new Error(e.message);
   }
 }
 
@@ -91,22 +170,40 @@ function createSheet(sheetName) {
   return `ℹ️ Лист "${sheetName}" уже существует.`;
 }
 
+function recreateAllSheetsFromTemplate() {
+  const templateSheetNames = Object.keys(SHEET_TEMPLATES);
+  templateSheetNames.forEach(name => {
+    const sheet = ss.getSheetByName(name);
+    if (sheet) {
+      ss.deleteSheet(sheet);
+    }
+    createSheet(name);
+  });
+  return `✅ Все ${templateSheetNames.length} шаблонных листов были пересозданы.`;
+}
+
 function createAllSheets() {
   const templateSheetNames = Object.keys(SHEET_TEMPLATES);
   let createdCount = 0;
+  
   templateSheetNames.forEach(name => {
     if (!ss.getSheetByName(name)) {
       createSheet(name);
       createdCount++;
     }
   });
-  return createdCount > 0 ? `✅ Создано ${createdCount} новых листов.` : 'ℹ️ Все необходимые листы уже существуют.';
+  
+  if (createdCount === 0) {
+    return `ℹ️ Все ${templateSheetNames.length} шаблонных листов уже существуют.`;
+  } else {
+    return `✅ Создано ${createdCount} из ${templateSheetNames.length} недостающих листов.`;
+  }
 }
 
 function clearSheet(sheetName) {
   const sheet = ss.getSheetByName(sheetName);
   if (sheet) {
-    sheet.getDataRange().offset(1, 0).clearContent(); // Очищаем все, кроме заголовка
+    sheet.getDataRange().offset(1, 0).clearContent();
     return `✅ Лист "${sheetName}" очищен.`;
   }
   throw new Error(`Лист "${sheetName}" не найден.`);
@@ -137,56 +234,40 @@ function deleteNonTemplateSheets() {
 
 // --- Функции для настроек и тестов ---
 
-/**
- * Сохраняет токен и ID развертывания в свойства скрипта.
- */
 function saveSettings(settings) {
   PropertiesService.getScriptProperties().setProperties({
       BOT_TOKEN: settings.BOT_TOKEN || '',
       DEPLOYMENT_ID: settings.DEPLOYMENT_ID || ''
-  }, false); // false - не удалять остальные свойства
+  }, false);
   return getSettings();
 }
 
-/**
- * Получает все настройки из свойств скрипта.
- */
 function getSettings() {
   return PropertiesService.getScriptProperties().getProperties();
 }
 
-/**
- * Инициализирует объект бота с сохраненным токеном.
- */
 function initBot() {
-  if (Bot) return; // Если бот уже инициализирован, ничего не делаем
+  if (Bot) return;
   const scriptProperties = PropertiesService.getScriptProperties();
   const token = scriptProperties.getProperty('BOT_TOKEN');
-  const deploymentId = scriptProperties.getProperty('DEPLOYMENT_ID');
-
+  
   if (!token) {
-    throw new Error('Токен бота не найден. Откройте "Панель управления" -> "Настройки" и сохраните токен.');
+    throw new Error('Токен бота не найден. Сохраните его в настройках.');
   }
-
-  if (!deploymentId) {
-    throw new Error('ID развертывания не найден. Откройте "Панель управления" -> "Настройки" и сохраните ID.');
-  }
-
-  const webAppUrl = `https://script.google.com/macros/s/${deploymentId}/exec`;
 
   try {
-    Bot = TGbot.bot({ botToken: token, webAppUrl: webAppUrl });
+    Bot = TGbot.bot({ botToken: token });
     if (!Bot) {
       throw new Error('Не удалось инициализировать объект бота. Проверьте настройки библиотеки TGbot.');
     }
   } catch (e) {
-    throw new Error(`Ошибка инициализации бота: ${e.message}. Убедитесь, что библиотека TGbot подключена и настроена правильно.`);
+    throw new Error(`Ошибка инициализации бота: ${e.message}. Убедитесь, что библиотека TGbot подключена.`);
   }
 }
 
 function runTest(testName, options) {
   try {
-    initBot(); // Попытка инициализации при каждом тесте
+    initBot();
     if (!Bot) {
       throw new Error('Бот не инициализирован.');
     }
@@ -226,26 +307,23 @@ function runTest(testName, options) {
         const url = `https://script.google.com/macros/s/${deploymentId}/exec`;
         return Bot.setWebhook({ url: url });
       case 'getWebhookInfo':
-        return Bot.getWebhookInfo();
+        const info = Bot.getWebhookInfo();
+        console.log("getWebhookInfo raw response:", JSON.stringify(info));
+        return info;
       case 'deleteWebhook':
         return Bot.deleteWebhook();
       default:
         throw new Error('Неизвестный тест: ' + testName);
     }
   } catch (e) {
-    // Логируем ошибку в лист 'Errors'
     const sheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
     sheet.appendRow([new Date(), `Функция: ${testName}, Ошибка: ${e.message}`, JSON.stringify(e, null, 2)]);
-    // Возвращаем объект ошибки, чтобы он отобразился в UI
     return { error: true, message: e.message, stack: e.stack };
   }
 }
 
 // --- Основная функция обработки вебхуков ---
 
-/**
- * Главная функция, принимающая данные от Telegram.
- */
 function doPost(e) {
   const debugSheet = ss.getSheetByName('Debug');
   try {
@@ -300,11 +378,9 @@ function recordUser(user) {
     ];
 
     if (userRow) {
-      // Пользователь найден, обновляем строку
       const rowIndex = data.findIndex(row => row[0] == user.id) + 1;
       usersSheet.getRange(rowIndex, 1, 1, userData.length).setValues([userData]);
     } else {
-      // Новый пользователь, добавляем строку
       usersSheet.appendRow(userData);
     }
   } catch (err) {
