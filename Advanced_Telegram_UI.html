@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Расширенная панель Telegram Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4F46E5;
+      --primary-hover: #4338CA;
+      --success-color: #10B981;
+      --warning-color: #F59E0B;
+      --error-color: #EF4444;
+      --background-color: #F8FAFC;
+      --container-bg: #FFFFFF;
+      --text-color: #1F2937;
+      --subtle-text: #6B7280;
+      --border-color: #E5E7EB;
+      --input-bg: #F9FAFB;
+      --code-bg: #1F2937;
+      --code-color: #F3F4F6;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .header {
+      background-color: var(--container-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-connected {
+      background-color: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status-disconnected {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .tab-bar {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      background-color: var(--container-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem;
+    }
+
+    .tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-item {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--subtle-text);
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 0.5rem 0.5rem 0 0;
+      background-color: transparent;
+      margin-right: 0.25rem;
+      position: relative;
+      top: 1px;
+      transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+    }
+    
+    .tab-item:hover {
+      color: var(--primary-color);
+      background-color: var(--background-color);
+    }
+    
+    .tab-item.active {
+      color: var(--primary-color);
+      font-weight: 600;
+      background-color: var(--container-bg);
+      border-color: var(--border-color);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background-color: var(--container-bg);
+      min-height: calc(100vh - 120px);
+    }
+
+    .content {
+      padding: 2rem;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background-color: var(--input-bg);
+      font-size: 0.875rem;
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-decoration: none;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-warning {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
+    .btn-error {
+      background-color: var(--error-color);
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border-color);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      background-color: var(--container-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-color);
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .alert-success {
+      background-color: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+
+    .alert-error {
+      background-color: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
+    }
+
+    .alert-warning {
+      background-color: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FCD34D;
+    }
+
+    .chat-container {
+      display: flex;
+      height: 600px;
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .chat-sidebar {
+      width: 300px;
+      background-color: var(--input-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--container-bg);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background-color: var(--background-color);
+    }
+
+    .chat-input {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--container-bg);
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      max-width: 80%;
+    }
+
+    .message-outgoing {
+      background-color: var(--primary-color);
+      color: white;
+      margin-left: auto;
+    }
+
+    .message-incoming {
+      background-color: var(--container-bg);
+      border: 1px solid var(--border-color);
+    }
+
+    .file-upload {
+      border: 2px dashed var(--border-color);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    .file-upload:hover {
+      border-color: var(--primary-color);
+    }
+
+    .file-upload.dragover {
+      border-color: var(--primary-color);
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .justify-between {
+      justify-content: space-between;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    .mb-4 {
+      margin-bottom: 1rem;
+    }
+
+    .mt-4 {
+      margin-top: 1rem;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .text-xs {
+      font-size: 0.75rem;
+    }
+
+    .font-medium {
+      font-weight: 500;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .user-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    .user-item:hover {
+      background-color: var(--background-color);
+    }
+
+    .flex-1 {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="header-title">🤖 Расширенная панель Telegram Bot</div>
+      <div id="statusIndicator" class="status-indicator status-disconnected">
+        <div class="loading"></div>
+        <span>Проверка подключения...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab-item active" data-tab="messages">📱 Сообщения</div>
+    <div class="tab-item" data-tab="media">📷 Медиа</div>
+    <div class="tab-item" data-tab="keyboards">⌨️ Клавиатуры</div>
+    <div class="tab-item" data-tab="calendar">📅 Календарь</div>
+    <div class="tab-item" data-tab="polls">📊 Опросы</div>
+    <div class="tab-item" data-tab="chat">💬 Чат</div>
+    <div class="tab-item" data-tab="settings">⚙️ Настройки</div>
+  </div>
+
+  <div class="container">
+    <div class="content">
+      <!-- Вкладка Сообщения -->
+      <div id="messages" class="tab-content active">
+        <div class="card">
+          <div class="card-title">Отправка текстового сообщения</div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">ID пользователя</label>
+              <input type="text" id="messageUserId" class="form-input" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Режим парсинга</label>
+              <select id="messageParseMode" class="form-select">
+                <option value="HTML">HTML</option>
+                <option value="Markdown">Markdown</option>
+                <option value="MarkdownV2">MarkdownV2</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Текст сообщения</label>
+            <textarea id="messageText" class="form-textarea" placeholder="Введите текст сообщения..."></textarea>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="sendTextMessage()">Отправить сообщение</button>
+            <button class="btn btn-secondary" onclick="clearMessageForm()">Очистить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Медиа -->
+      <div id="media" class="tab-content">
+        <div class="card">
+          <div class="card-title">Отправка медиа файлов</div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">ID пользователя</label>
+              <input type="text" id="mediaUserId" class="form-input" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Тип медиа</label>
+              <select id="mediaType" class="form-select">
+                <option value="photo">Фото</option>
+                <option value="video">Видео</option>
+                <option value="document">Документ</option>
+                <option value="audio">Аудио</option>
+                <option value="voice">Голосовое</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Подпись (опционально)</label>
+            <input type="text" id="mediaCaption" class="form-input" placeholder="Подпись к файлу">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Файл</label>
+            <div class="file-upload" onclick="document.getElementById('mediaFile').click()">
+              <div>📁 Нажмите для выбора файла или перетащите файл сюда</div>
+              <input type="file" id="mediaFile" class="hidden" onchange="handleFileSelect(this)">
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="sendMediaFile()">Отправить файл</button>
+            <button class="btn btn-secondary" onclick="clearMediaForm()">Очистить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Клавиатуры -->
+      <div id="keyboards" class="tab-content">
+        <div class="card">
+          <div class="card-title">Создание клавиатуры</div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">ID пользователя</label>
+              <input type="text" id="keyboardUserId" class="form-input" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Тип клавиатуры</label>
+              <select id="keyboardType" class="form-select">
+                <option value="reply">Обычная</option>
+                <option value="inline">Встроенная</option>
+                <option value="remove">Удалить</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Текст сообщения</label>
+            <textarea id="keyboardText" class="form-textarea" placeholder="Текст сообщения с клавиатурой"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Кнопки (по одной на строку)</label>
+            <textarea id="keyboardButtons" class="form-textarea" placeholder="Кнопка 1&#10;Кнопка 2&#10;Кнопка 3"></textarea>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="sendKeyboard()">Отправить клавиатуру</button>
+            <button class="btn btn-secondary" onclick="clearKeyboardForm()">Очистить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Календарь -->
+      <div id="calendar" class="tab-content">
+        <div class="card">
+          <div class="card-title">Отправка календаря</div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">ID пользователя</label>
+              <input type="text" id="calendarUserId" class="form-input" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Текст сообщения</label>
+              <input type="text" id="calendarText" class="form-input" placeholder="Выберите дату:" value="Выберите дату:">
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="sendCalendar()">Отправить календарь</button>
+            <button class="btn btn-secondary" onclick="clearCalendarForm()">Очистить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Опросы -->
+      <div id="polls" class="tab-content">
+        <div class="card">
+          <div class="card-title">Создание опроса</div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">ID пользователя</label>
+              <input type="text" id="pollUserId" class="form-input" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Тип опроса</label>
+              <select id="pollType" class="form-select">
+                <option value="regular">Обычный опрос</option>
+                <option value="quiz">Викторина</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Вопрос</label>
+            <input type="text" id="pollQuestion" class="form-input" placeholder="Ваш вопрос?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Варианты ответов (по одному на строку)</label>
+            <textarea id="pollOptions" class="form-textarea" placeholder="Вариант 1&#10;Вариант 2&#10;Вариант 3"></textarea>
+          </div>
+          <div id="quizOptions" class="hidden">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label">Правильный ответ (номер)</label>
+                <input type="number" id="pollCorrectOption" class="form-input" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Объяснение</label>
+                <input type="text" id="pollExplanation" class="form-input" placeholder="Объяснение правильного ответа">
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary" onclick="sendPoll()">Отправить опрос</button>
+            <button class="btn btn-secondary" onclick="clearPollForm()">Очистить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Чат -->
+      <div id="chat" class="tab-content">
+        <div class="chat-container">
+          <div class="chat-sidebar">
+            <div class="card-title">Пользователи</div>
+            <div id="usersList" class="flex-1">
+              <!-- Список пользователей будет загружен здесь -->
+            </div>
+          </div>
+          <div class="chat-main">
+            <div class="chat-header">
+              <div id="selectedUser">Выберите пользователя для начала чата</div>
+            </div>
+            <div id="chatMessages" class="chat-messages">
+              <!-- Сообщения будут загружены здесь -->
+            </div>
+            <div class="chat-input">
+              <div class="flex gap-2">
+                <input type="text" id="chatInput" class="form-input" placeholder="Введите сообщение..." onkeypress="handleChatKeyPress(event)">
+                <button class="btn btn-primary" onclick="sendChatMessage()">Отправить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка Настройки -->
+      <div id="settings" class="tab-content">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Настройки бота</div>
+            <div class="form-group">
+              <label class="form-label">Токен бота</label>
+              <input type="password" id="botToken" class="form-input" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL веб-приложения</label>
+              <input type="text" id="webAppUrl" class="form-input" placeholder="https://script.google.com/macros/s/...">
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки</button>
+              <button class="btn btn-secondary" onclick="loadSettings()">Загрузить настройки</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Управление webhook</div>
+            <div class="flex gap-2 mb-4">
+              <button class="btn btn-success" onclick="setWebhook()">Установить webhook</button>
+              <button class="btn btn-warning" onclick="getWebhookInfo()">Информация</button>
+              <button class="btn btn-error" onclick="deleteWebhook()">Удалить webhook</button>
+            </div>
+            <div id="webhookInfo" class="text-sm">
+              <!-- Информация о webhook будет отображена здесь -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-title">Статистика использования</div>
+          <div id="usageStats" class="text-sm">
+            <!-- Статистика будет загружена здесь -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Глобальные переменные
+    let selectedUserId = null;
+    let selectedFile = null;
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeTabs();
+      checkBotStatus();
+      loadSettings();
+      loadUsersList();
+      loadUsageStats();
+    });
+
+    // Переключение вкладок
+    function initializeTabs() {
+      const tabItems = document.querySelectorAll('.tab-item');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabItems.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const targetTab = tab.getAttribute('data-tab');
+          
+          // Убираем активный класс со всех вкладок
+          tabItems.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(t => t.classList.remove('active'));
+          
+          // Добавляем активный класс к выбранной вкладке
+          tab.classList.add('active');
+          document.getElementById(targetTab).classList.add('active');
+        });
+      });
+    }
+
+    // Проверка статуса бота
+    function checkBotStatus() {
+      google.script.run
+        .withSuccessHandler(handleStatusResponse)
+        .withFailureHandler(handleStatusError)
+        .checkBotStatus();
+    }
+
+    function handleStatusResponse(response) {
+      const statusIndicator = document.getElementById('statusIndicator');
+      if (response.success) {
+        statusIndicator.className = 'status-indicator status-connected';
+        statusIndicator.innerHTML = `
+          <div style="width: 8px; height: 8px; background-color: #10B981; border-radius: 50%;"></div>
+          <span>Подключено: ${response.data.botName}</span>
+        `;
+      } else {
+        statusIndicator.className = 'status-indicator status-disconnected';
+        statusIndicator.innerHTML = `
+          <div style="width: 8px; height: 8px; background-color: #EF4444; border-radius: 50%;"></div>
+          <span>Ошибка: ${response.error}</span>
+        `;
+      }
+    }
+
+    function handleStatusError(error) {
+      const statusIndicator = document.getElementById('statusIndicator');
+      statusIndicator.className = 'status-indicator status-disconnected';
+      statusIndicator.innerHTML = `
+        <div style="width: 8px; height: 8px; background-color: #EF4444; border-radius: 50%;"></div>
+        <span>Ошибка подключения</span>
+      `;
+    }
+
+    // Функции для вкладки Сообщения
+    function sendTextMessage() {
+      const userId = document.getElementById('messageUserId').value;
+      const text = document.getElementById('messageText').value;
+      const parseMode = document.getElementById('messageParseMode').value;
+
+      if (!userId || !text) {
+        showAlert('Заполните все обязательные поля', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(handleMessageResponse)
+        .withFailureHandler(handleMessageError)
+        .sendTextMessage(userId, text, parseMode);
+    }
+
+    function handleMessageResponse(response) {
+      if (response.success) {
+        showAlert('Сообщение отправлено успешно!', 'success');
+        clearMessageForm();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handleMessageError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    function clearMessageForm() {
+      document.getElementById('messageUserId').value = '';
+      document.getElementById('messageText').value = '';
+      document.getElementById('messageParseMode').value = 'HTML';
+    }
+
+    // Функции для вкладки Медиа
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (file) {
+        selectedFile = file;
+        const uploadArea = document.querySelector('.file-upload');
+        uploadArea.innerHTML = `
+          <div>📁 ${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>
+        `;
+      }
+    }
+
+    function sendMediaFile() {
+      const userId = document.getElementById('mediaUserId').value;
+      const mediaType = document.getElementById('mediaType').value;
+      const caption = document.getElementById('mediaCaption').value;
+
+      if (!userId || !selectedFile) {
+        showAlert('Заполните ID пользователя и выберите файл', 'error');
+        return;
+      }
+
+      // Здесь будет логика отправки файла
+      showAlert('Функция отправки файлов в разработке', 'warning');
+    }
+
+    function clearMediaForm() {
+      document.getElementById('mediaUserId').value = '';
+      document.getElementById('mediaCaption').value = '';
+      document.getElementById('mediaFile').value = '';
+      selectedFile = null;
+      document.querySelector('.file-upload').innerHTML = '📁 Нажмите для выбора файла или перетащите файл сюда';
+    }
+
+    // Функции для вкладки Клавиатуры
+    function sendKeyboard() {
+      const userId = document.getElementById('keyboardUserId').value;
+      const text = document.getElementById('keyboardText').value;
+      const keyboardType = document.getElementById('keyboardType').value;
+      const buttonsText = document.getElementById('keyboardButtons').value;
+
+      if (!userId || !text) {
+        showAlert('Заполните ID пользователя и текст сообщения', 'error');
+        return;
+      }
+
+      const buttons = buttonsText.split('\n').filter(btn => btn.trim());
+      
+      google.script.run
+        .withSuccessHandler(handleKeyboardResponse)
+        .withFailureHandler(handleKeyboardError)
+        .sendKeyboard(userId, text, buttons, keyboardType);
+    }
+
+    function handleKeyboardResponse(response) {
+      if (response.success) {
+        showAlert('Клавиатура отправлена успешно!', 'success');
+        clearKeyboardForm();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handleKeyboardError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    function clearKeyboardForm() {
+      document.getElementById('keyboardUserId').value = '';
+      document.getElementById('keyboardText').value = '';
+      document.getElementById('keyboardButtons').value = '';
+      document.getElementById('keyboardType').value = 'reply';
+    }
+
+    // Функции для вкладки Календарь
+    function sendCalendar() {
+      const userId = document.getElementById('calendarUserId').value;
+      const text = document.getElementById('calendarText').value;
+
+      if (!userId) {
+        showAlert('Заполните ID пользователя', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(handleCalendarResponse)
+        .withFailureHandler(handleCalendarError)
+        .sendCalendar(userId, text);
+    }
+
+    function handleCalendarResponse(response) {
+      if (response.success) {
+        showAlert('Календарь отправлен успешно!', 'success');
+        clearCalendarForm();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handleCalendarError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    function clearCalendarForm() {
+      document.getElementById('calendarUserId').value = '';
+      document.getElementById('calendarText').value = 'Выберите дату:';
+    }
+
+    // Функции для вкладки Опросы
+    document.getElementById('pollType').addEventListener('change', function() {
+      const quizOptions = document.getElementById('quizOptions');
+      if (this.value === 'quiz') {
+        quizOptions.classList.remove('hidden');
+      } else {
+        quizOptions.classList.add('hidden');
+      }
+    });
+
+    function sendPoll() {
+      const userId = document.getElementById('pollUserId').value;
+      const question = document.getElementById('pollQuestion').value;
+      const pollType = document.getElementById('pollType').value;
+      const optionsText = document.getElementById('pollOptions').value;
+      const correctOption = document.getElementById('pollCorrectOption').value;
+      const explanation = document.getElementById('pollExplanation').value;
+
+      if (!userId || !question || !optionsText) {
+        showAlert('Заполните все обязательные поля', 'error');
+        return;
+      }
+
+      const options = optionsText.split('\n').filter(opt => opt.trim());
+      if (options.length < 2) {
+        showAlert('Добавьте минимум 2 варианта ответа', 'error');
+        return;
+      }
+
+      const isQuiz = pollType === 'quiz';
+      const correctOptionId = isQuiz && correctOption ? parseInt(correctOption) : null;
+
+      google.script.run
+        .withSuccessHandler(handlePollResponse)
+        .withFailureHandler(handlePollError)
+        .sendPoll(userId, question, options, isQuiz, correctOptionId, explanation);
+    }
+
+    function handlePollResponse(response) {
+      if (response.success) {
+        showAlert('Опрос отправлен успешно!', 'success');
+        clearPollForm();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handlePollError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    function clearPollForm() {
+      document.getElementById('pollUserId').value = '';
+      document.getElementById('pollQuestion').value = '';
+      document.getElementById('pollOptions').value = '';
+      document.getElementById('pollType').value = 'regular';
+      document.getElementById('pollCorrectOption').value = '';
+      document.getElementById('pollExplanation').value = '';
+      document.getElementById('quizOptions').classList.add('hidden');
+    }
+
+    // Функции для вкладки Чат
+    function loadUsersList() {
+      google.script.run
+        .withSuccessHandler(handleUsersResponse)
+        .withFailureHandler(handleUsersError)
+        .getUsersList();
+    }
+
+    function handleUsersResponse(users) {
+      const usersList = document.getElementById('usersList');
+      if (users.length === 0) {
+        usersList.innerHTML = '<div class="text-center text-sm text-gray-500">Пользователи не найдены</div>';
+        return;
+      }
+
+      usersList.innerHTML = users.map(user => `
+        <div class="user-item" onclick="selectUser('${user.id}', '${user.name}')">
+          <div class="font-medium">${user.name}</div>
+          <div class="text-xs text-gray-500">ID: ${user.id}</div>
+        </div>
+      `).join('');
+    }
+
+    function handleUsersError(error) {
+      const usersList = document.getElementById('usersList');
+      usersList.innerHTML = `<div class="text-center text-sm text-red-500">Ошибка: ${error.message}</div>`;
+    }
+
+    function selectUser(userId, userName) {
+      selectedUserId = userId;
+      document.getElementById('selectedUser').textContent = `Чат с ${userName}`;
+      loadChatHistory(userId);
+    }
+
+    function loadChatHistory(userId) {
+      google.script.run
+        .withSuccessHandler(handleChatHistoryResponse)
+        .withFailureHandler(handleChatHistoryError)
+        .getUserChatHistory(userId);
+    }
+
+    function handleChatHistoryResponse(response) {
+      const chatMessages = document.getElementById('chatMessages');
+      if (response.success) {
+        chatMessages.innerHTML = response.data.map(message => `
+          <div class="message message-incoming">
+            <div class="text-sm text-gray-500">${new Date(message.date).toLocaleString()}</div>
+            <div>${message.message}</div>
+          </div>
+        `).join('');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } else {
+        chatMessages.innerHTML = `<div class="text-center text-sm text-red-500">Ошибка загрузки истории: ${response.error}</div>`;
+      }
+    }
+
+    function handleChatHistoryError(error) {
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML = `<div class="text-center text-sm text-red-500">Ошибка: ${error.message}</div>`;
+    }
+
+    function handleChatKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendChatMessage();
+      }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+
+      if (!selectedUserId || !text) {
+        return;
+      }
+
+      // Добавляем сообщение в чат
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML += `
+        <div class="message message-outgoing">
+          <div class="text-sm">${new Date().toLocaleString()}</div>
+          <div>${text}</div>
+        </div>
+      `;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // Отправляем сообщение
+      google.script.run
+        .withSuccessHandler(handleChatMessageResponse)
+        .withFailureHandler(handleChatMessageError)
+        .sendTextMessage(selectedUserId, text);
+
+      input.value = '';
+    }
+
+    function handleChatMessageResponse(response) {
+      if (!response.success) {
+        showAlert(`Ошибка отправки: ${response.error}`, 'error');
+      }
+    }
+
+    function handleChatMessageError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    // Функции для вкладки Настройки
+    function saveSettings() {
+      const botToken = document.getElementById('botToken').value;
+      const webAppUrl = document.getElementById('webAppUrl').value;
+
+      if (!botToken) {
+        showAlert('Введите токен бота', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(handleSaveSettingsResponse)
+        .withFailureHandler(handleSaveSettingsError)
+        .saveSettings({ BOT_TOKEN: botToken, WEBAPP_URL: webAppUrl });
+    }
+
+    function handleSaveSettingsResponse(response) {
+      if (response.success) {
+        showAlert('Настройки сохранены успешно!', 'success');
+        checkBotStatus();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handleSaveSettingsError(error) {
+      showAlert(`Ошибка: ${error.message}`, 'error');
+    }
+
+    function loadSettings() {
+      google.script.run
+        .withSuccessHandler(handleLoadSettingsResponse)
+        .withFailureHandler(handleLoadSettingsError)
+        .getSettings();
+    }
+
+    function handleLoadSettingsResponse(settings) {
+      document.getElementById('botToken').value = settings.BOT_TOKEN || '';
+      document.getElementById('webAppUrl').value = settings.WEBAPP_URL || '';
+    }
+
+    function handleLoadSettingsError(error) {
+      showAlert(`Ошибка загрузки настроек: ${error.message}`, 'error');
+    }
+
+    function setWebhook() {
+      google.script.run
+        .withSuccessHandler(handleWebhookResponse)
+        .withFailureHandler(handleWebhookError)
+        .setWebhook();
+    }
+
+    function getWebhookInfo() {
+      google.script.run
+        .withSuccessHandler(handleWebhookInfoResponse)
+        .withFailureHandler(handleWebhookError)
+        .getWebhookInfo();
+    }
+
+    function deleteWebhook() {
+      google.script.run
+        .withSuccessHandler(handleWebhookResponse)
+        .withFailureHandler(handleWebhookError)
+        .deleteWebhook();
+    }
+
+    function handleWebhookResponse(response) {
+      if (response.success) {
+        showAlert('Webhook обновлен успешно!', 'success');
+        getWebhookInfo();
+      } else {
+        showAlert(`Ошибка: ${response.error}`, 'error');
+      }
+    }
+
+    function handleWebhookInfoResponse(response) {
+      const webhookInfo = document.getElementById('webhookInfo');
+      if (response.success) {
+        webhookInfo.innerHTML = `
+          <div><strong>URL:</strong> ${response.data.result.url || 'Не установлен'}</div>
+          <div><strong>Статус:</strong> ${response.data.result.pending_update_count || 0} ожидающих обновлений</div>
+        `;
+      } else {
+        webhookInfo.innerHTML = `<div class="text-red-500">Ошибка получения информации</div>`;
+      }
+    }
+
+    function handleWebhookError(error) {
+      showAlert(`Ошибка webhook: ${error.message}`, 'error');
+    }
+
+    function loadUsageStats() {
+      google.script.run
+        .withSuccessHandler(handleStatsResponse)
+        .withFailureHandler(handleStatsError)
+        .getUsageStatistics();
+    }
+
+    function handleStatsResponse(response) {
+      const statsContainer = document.getElementById('usageStats');
+      if (response.success) {
+        const stats = response.data;
+        statsContainer.innerHTML = `
+          <div class="grid grid-3">
+            <div><strong>Всего действий:</strong> ${stats.totalActions}</div>
+            <div><strong>Успешных:</strong> ${stats.successfulActions}</div>
+            <div><strong>Процент успеха:</strong> ${stats.successRate}%</div>
+          </div>
+          <div class="mt-4">
+            <strong>Последние действия:</strong>
+            <div class="text-xs">
+              ${stats.recentActions.map(action => `
+                <div>${new Date(action.date).toLocaleString()} - ${action.action} (${action.status})</div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        statsContainer.innerHTML = `<div class="text-red-500">Ошибка загрузки статистики</div>`;
+      }
+    }
+
+    function handleStatsError(error) {
+      const statsContainer = document.getElementById('usageStats');
+      statsContainer.innerHTML = `<div class="text-red-500">Ошибка: ${error.message}</div>`;
+    }
+
+    // Вспомогательные функции
+    function showAlert(message, type = 'info') {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.textContent = message;
+      
+      const container = document.querySelector('.content');
+      container.insertBefore(alertDiv, container.firstChild);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 5000);
+    }
+
+    // Drag & Drop для файлов
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileUpload = document.querySelector('.file-upload');
+      
+      fileUpload.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+      });
+      
+      fileUpload.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+      });
+      
+      fileUpload.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          selectedFile = files[0];
+          this.innerHTML = `
+            <div>📁 ${files[0].name} (${(files[0].size / 1024).toFixed(1)} KB)</div>
+          `;
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
