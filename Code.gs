@@ -89,7 +89,7 @@ function initBot() {
   if (Bot) return; // Если бот уже инициализирован, ничего не делаем
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
   if (token) {
-    Bot = new TGbot({ botToken: token });
+    Bot = new CoreUtilities({ botToken: token });
   } else {
     // Не показываем alert, чтобы не прерывать UI. Ошибку обработает вызывающая функция.
     throw new Error('Токен бота не найден. Запустите Мастер Настройки.');
