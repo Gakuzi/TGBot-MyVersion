@@ -3,11 +3,6 @@
  * Создает красивое модальное окно с настройками и функциями
  */
 
-// Конфигурация бота
-if (!Bot) {
-  initBot();
-}
-
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 
 /**

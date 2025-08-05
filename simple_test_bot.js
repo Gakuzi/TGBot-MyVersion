@@ -3,11 +3,6 @@
  * Упрощенная версия для быстрого тестирования
  */
 
-// === КОНФИГУРАЦИЯ ===
-if (!Bot) {
-  initBot();
-}
-
 // Получение активной таблицы
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -15,6 +10,7 @@ const ss = SpreadsheetApp.getActiveSpreadsheet();
  * Основная функция webhook
  */
 function doPost(e) {
+  if (!Bot) initBot();
   try {
     if (e?.postData?.contents) {
       const contents = JSON.parse(e.postData.contents);
@@ -65,6 +61,7 @@ function doPost(e) {
  * Отправка приветствия
  */
 function sendWelcome(chat_id, user_name) {
+  if (!Bot) initBot();
   const text = `
 🤖 <b>Добро пожаловать, ${user_name}!</b>
 
@@ -93,6 +90,7 @@ function sendWelcome(chat_id, user_name) {
  * Отправка статистики
  */
 function sendStats(chat_id) {
+  if (!Bot) initBot();
   try {
     const messagesSheet = ss.getSheetByName("Messages");
     const usersSheet = ss.getSheetByName("Users");
@@ -133,6 +131,7 @@ function sendStats(chat_id) {
  * Отправка списка пользователей
  */
 function sendUsers(chat_id) {
+  if (!Bot) initBot();
   try {
     const sheet = ss.getSheetByName("Users");
     
@@ -181,7 +180,8 @@ function saveMessage(msg, user_name) {
     const text = msg.text || "";
     
     sheet.appendRow([timestamp, user_id, user_name, text]);
-  } catch (error) {
+  }
+ catch (error) {
     console.error("Ошибка сохранения:", error);
   }
 }
@@ -206,7 +206,8 @@ function addUser(user) {
       const timestamp = new Date();
       sheet.appendRow([user.id, user.first_name, timestamp]);
     }
-  } catch (error) {
+  }
+ catch (error) {
     console.error("Ошибка добавления пользователя:", error);
   }
 }
@@ -225,7 +226,8 @@ function logToSheet(data, sheetName) {
     
     const timestamp = new Date();
     sheet.appendRow([timestamp, JSON.stringify(data)]);
-  } catch (error) {
+  }
+ catch (error) {
     console.error("Ошибка логирования:", error);
   }
 }
@@ -312,6 +314,7 @@ function resetBot() {
  * Тестовая функция для проверки работы
  */
 function testBot() {
+  if (!Bot) initBot();
   console.log("=== ТЕСТ БОТА ===");
   
   // Проверяем информацию о боте
