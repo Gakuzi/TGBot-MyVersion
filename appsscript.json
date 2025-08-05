@@ -2,9 +2,9 @@
   "timeZone": "Europe/Moscow",
   "dependencies": {
     "libraries": [{
-      "userSymbol": "CoreUtilities",
-      "libraryId": "1y847eOyoPdYBIJ1ni4g7pJxwriX2a_f-4F1BTjImidTEEJ5iNWvZAO_7",
-      "version": "0" 
+      "userSymbol": "TGbot",
+      "libraryId": "1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg",
+      "version": "89"
     }]
   },
   "exceptionLogging": "STACKDRIVER",
