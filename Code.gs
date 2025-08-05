@@ -160,16 +160,19 @@ function getSettings() {
  */
 function initBot() {
   if (Bot) return; // Если бот уже инициализирован, ничего не делаем
-  const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
-  const webAppUrl = ScriptApp.getService().getUrl(); // Получаем URL развернутого веб-приложения
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const token = scriptProperties.getProperty('BOT_TOKEN');
+  const deploymentId = scriptProperties.getProperty('DEPLOYMENT_ID');
 
   if (!token) {
     throw new Error('Токен бота не найден. Откройте "Панель управления" -> "Настройки" и сохраните токен.');
   }
 
-  if (!webAppUrl) {
-    throw new Error('URL веб-приложения не найден. Убедитесь, что скрипт развернут как веб-приложение.');
+  if (!deploymentId) {
+    throw new Error('ID развертывания не найден. Откройте "Панель управления" -> "Настройки" и сохраните ID.');
   }
+
+  const webAppUrl = `https://script.google.com/macros/s/${deploymentId}/exec`;
 
   try {
     Bot = TGbot.bot({ botToken: token, webAppUrl: webAppUrl });
@@ -218,8 +221,9 @@ function runTest(testName, options) {
         };
         return Bot.sendPoll(pollOptions);
       case 'setWebhook':
-        const url = ScriptApp.getService().getUrl();
-        if (!url) throw new Error("Не удалось получить URL веб-приложения. Разверните скрипт.");
+        const deploymentId = PropertiesService.getScriptProperties().getProperty('DEPLOYMENT_ID');
+        if (!deploymentId) throw new Error("ID развертывания не найден. Сохраните его в настройках.");
+        const url = `https://script.google.com/macros/s/${deploymentId}/exec`;
         return Bot.setWebhook({ url: url });
       case 'getWebhookInfo':
         return Bot.getWebhookInfo();
