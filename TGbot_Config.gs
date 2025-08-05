@@ -4,174 +4,6 @@
  * Версия: 89
  */
 
-// Глобальные переменные
-let Bot = null;
-let TGbot = null;
-
-/**
- * Инициализация бота с настройками из Properties
- */
-function initializeBot() {
-  try {
-    const properties = PropertiesService.getScriptProperties();
-    const botToken = properties.getProperty('BOT_TOKEN');
-    const webAppUrl = properties.getProperty('WEBAPP_URL');
-    
-    if (!botToken) {
-      throw new Error('Токен бота не настроен. Перейдите в "Настройки" для настройки.');
-    }
-    
-    // Инициализация библиотеки TGbot
-    Bot = TGbot.bot({ 
-      botToken: botToken, 
-      webAppUrl: webAppUrl || null,
-      logRequest: true,
-      parseMode: "HTML"
-    });
-    
-    console.log('Бот успешно инициализирован');
-    return true;
-  } catch (error) {
-    console.error('Ошибка инициализации бота:', error.message);
-    return false;
-  }
-}
-
-/**
- * Получение информации о боте
- */
-function getBotInfo() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    return Bot.getMe();
-  } catch (error) {
-    console.error('Ошибка получения информации о боте:', error.message);
-    return null;
-  }
-}
-
-/**
- * Получение полной информации о боте и доступных методах
- */
-function getBotFullInfo() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    return Bot.info();
-  } catch (error) {
-    console.error('Ошибка получения полной информации о боте:', error.message);
-    return null;
-  }
-}
-
-/**
- * Установка webhook
- */
-function setWebhook() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    const properties = PropertiesService.getScriptProperties();
-    const webAppUrl = properties.getProperty('WEBAPP_URL');
-    
-    if (!webAppUrl) {
-      throw new Error('URL веб-приложения не настроен');
-    }
-    
-    return Bot.setWebhook({
-      url: webAppUrl,
-      max_connections: 50,
-      allowed_updates: ["message", "callback_query"],
-      drop_pending_updates: false
-    });
-  } catch (error) {
-    console.error('Ошибка установки webhook:', error.message);
-    return null;
-  }
-}
-
-/**
- * Получение информации о webhook
- */
-function getWebhookInfo() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    return Bot.getWebhookInfo();
-  } catch (error) {
-    console.error('Ошибка получения информации о webhook:', error.message);
-    return null;
-  }
-}
-
-/**
- * Удаление webhook
- */
-function deleteWebhook() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    return Bot.deleteWebhook();
-  } catch (error) {
-    console.error('Ошибка удаления webhook:', error.message);
-    return null;
-  }
-}
-
-/**
- * Получение обновлений
- */
-function getUpdates() {
-  if (!Bot) {
-    if (!initializeBot()) {
-      return null;
-    }
-  }
-  
-  try {
-    return Bot.getUpdates({});
-  } catch (error) {
-    console.error('Ошибка получения обновлений:', error.message);
-    return null;
-  }
-}
-
-/**
- * Очистка бота при зависании
- */
-function clearBot() {
-  try {
-    deleteWebhook();
-    getUpdates();
-    setWebhook();
-    return { success: true, message: 'Бот очищен и перезапущен' };
-  } catch (error) {
-    console.error('Ошибка очистки бота:', error.message);
-    return { success: false, message: error.message };
-  }
-}
-
 /**
  * Проверка подключения библиотеки
  */
@@ -263,24 +95,100 @@ function getAvailableMethods() {
 }
 
 /**
- * Логирование действий бота
+ * Получение информации о webhook
  */
-function logBotAction(action, data = null, success = true) {
+function getWebhookInfo() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const logSheet = ss.getSheetByName('BotLog') || ss.insertSheet('BotLog');
+    return Bot.getWebhookInfo();
+  } catch (error) {
+    console.error('Ошибка получения информации о webhook:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Удаление webhook
+ */
+function deleteWebhook() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    return Bot.deleteWebhook();
+  } catch (error) {
+    console.error('Ошибка удаления webhook:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Получение обновлений
+ */
+function getUpdates() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    return Bot.getUpdates({});
+  } catch (error) {
+    console.error('Ошибка получения обновлений:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Очистка бота при зависании
+ */
+function clearBot() {
+  try {
+    deleteWebhook();
+    getUpdates();
+    setWebhook();
+    return { success: true, message: 'Бот очищен и перезапущен' };
+  } catch (error) {
+    console.error('Ошибка очистки бота:', error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Установка webhook
+ */
+function setWebhook() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    const webAppUrl = properties.getProperty('WEBAPP_URL');
     
-    // Создаем заголовки если лист пустой
-    if (logSheet.getLastRow() === 0) {
-      logSheet.getRange(1, 1, 1, 5).setValues([['Дата', 'Действие', 'Данные', 'Статус', 'Ошибка']]);
+    if (!webAppUrl) {
+      throw new Error('URL веб-приложения не настроен');
     }
     
-    const timestamp = new Date();
-    const status = success ? 'Успешно' : 'Ошибка';
-    const error = success ? '' : (data?.message || data);
-    
-    logSheet.appendRow([timestamp, action, JSON.stringify(data), status, error]);
+    return Bot.setWebhook({
+      url: webAppUrl,
+      max_connections: 50,
+      allowed_updates: ["message", "callback_query"],
+      drop_pending_updates: false
+    });
   } catch (error) {
-    console.error('Ошибка логирования:', error.message);
+    console.error('Ошибка установки webhook:', error.message);
+    return null;
   }
 } 

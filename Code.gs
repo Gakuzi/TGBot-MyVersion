@@ -85,19 +85,24 @@ function showSettings() {
  * Открытие статистики
  */
 function showStatistics() {
-  const stats = getUsageStatistics();
-  const ui = SpreadsheetApp.getUi();
-  
-  let message = '📊 Статистика использования бота:\n\n';
-  if (stats.success) {
-    message += `Всего действий: ${stats.data.totalActions}\n`;
-    message += `Успешных: ${stats.data.successfulActions}\n`;
-    message += `Процент успеха: ${stats.data.successRate}%\n`;
-  } else {
-    message += `Ошибка загрузки статистики: ${stats.error}`;
+  try {
+    const stats = getUsageStatistics();
+    const ui = SpreadsheetApp.getUi();
+    
+    let message = '📊 Статистика использования бота:\n\n';
+    if (stats.success) {
+      message += `Всего действий: ${stats.data.totalActions}\n`;
+      message += `Успешных: ${stats.data.successfulActions}\n`;
+      message += `Процент успеха: ${stats.data.successRate}%\n`;
+    } else {
+      message += `Ошибка загрузки статистики: ${stats.error}`;
+    }
+    
+    ui.alert('Статистика', message, ui.ButtonSet.OK);
+  } catch (error) {
+    const ui = SpreadsheetApp.getUi();
+    ui.alert('Ошибка', `Ошибка загрузки статистики: ${error.message}`, ui.ButtonSet.OK);
   }
-  
-  ui.alert('Статистика', message, ui.ButtonSet.OK);
 }
 
 /**
@@ -111,16 +116,37 @@ function clearBot() {
       }
     }
     
-    const deleteResult = Bot.deleteWebhook();
-    const updatesResult = Bot.getUpdates({});
-    const setResult = Bot.setWebhook({
-      url: PropertiesService.getScriptProperties().getProperty('WEBAPP_URL'),
-      max_connections: 50,
-      allowed_updates: ["message", "callback_query"],
-      drop_pending_updates: false
-    });
+    const properties = PropertiesService.getScriptProperties();
+    const webAppUrl = properties.getProperty('WEBAPP_URL');
     
-    logBotAction('clearBot', { deleteResult, updatesResult, setResult }, true);
+    let results = {};
+    
+    try {
+      results.deleteResult = Bot.deleteWebhook();
+    } catch (error) {
+      results.deleteError = error.message;
+    }
+    
+    try {
+      results.updatesResult = Bot.getUpdates({});
+    } catch (error) {
+      results.updatesError = error.message;
+    }
+    
+    if (webAppUrl) {
+      try {
+        results.setResult = Bot.setWebhook({
+          url: webAppUrl,
+          max_connections: 50,
+          allowed_updates: ["message", "callback_query"],
+          drop_pending_updates: false
+        });
+      } catch (error) {
+        results.setError = error.message;
+      }
+    }
+    
+    logBotAction('clearBot', results, true);
     
     SpreadsheetApp.getUi().alert(
       'Очистка завершена',
@@ -577,20 +603,24 @@ function checkBotStatus() {
       }
     }
     
-    const botInfo = Bot.getMe();
-    if (!botInfo) {
-      return { success: false, error: 'Не удалось получить информацию о боте' };
-    }
-    
-    return { 
-      success: true, 
-      data: {
-        botName: botInfo.result?.first_name || 'Неизвестно',
-        botUsername: botInfo.result?.username || 'Неизвестно',
-        libraryVersion: '89',
-        webhookInfo: Bot.getWebhookInfo()
+    try {
+      const botInfo = Bot.getMe();
+      if (!botInfo || !botInfo.result) {
+        return { success: false, error: 'Не удалось получить информацию о боте' };
       }
-    };
+      
+      return { 
+        success: true, 
+        data: {
+          botName: botInfo.result.first_name || 'Неизвестно',
+          botUsername: botInfo.result.username || 'Неизвестно',
+          libraryVersion: '89',
+          webhookInfo: Bot.getWebhookInfo()
+        }
+      };
+    } catch (botError) {
+      return { success: false, error: `Ошибка получения информации о боте: ${botError.message}` };
+    }
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -884,5 +914,89 @@ function addUserToSheet(userData) {
     }
   } catch (error) {
     logError('addUserToSheet', error.message, userData);
+  }
+}
+
+/**
+ * Получение информации о webhook
+ */
+function getWebhookInfo() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    return Bot.getWebhookInfo();
+  } catch (error) {
+    console.error('Ошибка получения информации о webhook:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Удаление webhook
+ */
+function deleteWebhook() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    return Bot.deleteWebhook();
+  } catch (error) {
+    console.error('Ошибка удаления webhook:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Получение обновлений
+ */
+function getUpdates() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    return Bot.getUpdates({});
+  } catch (error) {
+    console.error('Ошибка получения обновлений:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Установка webhook
+ */
+function setWebhook() {
+  if (!Bot) {
+    if (!initializeBot()) {
+      return null;
+    }
+  }
+  
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    const webAppUrl = properties.getProperty('WEBAPP_URL');
+    
+    if (!webAppUrl) {
+      throw new Error('URL веб-приложения не настроен');
+    }
+    
+    return Bot.setWebhook({
+      url: webAppUrl,
+      max_connections: 50,
+      allowed_updates: ["message", "callback_query"],
+      drop_pending_updates: false
+    });
+  } catch (error) {
+    console.error('Ошибка установки webhook:', error.message);
+    return null;
   }
 }
