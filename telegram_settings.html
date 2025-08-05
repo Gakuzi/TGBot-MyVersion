@@ -23,6 +23,17 @@
           document.getElementById('webapp').value
         );
     }
+
+    // Загрузка сохраненных значений при открытии
+    google.script.run
+      .withSuccessHandler(function(settings) {
+        if (settings) {
+          document.getElementById('token').value = settings.token || '';
+          document.getElementById('webapp').value = settings.webapp || '';
+        }
+      })
+      .getTelegramSettings();
+
   </script>
 </body>
 </html>

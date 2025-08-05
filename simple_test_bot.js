@@ -199,8 +199,8 @@ function addUser(user) {
     }
     
     // Проверяем, есть ли уже пользователь
-    const existingUsers = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
-    const userExists = existingUsers.some(row => row[0] === user.id.toString());
+    const data = sheet.getRange("A:A").getValues();
+    const userExists = data.flat().some(id => id.toString() === user.id.toString());
     
     if (!userExists) {
       const timestamp = new Date();
@@ -236,8 +236,14 @@ function logToSheet(data, sheetName) {
  * Установка webhook
  */
 function setupWebhook() {
+  if (!Bot) initBot();
+  const webAppUrl = getWebAppUrl();
+  if (!webAppUrl) {
+    SpreadsheetApp.getUi().alert("URL веб-приложения не найден. Настройте его в меню.");
+    return;
+  }
   const result = Bot.setWebhook({
-    url: WEBAPP_URL,
+    url: webAppUrl,
     max_connections: 50
   });
   console.log("Webhook установлен:", result);
@@ -248,6 +254,7 @@ function setupWebhook() {
  * Проверка webhook
  */
 function checkWebhook() {
+  if (!Bot) initBot();
   const info = Bot.getWebhookInfo();
   console.log("Webhook info:", info);
   return info;
@@ -257,6 +264,7 @@ function checkWebhook() {
  * Удаление webhook
  */
 function removeWebhook() {
+  if (!Bot) initBot();
   const result = Bot.deleteWebhook();
   console.log("Webhook удален:", result);
   return result;
@@ -266,6 +274,7 @@ function removeWebhook() {
  * Информация о боте
  */
 function getBotInfo() {
+  if (!Bot) initBot();
   const info = Bot.getMe();
   console.log("Информация о боте:", info);
   return info;
@@ -275,6 +284,7 @@ function getBotInfo() {
  * Установка команд
  */
 function setCommands() {
+  if (!Bot) initBot();
   const commands = [
     { command: "start", description: "Запустить бота" },
     { command: "stats", description: "Статистика" },
@@ -291,6 +301,7 @@ function setCommands() {
  * Очистка бота
  */
 function resetBot() {
+  if (!Bot) initBot();
   removeWebhook();
   const updates = Bot.getUpdates({});
   console.log("Обновления:", updates);
@@ -315,4 +326,4 @@ function testBot() {
   setCommands();
   
   console.log("=== ТЕСТ ЗАВЕРШЕН ===");
-} 
+}

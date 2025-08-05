@@ -9,6 +9,7 @@
  * Отправка простого текстового сообщения
  */
 function sendSimpleMessage(chat_id) {
+  if (!Bot) initBot();
   const response = Bot.sendMessage({
     chat_id: chat_id,
     text: "Привет! Это простое текстовое сообщение."
@@ -20,6 +21,7 @@ function sendSimpleMessage(chat_id) {
  * Отправка сообщения с HTML разметкой
  */
 function sendHtmlMessage(chat_id) {
+  if (!Bot) initBot();
   const text = `
 <b>Жирный текст</b>
 <i>Курсив</i>
@@ -38,6 +40,7 @@ function sendHtmlMessage(chat_id) {
  * Отправка сообщения с Markdown
  */
 function sendMarkdownMessage(chat_id) {
+  if (!Bot) initBot();
   Bot.setParseMode("MarkdownV2");
   
   const text = `
@@ -59,6 +62,7 @@ function sendMarkdownMessage(chat_id) {
  * Создание обычной клавиатуры
  */
 function sendReplyKeyboard(chat_id) {
+  if (!Bot) initBot();
   const Keyboard = Bot.keyboard();
   
   const keyboard = Keyboard.make([
@@ -78,6 +82,7 @@ function sendReplyKeyboard(chat_id) {
  * Создание inline клавиатуры
  */
 function sendInlineKeyboard(chat_id) {
+  if (!Bot) initBot();
   const Keyboard = Bot.keyboard();
   const Key = Bot.key();
   
@@ -98,6 +103,7 @@ function sendInlineKeyboard(chat_id) {
  * Удаление клавиатуры
  */
 function removeKeyboard(chat_id) {
+  if (!Bot) initBot();
   const Keyboard = Bot.keyboard();
   
   Bot.sendMessage({
@@ -113,6 +119,7 @@ function removeKeyboard(chat_id) {
  * Отправка фото
  */
 function sendPhoto(chat_id) {
+  if (!Bot) initBot();
   Bot.sendPhoto({
     chat_id: chat_id,
     photo: "https://picsum.photos/400/300",
@@ -124,6 +131,7 @@ function sendPhoto(chat_id) {
  * Отправка фото из Google Sheets
  */
 function sendChartFromSheet(chat_id) {
+  if (!Bot) initBot();
   try {
     const sheet = ss.getSheetByName("Data");
     if (sheet && sheet.getCharts().length > 0) {
@@ -154,6 +162,7 @@ function sendChartFromSheet(chat_id) {
  * Отправка группы медиа
  */
 function sendMediaGroup(chat_id) {
+  if (!Bot) initBot();
   const data = [
     ["https://picsum.photos/400/300", "Фото 1"],
     ["https://picsum.photos/400/301", "Фото 2"],
@@ -173,6 +182,7 @@ function sendMediaGroup(chat_id) {
  * Отправка документа
  */
 function sendDocument(chat_id) {
+  if (!Bot) initBot();
   // Создаем простой CSV файл
   const csvData = "Имя,Возраст,Город\nИван,25,Москва\nМария,30,СПб";
   const blob = Utilities.newBlob(csvData, MimeType.CSV, "data.csv");
@@ -191,6 +201,7 @@ function sendDocument(chat_id) {
  * Отправка обычного опроса
  */
 function sendPoll(chat_id) {
+  if (!Bot) initBot();
   Bot.sendPoll({
     chat_id: chat_id,
     question: "Какой ваш любимый язык программирования?",
@@ -202,6 +213,7 @@ function sendPoll(chat_id) {
  * Отправка викторины
  */
 function sendQuiz(chat_id) {
+  if (!Bot) initBot();
   Bot.sendPoll({
     chat_id: chat_id,
     question: "Столица России?",
@@ -218,6 +230,7 @@ function sendQuiz(chat_id) {
  * Отправка календаря
  */
 function sendCalendar(chat_id) {
+  if (!Bot) initBot();
   Bot.sendMessage({
     chat_id: chat_id,
     text: "Выберите дату:",
@@ -231,6 +244,7 @@ function sendCalendar(chat_id) {
  * Создание отчета из таблицы
  */
 function sendTableReport(chat_id) {
+  if (!Bot) initBot();
   try {
     const sheet = ss.getSheetByName("Data");
     if (!sheet) {
@@ -276,6 +290,7 @@ function sendTableReport(chat_id) {
  * Экспорт данных в файл
  */
 function exportTableData(chat_id) {
+  if (!Bot) initBot();
   try {
     const sheet = ss.getSheetByName("Data");
     if (!sheet) {
@@ -315,6 +330,7 @@ function exportTableData(chat_id) {
  * Обработка callback запросов в doPost
  */
 function handleCallbackExample(callback) {
+  if (!Bot) initBot();
   const chat_id = callback.from.id;
   const data = callback.data;
   
@@ -356,6 +372,7 @@ function handleCallbackExample(callback) {
  * Пример отправки статистики
  */
 function sendStatsExample(chat_id) {
+  if (!Bot) initBot();
   const stats = {
     totalMessages: 150,
     activeUsers: 25,
@@ -383,6 +400,7 @@ function sendStatsExample(chat_id) {
  * Сохранение файла на Google Drive
  */
 function saveFileToDrive(message, folderId) {
+  if (!Bot) initBot();
   try {
     const fileInfo = Bot.getFile(message.document.file_id);
     const blob = UrlFetchApp.fetch(fileInfo).getBlob();
@@ -407,6 +425,7 @@ function saveFileToDrive(message, folderId) {
  * Проверка команды
  */
 function isCommand(message) {
+  if (!Bot) initBot();
   return Bot.isBotCommandMessage(message);
 }
 
@@ -428,6 +447,7 @@ function getMessageType(message) {
  * Транслитерация имени файла
  */
 function transliterateFileName(filename) {
+  if (!Bot) initBot();
   return Bot.translit(filename);
 }
 
@@ -435,6 +455,7 @@ function transliterateFileName(filename) {
  * Логирование с помощью helper
  */
 function logWithHelper(data) {
+  if (!Bot) initBot();
   const log = Bot.helper.log;
   log(data);
 }
@@ -475,8 +496,9 @@ function demonstrateAllFeatures(chat_id) {
  * Тест всех функций
  */
 function testAllFeatures() {
-  const testChatId = "YOUR_TEST_CHAT_ID"; // Замените на ваш chat_id
-  
+  const testChatId = Browser.inputBox('Введите Chat ID для теста:');
+  if (!testChatId || testChatId === 'cancel') return;
+
   console.log("=== ТЕСТИРОВАНИЕ ФУНКЦИЙ ===");
   
   // Тестируем отправку сообщений
@@ -496,4 +518,72 @@ function testAllFeatures() {
   sendQuiz(testChatId);
   
   console.log("=== ТЕСТИРОВАНИЕ ЗАВЕРШЕНО ===");
+}
+
+// === ГЛАВНАЯ ФУНКЦИЯ ===
+
+/**
+ * Главная функция, которая вызывается при получении запроса
+ */
+function doPost(e) {
+  if (!Bot) initBot();
+  
+  try {
+    const contents = JSON.parse(e.postData.contents);
+    
+    if (contents.callback_query) {
+      handleCallbackExample(contents.callback_query);
+    } else if (contents.message) {
+      const message = contents.message;
+      const chat_id = message.chat.id;
+      
+      if (isCommand(message)) {
+        const command = message.text.substring(1);
+        
+        switch (command) {
+          case "start":
+            sendSimpleMessage(chat_id);
+            break;
+          case "demo":
+            demonstrateAllFeatures(chat_id);
+            break;
+          case "keyboard":
+            sendReplyKeyboard(chat_id);
+            break;
+          case "inline":
+            sendInlineKeyboard(chat_id);
+            break;
+          case "photo":
+            sendPhoto(chat_id);
+            break;
+          case "poll":
+            sendPoll(chat_id);
+            break;
+          case "calendar":
+            sendCalendar(chat_id);
+            break;
+          case "report":
+            sendTableReport(chat_id);
+            break;
+          case "export":
+            exportTableData(chat_id);
+            break;
+          default:
+            Bot.sendMessage({
+              chat_id: chat_id,
+              text: "Неизвестная команда"
+            });
+        }
+      } else {
+        // Обработка обычных сообщений
+        const messageType = getMessageType(message);
+        Bot.sendMessage({
+          chat_id: chat_id,
+          text: `Получено сообщение типа: ${messageType}`
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Ошибка в doPost:", error);
+  }
 }

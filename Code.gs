@@ -1,3 +1,5 @@
+var Bot = null;
+
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('🤖 Telegram Bot')
@@ -9,6 +11,15 @@ function onOpen() {
     .addSeparator()
     .addItem('📂 Экспортировать данные', 'exportBotData')
     .addToUi();
+}
+
+function initBot() {
+  var token = getBotToken();
+  if (token) {
+    Bot = new TGbot({ botToken: token });
+  } else {
+    SpreadsheetApp.getUi().alert('Токен не найден. Пожалуйста, настройте его в меню.');
+  }
 }
 
 function openTelegramSettings() {
@@ -23,7 +34,40 @@ function showTelegramTestUI() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Telegram Bot Test UI');
 }
 
+function saveTelegramSettings(token, webapp) {
+  PropertiesService.getScriptProperties().setProperty('BOT_TOKEN', token);
+  PropertiesService.getScriptProperties().setProperty('WEBAPP_URL', webapp);
+  setWebhook();
+}
+
+function getTelegramSettings() {
+  var token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
+  var webapp = PropertiesService.getScriptProperties().getProperty('WEBAPP_URL');
+  return { token: token, webapp: webapp };
+}
+
+function getBotToken() {
+  return PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
+}
+
+function getWebAppUrl() {
+  return PropertiesService.getScriptProperties().getProperty('WEBAPP_URL');
+}
+
+function setWebhook() {
+  var token = getBotToken();
+  var webapp = getWebAppUrl();
+  if (token && webapp) {
+    var bot = new TGbot({ botToken: token });
+    var response = bot.setWebhook({ url: webapp });
+    SpreadsheetApp.getUi().alert('Вебхук установлен: ' + JSON.stringify(response));
+  } else {
+    SpreadsheetApp.getUi().alert('Токен или WebApp URL не найдены в настройках.');
+  }
+}
+
 function sendQuickTestMessage() {
+  if (!Bot) initBot();
   var chatId = Browser.inputBox('Введите Chat ID для теста:');
   if (chatId && chatId !== 'cancel') {
     var res = Bot.sendMessage({ chat_id: chatId, text: 'Тестовое сообщение из Google Таблиц!' });
