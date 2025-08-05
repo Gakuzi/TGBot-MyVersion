@@ -1,0 +1,12 @@
+{
+  "timeZone": "Europe/Moscow",
+  "dependencies": {
+    "libraries": [{
+      "userSymbol": "TGBot",
+      "libraryId": "1LyGnqsaphk-K_EB8ZxqcBRiKXRE2TY8oSHWlZn4HBje1WlmoNk51wGeg",
+      "version": "89"
+    }]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8"
+}
