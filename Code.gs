@@ -18,20 +18,18 @@ function onOpen() {
  * Запускает HTML-интерфейс Мастера Настройки.
  */
 function showSetupWizard() {
-  const html = HtmlService.createHtmlOutputFromFile('SetupWizard.html')
-    .setWidth(600)
-    .setHeight(550); // Увеличил высоту для нового дизайна
-  SpreadsheetApp.getUi().showModalDialog(html, '🚀 Мастер Первоначальной Настройки');
+  const html = HtmlService.createTemplateFromFile('SetupWizard');
+  html.start_at = 'wizard'; // Устанавливаем параметр для начала с первого шага
+  SpreadsheetApp.getUi().showModalDialog(html.evaluate().setWidth(600).setHeight(550), '🚀 Мастер Первоначальной Настройки');
 }
 
 /**
  * Открывает менеджер Webhook (часть Мастера Настройки).
  */
 function showWebhookManager() {
-  const html = HtmlService.createHtmlOutputFromFile('SetupWizard.html')
-    .setWidth(600)
-    .setHeight(550);
-  SpreadsheetApp.getUi().showModalDialog(html, '⚙️ Управление Webhook');
+  const html = HtmlService.createTemplateFromFile('SetupWizard');
+  html.start_at = 'webhook'; // Устанавливаем параметр для начала с шага Webhook
+  SpreadsheetApp.getUi().showModalDialog(html.evaluate().setWidth(600).setHeight(550), '⚙️ Управление Webhook');
 }
 
 /**
@@ -115,8 +113,15 @@ function setWebhook() {
  * Получает информацию о Webhook.
  */
 function getWebhookInfo() {
-  initBot();
-  return Bot.getWebhookInfo();
+  try {
+    initBot();
+    // Устанавливаем явный тайм-аут для запроса, если это возможно в библиотеке
+    // Если нет, то хотя бы ловим ошибку
+    return Bot.getWebhookInfo();
+  } catch (e) {
+    // Возвращаем объект ошибки, чтобы клиент мог его обработать
+    return { error: true, message: e.message };
+  }
 }
 
 /**

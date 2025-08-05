@@ -211,8 +211,10 @@
       google.script.run
         .withSuccessHandler(info => {
           let statusText = '<h4>Статус Webhook</h4>';
-          if (info && info.url) {
+          if (info && !info.error && info.url) {
             statusText += `<p><b>URL в Telegram:</b> ... (скрыто)</p><p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
+          } else if (info && info.error) {
+            statusText += `<div class="status-box error">Ошибка: ${info.message}</div>`;
           } else {
             statusText += '<p>Webhook не установлен.</p>';
           }
@@ -249,8 +251,15 @@
                 // Предзаполняем поля, чтобы пользователь видел текущие значения
                 document.getElementById('token').value = SETTINGS.BOT_TOKEN || '';
                 document.getElementById('deploymentId').value = SETTINGS.DEPLOYMENT_ID || '';
-                // Всегда начинаем с первого шага
-                goToStep(1);
+
+                // Определяем, с какого шага начать
+                const startAt = '<?!= start_at ?>'; // Получаем значение из Apps Script
+                if (startAt === 'webhook') {
+                    goToStep(4);
+                    loadWebhookInfo();
+                } else {
+                    goToStep(1);
+                }
             })
             .withFailureHandler(showError)
             .getSettings();
