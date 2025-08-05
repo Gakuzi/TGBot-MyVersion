@@ -1,5 +1,10 @@
 var Bot = null;
 const ss = SpreadsheetApp.getActiveSpreadsheet();
+var TGbot = {
+  bot: function() {
+    throw new Error("Неверный вызов TGbot.bot() обнаружен!");
+  }
+};
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
