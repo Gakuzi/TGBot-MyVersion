@@ -86,11 +86,25 @@ function getSettings() {
 function initBot() {
   if (Bot) return; // Если бот уже инициализирован, ничего не делаем
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
-  if (token) {
+  const webAppUrl = ScriptApp.getService().getUrl(); // Получаем URL развернутого веб-приложения
+
+  console.log(`initBot: Token - ${token ? 'Присутствует' : 'Отсутствует'}, WebAppUrl - ${webAppUrl}`);
+
+  if (!token) {
+    throw new Error('Токен бота не найден. Запустите Мастер Настройки и сохраните токен.');
+  }
+
+  if (!webAppUrl) {
+    throw new Error('URL веб-приложения не найден. Убедитесь, что скрипт развернут как веб-приложение.');
+  }
+
+  try {
     Bot = TGbot.bot({ botToken: token, webAppUrl: webAppUrl });
-  } else {
-    // Не показываем alert, чтобы не прерывать UI. Ошибку обработает вызывающая функция.
-    throw new Error('Токен бота не найден. Запустите Мастер Настройки.');
+    if (!Bot) {
+      throw new Error('Не удалось инициализировать объект бота. Проверьте настройки библиотеки TGbot.');
+    }
+  } catch (e) {
+    throw new Error(`Ошибка инициализации бота: ${e.message}. Убедитесь, что библиотека TGbot подключена и настроена правильно.`);
   }
 }
 
@@ -101,11 +115,10 @@ function initBot() {
  */
 function setWebhook() {
   initBot();
-  const deploymentId = PropertiesService.getScriptProperties().getProperty('DEPLOYMENT_ID');
-  if (!deploymentId) {
-    throw new Error('ID развертывания не найден. Запустите Мастер Настройки.');
+  if (!Bot) {
+    throw new Error('Объект бота не инициализирован. Невозможно установить Webhook.');
   }
-  const url = `https://script.google.com/macros/s/${deploymentId}/exec`;
+  const url = ScriptApp.getService().getUrl(); // Используем текущий URL развертывания
   return Bot.setWebhook({ url: url });
 }
 
@@ -115,11 +128,11 @@ function setWebhook() {
 function getWebhookInfo() {
   try {
     initBot();
-    // Устанавливаем явный тайм-аут для запроса, если это возможно в библиотеке
-    // Если нет, то хотя бы ловим ошибку
+    if (!Bot) {
+      throw new Error('Объект бота не инициализирован. Невозможно получить информацию о Webhook.');
+    }
     return Bot.getWebhookInfo();
   } catch (e) {
-    // Возвращаем объект ошибки, чтобы клиент мог его обработать
     return { error: true, message: e.message };
   }
 }
@@ -129,5 +142,8 @@ function getWebhookInfo() {
  */
 function deleteWebhook() {
   initBot();
+  if (!Bot) {
+    throw new Error('Объект бота не инициализирован. Невозможно удалить Webhook.');
+  }
   return Bot.deleteWebhook();
 }
