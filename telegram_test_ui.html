@@ -188,34 +188,34 @@
     .status-box.info { background-color: #e2e8f0; color: #4a5568; border-color: #cbd5e0;}
 
     /* Settings Tabs */
-    .settings-container {
+    .settings-tab-bar {
         display: flex;
+        gap: 5px;
+        border-bottom: 1px solid var(--border-color);
     }
-    .settings-sidebar {
-        width: 200px;
-        border-right: 1px solid var(--border-color);
-        padding-right: 20px;
-        flex-shrink: 0;
-    }
-    .settings-menu-item {
+    .settings-tab-item {
         padding: 10px 15px;
         cursor: pointer;
         font-weight: 500;
-        border-radius: 8px;
-        margin-bottom: 5px;
-        transition: all 0.2s ease;
-    }
-    .settings-menu-item:hover {
+        border-radius: 8px 8px 0 0;
+        border: 1px solid transparent;
+        border-bottom: none;
         background-color: var(--background-color);
+        color: var(--subtle-text);
+        position: relative;
+        top: 1px;
     }
-    .settings-menu-item.active {
-        background-color: #e9eafc;
-        font-weight: 600;
+    .settings-tab-item.active {
+        background-color: var(--container-bg);
+        border-color: var(--border-color);
         color: var(--primary-color);
+        font-weight: 600;
     }
     .settings-content {
-        flex-grow: 1;
-        padding-left: 30px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
     }
     .settings-tab-content {
         display: none;
@@ -377,55 +377,53 @@
         <!-- Settings Tab -->
         <div id="settings-tab" class="tab-content">
             <h2>Настройки</h2>
-            <div class="settings-container">
-                <div class="settings-sidebar">
-                    <div class="settings-menu-item active" onclick="showSettingsSubTab('telegram')">Telegram и Webhook</div>
-                    <div class="settings-menu-item" onclick="showSettingsSubTab('sheets')">Управление листами</div>
-                </div>
-                <div class="settings-content">
-                    <!-- Telegram & Webhook Settings -->
-                    <div id="telegram-settings-tab" class="settings-tab-content active">
-                        <h3>Основные настройки</h3>
-                        <div class="form-group">
-                            <label for="bot-token">Токен Telegram Бота</label>
-                            <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
-                        </div>
-                        <div class="form-group">
-                            <label for="deployment-id">ID Развертывания</label>
-                            <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
-                        </div>
-                        <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
-                        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
-                        <h3>Управление Webhook</h3>
-                        <div class="status-box info">
-                          <b>Важно:</b> Для работы Webhook ваш скрипт должен быть развернут как веб-приложение. Нажмите "Развертывание" -> "Новое развертывание" в редакторе Apps Script, выберите тип "Веб-приложение" и скопируйте ID развертывания в поле выше.
-                        </div>
-                        <div id="webhook-status"></div>
-                        <div class="button-group" style="margin-top: 16px; display: flex; gap: 10px;">
-                            <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить</button>
-                            <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить</button>
-                            <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
-                        </div>
+            <div class="settings-tab-bar">
+                <div class="settings-tab-item active" onclick="showSettingsSubTab('telegram')">Telegram и Webhook</div>
+                <div class="settings-tab-item" onclick="showSettingsSubTab('sheets')">Управление листами</div>
+            </div>
+            <div class="settings-content">
+                <!-- Telegram & Webhook Settings -->
+                <div id="telegram-settings-tab" class="settings-tab-content active">
+                    <h3>Основные настройки</h3>
+                    <div class="form-group">
+                        <label for="bot-token">Токен Telegram Бота</label>
+                        <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
                     </div>
+                    <div class="form-group">
+                        <label for="deployment-id">ID Развертывания</label>
+                        <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
+                    </div>
+                    <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
+                    <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+                    <h3>Управление Webhook</h3>
+                    <div class="status-box info">
+                      <b>Важно:</b> Для работы Webhook ваш скрипт должен быть развернут как веб-приложение. Нажмите "Развертывание" -> "Новое развертывание" в редакторе Apps Script, выберите тип "Веб-приложение" и скопируйте ID развертывания в поле выше.
+                    </div>
+                    <div id="webhook-status"></div>
+                    <div class="button-group" style="margin-top: 16px; display: flex; gap: 10px;">
+                        <button id="getWebhookInfoBtn" class="btn btn-secondary" onclick="runTest('getWebhookInfo')">Проверить</button>
+                        <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить</button>
+                        <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
+                    </div>
+                </div>
 
-                    <!-- Sheets Settings -->
-                    <div id="sheets-settings-tab" class="settings-tab-content">
-                        <h3>Управление Листами</h3>
-                        <div class="form-group">
-                            <label>Быстрая настройка</label>
-                            <p>Создать все недостающие листы по стандартному шаблону.</p>
-                            <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
-                        </div>
-                        <div class="form-group">
-                            <label>Детальное управление</label>
-                            <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
-                            <ul id="sheet-list" class="sheet-list"></ul>
-                        </div>
-                        <div class="form-group">
-                            <label>Очистка</label>
-                            <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон.</p>
-                            <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
-                        </div>
+                <!-- Sheets Settings -->
+                <div id="sheets-settings-tab" class="settings-tab-content">
+                    <h3>Управление Листами</h3>
+                    <div class="form-group">
+                        <label>Быстрая настройка</label>
+                        <p>Создать все недостающие листы по стандартному шаблону.</p>
+                        <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Детальное управление</label>
+                        <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
+                        <ul id="sheet-list" class="sheet-list"></ul>
+                    </div>
+                    <div class="form-group">
+                        <label>Очистка</label>
+                        <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон.</p>
+                        <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
                     </div>
                 </div>
             </div>
@@ -470,8 +468,8 @@
         document.querySelectorAll('.settings-tab-content').forEach(tab => tab.classList.remove('active'));
         document.getElementById(subTabName + '-settings-tab').classList.add('active');
 
-        document.querySelectorAll('.settings-menu-item').forEach(item => item.classList.remove('active'));
-        document.querySelector(`.settings-menu-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
+        document.querySelectorAll('.settings-tab-item').forEach(item => item.classList.remove('active'));
+        document.querySelector(`.settings-tab-item[onclick="showSettingsSubTab('${subTabName}')"]`).classList.add('active');
         
         const resultWrapper = document.getElementById('result-wrapper');
         resultWrapper.style.display = (subTabName === 'telegram') ? 'block' : 'none';

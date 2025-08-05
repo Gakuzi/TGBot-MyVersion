@@ -3,7 +3,7 @@ var Bot = null;
 
 const SHEET_TEMPLATES = {
   'Messages': ['Дата', 'ID Пользователя', 'Имя', 'Сообщение'],
-  'Users': ['ID Пользователя', 'Имя', 'Дата добавления'],
+  'Users': ['ID Пользователя', 'Имя', 'Фамилия', 'Ник', 'Язык', 'Дата добавления'],
   'Debug': ['Дата', 'Данные'],
   'Errors': ['Дата', 'Ошибка']
 };
@@ -238,5 +238,79 @@ function runTest(testName, options) {
     sheet.appendRow([new Date(), `Функция: ${testName}, Ошибка: ${e.message}`, JSON.stringify(e, null, 2)]);
     // Возвращаем объект ошибки, чтобы он отобразился в UI
     return { error: true, message: e.message, stack: e.stack };
+  }
+}
+
+// --- Основная функция обработки вебхуков ---
+
+/**
+ * Главная функция, принимающая данные от Telegram.
+ */
+function doPost(e) {
+  const debugSheet = ss.getSheetByName('Debug');
+  try {
+    if (debugSheet) {
+      debugSheet.appendRow([new Date(), JSON.stringify(e.postData.contents)]);
+    }
+
+    const update = JSON.parse(e.postData.contents);
+    const message = update.message || update.callback_query.message;
+    const user = update.message ? update.message.from : update.callback_query.from;
+
+    recordUser(user);
+
+    if (message) {
+      const messagesSheet = ss.getSheetByName('Messages');
+      if (messagesSheet) {
+        messagesSheet.appendRow([
+          new Date(),
+          user.id,
+          user.first_name,
+          message.text || ' (не текстовое сообщение)'
+        ]);
+      }
+    }
+
+  } catch (err) {
+    const errorSheet = ss.getSheetByName('Errors');
+    if (errorSheet) {
+      errorSheet.appendRow([new Date(), `doPost Error: ${err.message}`, err.stack]);
+    }
+  }
+}
+
+/**
+ * Записывает или обновляет информацию о пользователе.
+ */
+function recordUser(user) {
+  try {
+    const usersSheet = ss.getSheetByName('Users');
+    if (!usersSheet) return;
+
+    const data = usersSheet.getDataRange().getValues();
+    const userRow = data.find(row => row[0] == user.id);
+
+    const userData = [
+      user.id,
+      user.first_name || '',
+      user.last_name || '',
+      user.username || '',
+      user.language_code || '',
+      new Date()
+    ];
+
+    if (userRow) {
+      // Пользователь найден, обновляем строку
+      const rowIndex = data.findIndex(row => row[0] == user.id) + 1;
+      usersSheet.getRange(rowIndex, 1, 1, userData.length).setValues([userData]);
+    } else {
+      // Новый пользователь, добавляем строку
+      usersSheet.appendRow(userData);
+    }
+  } catch (err) {
+    const errorSheet = ss.getSheetByName('Errors');
+    if (errorSheet) {
+      errorSheet.appendRow([new Date(), `recordUser Error: ${err.message}`, err.stack]);
+    }
   }
 }
