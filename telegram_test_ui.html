@@ -11,6 +11,7 @@
       --background-color: #f7f8fa;
       --container-bg: #ffffff;
       --text-color: #2d3748;
+      --subtle-text: #718096;
       --border-color: #e2e8f0;
       --input-bg: #f8f9fb;
       --success-bg: #e6fffa;
@@ -118,11 +119,15 @@
       font-size: 15px;
       cursor: pointer;
       transition: background-color 0.2s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn:hover {
       background: var(--primary-hover);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+    .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
     .btn-secondary {
         background: var(--border-color);
         color: var(--text-color);
@@ -156,6 +161,32 @@
         background-color: var(--error-bg);
         color: var(--error-color);
     }
+    .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .status-box { padding: 16px; border-radius: 8px; margin-top: 16px; }
+    .status-box.success { background-color: #c6f6d5; color: var(--success-color); }
+    .status-box.error { background-color: #fed7d7; color: var(--error-color); }
+
+    /* Sheet Manager Styles */
+    .sheet-list { list-style: none; padding: 0; }
+    .sheet-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sheet-item:last-child { border-bottom: none; }
+    .sheet-name { font-weight: 500; }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .status-badge.created { background-color: #c6f6d5; color: #2f855a; }
+    .status-badge.missing { background-color: #fed7d7; color: #9b2c2c; }
   </style>
 </head>
 <body>
@@ -171,6 +202,8 @@
         <div class="menu-item" onclick="showTab('keyboards')">Клавиатуры</div>
         <div class="menu-item" onclick="showTab('polls')">Опросы</div>
         <div class="menu-item" onclick="showTab('webhook')">Webhook</div>
+        <div class="menu-item" onclick="showTab('sheets')">Упр. листами</div>
+        <div class="menu-item" onclick="showTab('settings')">Настройки</div>
       </div>
       <div class="content">
         <div id="status-container"></div>
@@ -184,10 +217,6 @@
               <button class="btn" onclick="runTest('getMe')">getMe</button>
             </div>
             <div class="form-group">
-              <label>Получить информацию о боте</label>
-              <button class="btn" onclick="runTest('getInfo')">getInfo</button>
-            </div>
-             <div class="form-group">
               <label>Получить Chat ID</label>
               <input type="text" id="chat-id-input" placeholder="Введите ваш Chat ID">
                <button class="btn btn-secondary" onclick="document.getElementById('chat-id-input').value = prompt('Введите ваш Chat ID:') || ''">Получить мой ID</button>
@@ -293,21 +322,52 @@
         <!-- Webhook Tab -->
         <div id="webhook-tab" class="tab-content">
             <h2>Управление Webhook</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Установить Webhook</label>
-                    <button class="btn" onclick="runTest('setWebhook')">Установить</button>
-                </div>
-                <div class="form-group">
-                    <label>Получить информацию</label>
-                    <button class="btn" onclick="runTest('getWebhookInfo')">Получить</button>
-                </div>
-                <div class="form-group">
-                    <label>Удалить Webhook</label>
-                    <button class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
-                </div>
+            <p>Здесь вы можете проверить статус вашего Webhook и при необходимости обновить или удалить его.</p>
+            <div id="webhook-status"></div>
+            <div class="button-group">
+                <button id="setWebhookBtn" class="btn" onclick="runTest('setWebhook')">Установить / Обновить</button>
+                <button id="deleteWebhookBtn" class="btn btn-secondary" onclick="runTest('deleteWebhook')">Удалить</button>
             </div>
         </div>
+
+        <!-- Sheets Tab -->
+        <div id="sheets-tab" class="tab-content">
+          <h2>Управление Листами</h2>
+          <div class="form-group">
+              <label>Быстрая настройка</label>
+              <p>Создать все недостающие листы по стандартному шаблону. Существующие листы не будут затронуты.</p>
+              <button class="btn" onclick="runSheetAction('createAllSheets')">Создать все по шаблону</button>
+          </div>
+          <div class="form-group">
+              <label>Детальное управление</label>
+              <p>Создавайте, удаляйте или очищайте содержимое отдельных листов.</p>
+              <ul id="sheet-list" class="sheet-list">
+                  <!-- Листы будут загружены здесь -->
+              </ul>
+          </div>
+           <div class="form-group">
+                <label>Очистка</label>
+                <p>Удалить все листы, которые <b>не входят</b> в стандартный шаблон. Это действие необратимо.</p>
+                <button class="btn btn-secondary" onclick="runSheetAction('deleteNonTemplateSheets')">Удалить сторонние листы</button>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <h2>Настройки</h2>
+            <div class="form-group">
+                <label for="bot-token">Токен Telegram Бота</label>
+                <input type="text" id="bot-token" placeholder="Вставьте ваш токен сюда...">
+                <p class="description">Получите токен у <code>@BotFather</code> в Telegram.</p>
+            </div>
+            <div class="form-group">
+                <label for="deployment-id">ID Развертывания</label>
+                <input type="text" id="deployment-id" placeholder="Вставьте ID развертывания...">
+                <p class="description">Разверните скрипт как веб-приложение и вставьте сюда ID развертывания.</p>
+            </div>
+            <button class="btn" onclick="saveSettings()">Сохранить настройки</button>
+        </div>
+
 
         <div id="result-container">
           Ожидание результатов...
@@ -317,16 +377,22 @@
   </div>
 
   <script>
+    let SETTINGS = {};
+
     function showTab(tabName) {
       // Tabs
-      const tabs = document.querySelectorAll('.tab-content');
-      tabs.forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName + '-tab').classList.add('active');
 
       // Menu
-      const menuItems = document.querySelectorAll('.menu-item');
-      menuItems.forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
       document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`).classList.add('active');
+      
+      if (tabName === 'webhook') {
+        loadWebhookInfo();
+      } else if (tabName === 'sheets') {
+        loadSheetsStatus();
+      }
     }
 
     function showStatus(message, isError = false) {
@@ -339,20 +405,125 @@
         setTimeout(() => statusDiv.style.display = 'none', 5000);
     }
 
-    function runTest(testName) {
+    function showLoader(buttonId) {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<div class="spinner"></div>' + button.innerText;
+      }
+    }
+
+    function hideLoader(buttonId, originalText) {
+      const button = document.getElementById(buttonId);
+       if (button) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+      }
+    }
+
+    function loadWebhookInfo() {
+      const statusDiv = document.getElementById('webhook-status');
+      statusDiv.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><div class="spinner"></div> <i>Загрузка информации...</i></div>';
+      google.script.run
+        .withSuccessHandler(info => {
+          let statusText = '<h4>Статус Webhook</h4>';
+          if (info && !info.error && info.url) {
+            statusText += `<p><b>URL в Telegram:</b> ... (скрыто)</p><p><b>Ожидающие обновления:</b> ${info.pending_update_count}</p>`;
+          } else if (info && info.error) {
+            statusText += `<div class="status-box error">Ошибка: ${info.message}</div>`;
+          } else {
+            statusText += '<p>Webhook не установлен.</p>';
+          }
+          statusDiv.innerHTML = statusText;
+        })
+        .withFailureHandler(err => {
+          statusDiv.innerHTML = `<div class="status-box error">Ошибка: ${err.message}</div>`;
+        })
+        .runTest('getWebhookInfo', {});
+    }
+
+    function saveSettings() {
+        const token = document.getElementById('bot-token').value;
+        const depId = document.getElementById('deployment-id').value;
+        showStatus('Сохранение...');
+        google.script.run
+            .withSuccessHandler((savedSettings) => {
+                SETTINGS = savedSettings;
+                showStatus('Настройки успешно сохранены!', false);
+            })
+            .withFailureHandler((err) => {
+                showStatus('Ошибка сохранения: ' + err.message, true);
+            })
+            .saveSettings({BOT_TOKEN: token, DEPLOYMENT_ID: depId});
+    }
+
+    function runSheetAction(action, sheetName = null) {
+        showStatus(`Выполнение: ${action}...`);
+        google.script.run
+            .withSuccessHandler(result => {
+                showStatus(result, false);
+                loadSheetsStatus(); // Перезагружаем список
+            })
+            .withFailureHandler(err => {
+                showStatus(`Ошибка: ${err.message}`, true);
+            })
+            .manageSheets({action: action, sheetName: sheetName});
+    }
+
+    function loadSheetsStatus() {
+        const list = document.getElementById('sheet-list');
+        list.innerHTML = '<li><div class="spinner"></div> <i>Загрузка статуса листов...</i></li>';
+        google.script.run
+            .withSuccessHandler(sheets => {
+                list.innerHTML = '';
+                if (sheets && sheets.length > 0) {
+                    sheets.forEach(sheet => {
+                        const item = document.createElement('li');
+                        item.className = 'sheet-item';
+                        let buttons = '';
+                        if (sheet.isTemplate) {
+                            if (sheet.exists) {
+                                buttons = `<button class="btn btn-secondary" onclick="runSheetAction('clearSheet', '${sheet.name}')">Очистить</button>`;
+                            } else {
+                                buttons = `<button class="btn" onclick="runSheetAction('createSheet', '${sheet.name}')">Создать</button>`;
+                            }
+                        } else {
+                             buttons = `<button class="btn btn-secondary" onclick="runSheetAction('deleteSheet', '${sheet.name}')">Удалить</button>`;
+                        }
+
+                        item.innerHTML = `
+                            <div>
+                                <span class="sheet-name">${sheet.name}</span>
+                                <span class="status-badge ${sheet.exists ? 'created' : 'missing'}">${sheet.exists ? 'Существует' : 'Отсутствует'}</span>
+                            </div>
+                            <div>${buttons}</div>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    list.innerHTML = '<li>Нет информации о листах.</li>';
+                }
+            })
+            .withFailureHandler(err => {
+                list.innerHTML = `<li><div class="status error">Ошибка загрузки: ${err.message}</div></li>`;
+            })
+            .getSheetsStatus();
+    }
+
+
+    function runTest(testName, options = {}) {
       const resultContainer = document.getElementById('result-container');
       resultContainer.textContent = 'Выполнение...';
-      
-      let options = {};
       
       try {
         switch(testName) {
           case 'getMe':
-          case 'getInfo':
+            break;
           case 'setWebhook':
-          case 'getWebhookInfo':
+            showLoader('setWebhookBtn');
+            break;
           case 'deleteWebhook':
-            // No options needed
+            showLoader('deleteWebhookBtn');
             break;
           case 'sendMessage':
             options.chat_id = document.getElementById('msg-chat-id').value;
@@ -380,19 +551,23 @@
             options.optionsText = document.getElementById('poll-options').value;
             if (!options.chat_id || !options.question || !options.optionsText) throw new Error('Все поля для опроса обязательны.');
             break;
-          default:
-            resultContainer.textContent = 'Неизвестный тест: ' + testName;
-            return;
         }
 
         google.script.run
           .withSuccessHandler(response => {
             resultContainer.textContent = JSON.stringify(response, null, 2);
             showStatus('Тест "' + testName + '" выполнен успешно!');
+            if(testName === 'setWebhook' || testName === 'deleteWebhook') {
+                hideLoader(testName === 'setWebhook' ? 'setWebhookBtn' : 'deleteWebhookBtn', testName === 'setWebhook' ? 'Установить / Обновить' : 'Удалить');
+                loadWebhookInfo();
+            }
           })
           .withFailureHandler(error => {
             resultContainer.textContent = 'Ошибка: ' + error.message;
             showStatus('Ошибка выполнения теста "' + testName + '": ' + error.message, true);
+             if(testName === 'setWebhook' || testName === 'deleteWebhook') {
+                hideLoader(testName === 'setWebhook' ? 'setWebhookBtn' : 'deleteWebhookBtn', testName === 'setWebhook' ? 'Установить / Обновить' : 'Удалить');
+            }
           })
           .runTest(testName, options);
 
@@ -401,8 +576,22 @@
           showStatus(e.message, true);
       }
     }
+    
+    function initializeDashboard() {
+        google.script.run
+            .withSuccessHandler(settings => {
+                SETTINGS = settings || {};
+                document.getElementById('bot-token').value = SETTINGS.BOT_TOKEN || '';
+                document.getElementById('deployment-id').value = SETTINGS.DEPLOYMENT_ID || '';
+                // Загружаем статус листов при инициализации
+                loadSheetsStatus();
+            })
+            .withFailureHandler(err => {
+                showStatus('Не удалось загрузить первоначальные настройки: ' + err.message, true);
+            })
+            .getSettings();
+    }
 
-    // Set default chat ID from input if available
     document.addEventListener("DOMContentLoaded", function() {
         const chatIdInput = document.getElementById('chat-id-input');
         const allChatIdInputs = document.querySelectorAll('input[placeholder="Введите Chat ID"]');
@@ -414,6 +603,8 @@
                 }
             });
         });
+
+        initializeDashboard();
     });
 
   </script>

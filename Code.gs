@@ -1,75 +1,150 @@
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 var Bot = null;
 
+const SHEET_TEMPLATES = {
+  'Messages': ['Дата', 'ID Пользователя', 'Имя', 'Сообщение'],
+  'Users': ['ID Пользователя', 'Имя', 'Дата добавления'],
+  'Debug': ['Дата', 'Данные'],
+  'Errors': ['Дата', 'Ошибка']
+};
+
 /**
  * Создает кастомное меню при открытии таблицы.
  */
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('🤖 Telegram Bot')
-    .addItem('🚀 Мастер Настройки', 'showSetupWizard')
-    .addItem('⚙️ Управление Webhook', 'showWebhookManager')
-    .addSeparator()
-    .addItem('🧪 Открыть тестовое окно', 'showTelegramTestUI')
+    .addItem('⚙️ Панель управления', 'showTelegramTestUI')
     .addToUi();
 }
 
 /**
- * Запускает HTML-интерфейс Мастера Настройки.
- */
-function showSetupWizard() {
-  const html = HtmlService.createTemplateFromFile('SetupWizard');
-  html.start_at = 'wizard'; // Устанавливаем параметр для начала с первого шага
-  SpreadsheetApp.getUi().showModalDialog(html.evaluate().setWidth(600).setHeight(550), '🚀 Мастер Первоначальной Настройки');
-}
-
-/**
- * Открывает менеджер Webhook (часть Мастера Настройки).
- */
-function showWebhookManager() {
-  const html = HtmlService.createTemplateFromFile('SetupWizard');
-  html.start_at = 'webhook'; // Устанавливаем параметр для начала с шага Webhook
-  SpreadsheetApp.getUi().showModalDialog(html.evaluate().setWidth(600).setHeight(550), '⚙️ Управление Webhook');
-}
-
-/**
- * Открывает UI для тестирования функций бота.
+ * Открывает UI для тестирования и настроек.
  */
 function showTelegramTestUI() {
   const html = HtmlService.createHtmlOutputFromFile('telegram_test_ui.html')
     .setWidth(1200)
     .setHeight(800);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Telegram Bot Test UI');
+  SpreadsheetApp.getUi().showModalDialog(html, 'Панель управления Telegram Ботом');
 }
 
-// --- Функции для Мастера Настройки ---
+// --- Функции для панели управления (Листы) ---
 
 /**
- * Создает необходимые листы в таблице с заголовками.
+ * Возвращает статус всех листов (шаблонных и пользовательских).
  */
-function setupInitialSheets() {
-  const sheets = {
-    'Messages': ['Дата', 'ID Пользователя', 'Имя', 'Сообщение'],
-    'Users': ['ID Пользователя', 'Имя', 'Дата добавления'],
-    'Debug': ['Дата', 'Данные'],
-    'Errors': ['Дата', 'Ошибка']
-  };
+function getSheetsStatus() {
+  const allSheets = ss.getSheets().map(s => s.getName());
+  const templateSheetNames = Object.keys(SHEET_TEMPLATES);
+  
+  let statuses = templateSheetNames.map(name => ({
+    name: name,
+    exists: allSheets.includes(name),
+    isTemplate: true
+  }));
 
-  for (const sheetName in sheets) {
-    if (!ss.getSheetByName(sheetName)) {
-      const newSheet = ss.insertSheet(sheetName);
-      newSheet.getRange(1, 1, 1, sheets[sheetName].length).setValues([sheets[sheetName]]);
-      newSheet.setFrozenRows(1);
+  allSheets.forEach(name => {
+    if (!templateSheetNames.includes(name)) {
+      statuses.push({ name: name, exists: true, isTemplate: false });
     }
-  }
-  return 'Листы успешно созданы и отформатированы!';
+  });
+
+  return statuses;
 }
+
+/**
+ * Главная функция для управления листами.
+ */
+function manageSheets(options) {
+  try {
+    switch (options.action) {
+      case 'createAllSheets':
+        return createAllSheets();
+      case 'createSheet':
+        return createSheet(options.sheetName);
+      case 'clearSheet':
+        return clearSheet(options.sheetName);
+      case 'deleteSheet':
+        return deleteSheet(options.sheetName);
+      case 'deleteNonTemplateSheets':
+        return deleteNonTemplateSheets();
+      default:
+        throw new Error('Неизвестное действие.');
+    }
+  } catch (e) {
+    // Логируем и возвращаем ошибку
+    const errorSheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
+    errorSheet.appendRow([new Date(), `manageSheets Error: ${e.message}`]);
+    throw new Error(e.message); // Передаем ошибку в UI
+  }
+}
+
+function createSheet(sheetName) {
+  if (!ss.getSheetByName(sheetName)) {
+    const headers = SHEET_TEMPLATES[sheetName];
+    if (!headers) throw new Error(`Шаблон для листа "${sheetName}" не найден.`);
+    const newSheet = ss.insertSheet(sheetName);
+    newSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    newSheet.setFrozenRows(1);
+    return `✅ Лист "${sheetName}" успешно создан.`;
+  }
+  return `ℹ️ Лист "${sheetName}" уже существует.`;
+}
+
+function createAllSheets() {
+  const templateSheetNames = Object.keys(SHEET_TEMPLATES);
+  let createdCount = 0;
+  templateSheetNames.forEach(name => {
+    if (!ss.getSheetByName(name)) {
+      createSheet(name);
+      createdCount++;
+    }
+  });
+  return createdCount > 0 ? `✅ Создано ${createdCount} новых листов.` : 'ℹ️ Все необходимые листы уже существуют.';
+}
+
+function clearSheet(sheetName) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (sheet) {
+    sheet.getDataRange().offset(1, 0).clearContent(); // Очищаем все, кроме заголовка
+    return `✅ Лист "${sheetName}" очищен.`;
+  }
+  throw new Error(`Лист "${sheetName}" не найден.`);
+}
+
+function deleteSheet(sheetName) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (sheet) {
+    ss.deleteSheet(sheet);
+    return `✅ Лист "${sheetName}" удален.`;
+  }
+  throw new Error(`Лист "${sheetName}" не найден.`);
+}
+
+function deleteNonTemplateSheets() {
+  const allSheetNames = ss.getSheets().map(s => s.getName());
+  const templateSheetNames = Object.keys(SHEET_TEMPLATES);
+  let deletedCount = 0;
+  allSheetNames.forEach(name => {
+    if (!templateSheetNames.includes(name)) {
+      deleteSheet(name);
+      deletedCount++;
+    }
+  });
+  return deletedCount > 0 ? `✅ Удалено ${deletedCount} сторонних листов.` : 'ℹ️ Сторонние листы не найдены.';
+}
+
+
+// --- Функции для настроек и тестов ---
 
 /**
  * Сохраняет токен и ID развертывания в свойства скрипта.
  */
 function saveSettings(settings) {
-  PropertiesService.getScriptProperties().setProperties(settings, true); // true - удалить остальные свойства
+  PropertiesService.getScriptProperties().setProperties({
+      BOT_TOKEN: settings.BOT_TOKEN || '',
+      DEPLOYMENT_ID: settings.DEPLOYMENT_ID || ''
+  }, false); // false - не удалять остальные свойства
   return getSettings();
 }
 
@@ -89,7 +164,7 @@ function initBot() {
   const webAppUrl = ScriptApp.getService().getUrl(); // Получаем URL развернутого веб-приложения
 
   if (!token) {
-    throw new Error('Токен бота не найден. Запустите Мастер Настройки и сохраните токен.');
+    throw new Error('Токен бота не найден. Откройте "Панель управления" -> "Настройки" и сохраните токен.');
   }
 
   if (!webAppUrl) {
@@ -107,17 +182,15 @@ function initBot() {
 }
 
 function runTest(testName, options) {
-  initBot();
-  if (!Bot) {
-    throw new Error('Бот не инициализирован.');
-  }
-
   try {
+    initBot(); // Попытка инициализации при каждом тесте
+    if (!Bot) {
+      throw new Error('Бот не инициализирован.');
+    }
+
     switch (testName) {
       case 'getMe':
         return Bot.getMe();
-      case 'getInfo':
-        return Bot.info();
       case 'sendMessage':
         return Bot.sendMessage(options);
       case 'sendMedia':
@@ -146,6 +219,7 @@ function runTest(testName, options) {
         return Bot.sendPoll(pollOptions);
       case 'setWebhook':
         const url = ScriptApp.getService().getUrl();
+        if (!url) throw new Error("Не удалось получить URL веб-приложения. Разверните скрипт.");
         return Bot.setWebhook({ url: url });
       case 'getWebhookInfo':
         return Bot.getWebhookInfo();
@@ -155,6 +229,10 @@ function runTest(testName, options) {
         throw new Error('Неизвестный тест: ' + testName);
     }
   } catch (e) {
+    // Логируем ошибку в лист 'Errors'
+    const sheet = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
+    sheet.appendRow([new Date(), `Функция: ${testName}, Ошибка: ${e.message}`, JSON.stringify(e, null, 2)]);
+    // Возвращаем объект ошибки, чтобы он отобразился в UI
     return { error: true, message: e.message, stack: e.stack };
   }
 }
