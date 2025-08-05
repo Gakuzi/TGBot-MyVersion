@@ -87,7 +87,7 @@
     <!-- Шаг 1: Приветствие -->
     <div id="step1" class="step">
       <h2>🚀 Мастер Первоначальной Настройки</h2>
-      <p>Этот мастер поможет вам настроить таблицу и подключить Telegram-бота. Процесс займет не больше минуты.</p>
+      <p>Этот мастер поможет вам настроить таблицу и подключить Telegram-бота. Вы сможете проверить и обновить существующие настройки.</p>
       <div class="button-group">
         <button onclick="runSetupSheets()">Начать</button>
       </div>
@@ -130,6 +130,7 @@
   <script>
     let currentStep = 1;
     const totalSteps = 4;
+    let SETTINGS = {}; // Храним настройки глобально
 
     function updateProgressBar() {
       const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
@@ -160,7 +161,12 @@
     function runSetupSheets() {
       showLoader(event.target.id);
       google.script.run
-        .withSuccessHandler(() => goToStep(2))
+        .withSuccessHandler(() => {
+            // Заполняем поля после создания листов
+            document.getElementById('token').value = SETTINGS.BOT_TOKEN || '';
+            document.getElementById('deploymentId').value = SETTINGS.DEPLOYMENT_ID || '';
+            goToStep(2);
+        })
         .withFailureHandler(showError)
         .setupInitialSheets();
     }
@@ -170,9 +176,13 @@
       if (!token) { alert('Токен не может быть пустым.'); return; }
       showLoader('saveTokenBtn');
       google.script.run
-        .withSuccessHandler(() => goToStep(3))
+        .withSuccessHandler(settings => {
+            SETTINGS = settings;
+            hideLoader('saveTokenBtn', 'Сохранить и продолжить');
+            goToStep(3);
+        })
         .withFailureHandler(err => { hideLoader('saveTokenBtn', 'Сохранить и продолжить'); showError(err); })
-        .saveSettings({BOT_TOKEN: token});
+        .saveSettings({BOT_TOKEN: token, DEPLOYMENT_ID: SETTINGS.DEPLOYMENT_ID});
     }
 
     function saveDeploymentId() {
@@ -180,9 +190,14 @@
       if (!deploymentId) { alert('ID развертывания не может быть пустым.'); return; }
       showLoader('saveDepIdBtn');
       google.script.run
-        .withSuccessHandler(() => { goToStep(4); loadWebhookInfo(); })
+        .withSuccessHandler(settings => {
+            SETTINGS = settings;
+            hideLoader('saveDepIdBtn', 'Сохранить и настроить Webhook');
+            goToStep(4);
+            loadWebhookInfo();
+        })
         .withFailureHandler(err => { hideLoader('saveDepIdBtn', 'Сохранить и настроить Webhook'); showError(err); })
-        .saveSettings({DEPLOYMENT_ID: deploymentId});
+        .saveSettings({BOT_TOKEN: SETTINGS.BOT_TOKEN, DEPLOYMENT_ID: deploymentId});
     }
 
     function loadWebhookInfo() {
@@ -222,26 +237,25 @@
     }
 
     // --- Инициализация ---
-    google.script.run.withSuccessHandler(settings => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const startAt = urlParams.get('start_at');
+    function initializeWizard() {
+        google.script.run.withSuccessHandler(settings => {
+            SETTINGS = settings || {};
+            const urlParams = new URLSearchParams(window.location.search);
+            const startAt = urlParams.get('start_at');
 
-      if (startAt === 'webhook') {
-         goToStep(4);
-         loadWebhookInfo();
-         return;
-      }
+            if (startAt === 'webhook') {
+                document.getElementById('token').value = SETTINGS.BOT_TOKEN || '';
+                document.getElementById('deploymentId').value = SETTINGS.DEPLOYMENT_ID || '';
+                goToStep(4);
+                loadWebhookInfo();
+            } else {
+                // Всегда начинаем с первого шага
+                goToStep(1);
+            }
+        }).getSettings();
+    }
 
-      if (settings && settings.BOT_TOKEN && settings.DEPLOYMENT_ID) {
-        goToStep(4);
-        loadWebhookInfo();
-      } else if (settings && settings.BOT_TOKEN) {
-        document.getElementById('token').value = settings.BOT_TOKEN;
-        goToStep(3);
-      } else {
-        goToStep(1);
-      }
-    }).getSettings();
+    initializeWizard();
 
   </script>
 </body>
